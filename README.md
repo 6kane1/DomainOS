@@ -4,14 +4,14 @@
 
 A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 24H2 and 25H2 (builds 26100, 26200), Home and Pro**, for games.
 
-> **Best on 25H2:** the playbook currently runs most stably on Windows 11 25H2. Support for 26H2 is coming within a few weeks.
+> **Best on 25H2:** the playbook currently runs most stably on Windows 11 25H2. Support for 26H2 comes in the first update after 2.0.0.
 
 **A short list of changes, each one explained and checkable.** Every value below names the registry key, service or setting it changes.
 
 > **Before you start**
 > - **It can be undone without reinstalling Windows** (see [Undo](#undo)). Removed apps are installed again from the Store. Still, try it in a virtual machine first.
 > - **Average FPS does not go up** because of a playbook. What you get is fewer background processes, no advertising, no forced restarts and a system that is set up the same way every time.
-> - Version 1.6.8 is new and has had little testing. Report what breaks.
+> - Version 2.0.0 is new and has had little testing. Report what breaks.
 
 ## What stays untouched — on purpose
 
