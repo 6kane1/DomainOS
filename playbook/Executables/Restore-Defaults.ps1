@@ -1,5 +1,5 @@
 ﻿<#
-  Domain OS — puts back items that earlier versions (1.5.0–1.6.0) changed and this version no longer touches.
+  Domain OS — puts back items that earlier versions (1.5.0–1.6.6) changed and this version no longer touches.
 
   The values come from %ProgramData%\Domain OS\Undo\state.json, written before the very first install: every
   service gets the start-up type it had, every task its enabled state, every registry value its data (or is

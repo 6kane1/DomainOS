@@ -61,6 +61,14 @@ foreach ($r in $state.registry) {
     } catch { $failed++; Write-Log "FAILED registry $($r.path)\$($r.name): $($_.Exception.Message)" }
 }
 
+# ---- the link tracking service, deleted by Remove-TrkWks.ps1: registered again from its backup ----------------
+$trk = Join-Path $env:ProgramData 'Domain OS\Undo\TrkWks.reg'
+if ((Test-Path $trk) -and -not (Test-Path 'HKLM:\SYSTEM\CurrentControlSet\Services\TrkWks') -and $PSCmdlet.ShouldProcess('TrkWks', 'register the service again')) {
+    & reg.exe import $trk 2>$null
+    if ($LASTEXITCODE -eq 0) { $done++; Write-Log 'service TrkWks registered again (it starts after the restart)' }
+    else { $failed++; Write-Log 'FAILED service TrkWks: the backup could not be imported' }
+}
+
 # ---- services: the start-up type they had -------------------------------------------------------------------
 foreach ($s in $state.services) {
     $key = "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$($s.name)"

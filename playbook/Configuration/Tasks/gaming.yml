@@ -18,10 +18,17 @@ actions:
   - !registryValue: {path: 'HKCU\Control Panel\Accessibility\Keyboard Response', value: 'Flags', data: '122', type: REG_SZ}
   - !registryValue: {path: 'HKCU\Control Panel\Accessibility\ToggleKeys', value: 'Flags', data: '58', type: REG_SZ}
 
-  # Processor time slices (Win32PrioritySeparation = 0x25 = 37): short, variable quanta; the program in front gets
-  # twice the slice of background programs (Windows' own value 2 gives three times). Requested by the author as the
-  # Domain OS default; measure it with Domain FrameTime. Undo restores the previous value.
-  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl', value: 'Win32PrioritySeparation', data: '37', type: REG_DWORD}
+  # Processor time slices (Win32PrioritySeparation = 0x18 = 24): long, fixed quanta, the same length for the program
+  # in front and for background programs (no foreground boost of the quantum). Windows' own value 2 gives short,
+  # variable quanta with three times the slice in front. The Domain OS default since 1.6.7 (the author's choice; 1.4.0–
+  # 1.6.6 used 0x25). Measure it with Domain FrameTime. Undo restores the previous value.
+  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl', value: 'Win32PrioritySeparation', data: '24', type: REG_DWORD}
+
+  # Hardware-accelerated GPU scheduling (Settings > Display > Graphics): the graphics card schedules its own work,
+  # which takes some CPU work and latency off frame submission. Needs a WDDM 2.7+ driver and a GPU that supports it
+  # (NVIDIA GTX 10 and newer, AMD RX 5000 and newer, Intel Arc); on others Windows ignores the value. Takes effect
+  # after a restart. Undo puts the previous value back. 2 = on, 1 = off.
+  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers', value: 'HwSchMode', data: '2', type: REG_DWORD, option: 'gpu-hags'}
 
   # Game Mode is left on, as Windows ships it: AMD's 3D V-Cache driver on Ryzen X3D with two CCDs recognises games
   # through Game Mode / Game Bar and keeps them on the V-Cache CCD, and Game Mode keeps Windows Update from installing

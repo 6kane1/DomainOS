@@ -1,6 +1,6 @@
 ---
 title: More services off
-description: Error reporting, telemetry-related services and scheduled telemetry jobs, always applied. Only the start-up type changes (4 = disabled) or the task is disabled; nothing is deleted, and "Undo Domain OS" puts every one back. Services and tasks this Windows does not have are skipped.
+description: Error reporting, telemetry-related services and scheduled telemetry jobs, always applied. Only the start-up type changes (4 = disabled) or the task is disabled; the one exception, the link tracking service, is deleted after a backup. "Undo Domain OS" puts every one back. Services and tasks this Windows does not have are skipped.
 actions:
   # ---- error reporting and telemetry services --------------------------------------------------------------
   # Windows Error Reporting, the program compatibility assistant, the telemetry service.
@@ -8,13 +8,22 @@ actions:
   - !service: {name: 'WerSvc', operation: change, startup: 4, errorAction: Ignore}
   - !service: {name: 'PcaSvc', operation: change, startup: 4, errorAction: Ignore}
   - !service: {name: 'DiagTrack', operation: change, startup: 4, errorAction: Ignore}
-  # Windows AI components host (Click to Do, AI actions; it ran on a PC without an NPU in a user report),
+  # Windows AI components host (Click to Do, AI actions; it ran on a PC without an NPU in a user report) and
   # the inventory collector behind the compatibility appraiser (its tasks and the policy are already off, the
-  # service still ran), distributed link tracking (follows moved files on network volumes).
-  # Stops working: AI actions in Click to Do / Photos, shortcuts that follow a file moved to another PC.
+  # service still ran). Stops working: AI actions in Click to Do / Photos.
   - !service: {name: 'WSAIFabricSvc', operation: change, startup: 4, errorAction: Ignore}
   - !service: {name: 'InventorySvc', operation: change, startup: 4, errorAction: Ignore}
-  - !service: {name: 'TrkWks', operation: change, startup: 4, errorAction: Ignore}
+
+  # Distributed Link Tracking Client (TrkWks): keeps shortcuts working when a file moves between computers in a
+  # network. Deleted from Windows (the author's choice, 1.6.7); before that, the whole service registration is
+  # saved and "Undo Domain OS" registers it again. Stops working: shortcuts that follow a file moved to another PC.
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Remove-TrkWks.ps1"'
+    exeDir: true
+    wait: true
+    weight: 1
+    errorAction: Log
 
   # SysMain stays on in every case: it keeps memory compression and prefetch working. If an earlier test build
   # or another tweak switched it off, it is set back to automatic here.

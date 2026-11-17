@@ -11,7 +11,7 @@ A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 2
 > **Before you start**
 > - **It can be undone without reinstalling Windows** (see [Undo](#undo)). Removed apps are installed again from the Store. Still, try it in a virtual machine first.
 > - **Average FPS does not go up** because of a playbook. What you get is fewer background processes, no advertising, no forced restarts and a system that is set up the same way every time.
-> - Version 1.6.6 is new and has had little testing. Report what breaks.
+> - Version 1.6.7 is new and has had little testing. Report what breaks.
 
 ## What stays untouched — on purpose
 
@@ -58,7 +58,7 @@ Removes apps that advertise or start in the background: Clipchamp, News, Weather
 ### Services and background work
 - **Basic set (option, on):** eight scheduled jobs of removed apps and of data collection (maps, family safety, disk check proxy, SQM). Edge stays, but no longer keeps processes running after its window is closed. Services themselves are left as Windows sets them: printing, Bluetooth, maps, fax, diagnostics, sync and the small system drivers are not touched.
 - **Your choice (options, off):** file indexing, hibernation with Fast Startup, background activity of Store apps. Each of these removes a function, so each is a separate tick.
-- **Telemetry services and jobs (always applied):** error reporting (WerSvc), compatibility assistant (PcaSvc), telemetry (DiagTrack), Windows AI components host (WSAIFabricSvc), the inventory collector (InventorySvc), distributed link tracking (TrkWks), plus 14 scheduled telemetry jobs: device census, usage-data reporting, sustainability telemetry, startup-app scan, troubleshooting scans, disk and power diagnostics, WinSAT, error-report upload. Defragmentation/TRIM, registry backup, restore points, SysMain, time sync and Defender stay. Versions 1.5.0–1.6.0 switched off more (diagnostics, sync, small drivers, printing, Bluetooth, the basic services, the restart policy); installing 1.6.0 puts all of those back to what they were before the first install.
+- **Telemetry services and jobs (always applied):** error reporting (WerSvc), compatibility assistant (PcaSvc), telemetry (DiagTrack), Windows AI components host (WSAIFabricSvc), the inventory collector (InventorySvc); the Distributed Link Tracking Client (TrkWks) is deleted from Windows after a backup of its registration, and Undo registers it again; plus 14 scheduled telemetry jobs: device census, usage-data reporting, sustainability telemetry, startup-app scan, troubleshooting scans, disk and power diagnostics, WinSAT, error-report upload. Defragmentation/TRIM, registry backup, restore points, SysMain, time sync and Defender stay. Versions 1.5.0–1.6.0 switched off more (diagnostics, sync, small drivers, printing, Bluetooth, the basic services, the restart policy); installing 1.6.0 puts all of those back to what they were before the first install.
 - **Hypervisor launch type:** versions 1.5.7–1.6.0 switched the hypervisor start off when virtualization was off in the BIOS. That step is gone (if virtualization is switched on later, memory integrity and VBS would silently not start); installing 1.6.2 or later puts the previous value back.
 - What this gives: fewer processes and less memory in use after start-up — you can see it in Task Manager. It does not raise FPS by itself.
 - Never switched off: Defender, Windows Update, audio, network, input, Task Scheduler, WMI, the Xbox services, TPM and Secure Boot services, anti-cheat services.
@@ -74,7 +74,8 @@ Security updates keep coming. On Windows Home some of these policies may be igno
 - **Pointer acceleration off.**
 - **Sticky / Filter / Toggle Keys shortcuts off**, so five presses of Shift no longer throw a window over the game.
 - **Game Mode stays on**, as Windows ships it: AMD's 3D V-Cache driver on Ryzen X3D with two CCDs uses it to keep games on the V-Cache CCD, and it keeps Windows Update from installing drivers or asking to restart during a game. Versions 1.5.x switched it off; installing 1.6.2 or later puts your previous setting back.
-- **`Win32PrioritySeparation` = 0x25:** short, variable time slices; the program in front gets twice the slice of background programs (Windows' own value 2 gives three times). Measure it against 2 with Domain FrameTime; Undo restores the previous value.
+- **Hardware-accelerated GPU scheduling (HAGS), on by default (option):** `HwSchMode` = 2 in `HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers`. The graphics card schedules its own work, which takes some CPU work and latency off frame submission. Needs a supported GPU and driver (NVIDIA GTX 10 and newer, AMD RX 5000 and newer, Intel Arc); otherwise Windows ignores it. Works after a restart; Undo puts the previous value back.
+- **`Win32PrioritySeparation` = 0x18:** long, fixed time slices, the same length for the program in front and for background programs (Windows' own value 2 gives short, variable slices with three times the slice in front). Versions 1.4.0–1.6.6 used 0x25. Measure it against 2 with Domain FrameTime; Undo restores the previous value.
 
 ### Interface
 File extensions are shown and Explorer opens on "This PC". No effect on performance is claimed.
