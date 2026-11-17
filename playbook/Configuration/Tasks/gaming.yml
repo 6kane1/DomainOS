@@ -2,11 +2,30 @@
 title: Gaming settings
 description: Only settings with a documented, checkable effect. Timer, MMCSS and network "throttling" values are not included, as they have no reproducible effect.
 actions:
-  # Background recording of the last minutes of play (Game DVR) costs GPU and disk time in every game.
-  # Game Bar itself and Game Mode stay: recording by hand (Win+Alt+R) still works.
+  # ---- Captures and Game Bar off (the author's decision, 1.6.8); Game Mode stays on -----------------------------
+  # Captures: background recording of the last minutes (Game DVR), recording by hand, recorded sound, cursor and
+  # microphone. The policy switches recording and broadcasting off for every account.
   - !registryValue: {path: 'HKCU\System\GameConfigStore', value: 'GameDVR_Enabled', data: '0', type: REG_DWORD}
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'AppCaptureEnabled', data: '0', type: REG_DWORD}
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'HistoricalCaptureEnabled', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'AudioCaptureEnabled', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'CursorCaptureEnabled', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'MicrophoneCaptureEnabledByDefault', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR', value: 'AllowGameDVR', data: '0', type: REG_DWORD}
+  # Game Bar: no opening by Win+G or the controller's Xbox button, no start-up tips panel. The app stays installed
+  # (Xbox sign-in, Gaming Services and anti-cheats do not depend on the overlay), so it can be switched on again in
+  # Settings > Gaming > Game Bar.
+  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'UseNexusForGameBarEnabled', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'ShowStartupPanel', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'GamePanelStartupTipIndex', data: '3', type: REG_DWORD}
+  # Xbox mode (Settings > Gaming > Xbox mode, the full-screen Xbox home on 25H2) off: the switch only empties the
+  # home app of the account (checked on the author's PC: "Microsoft.GamingApp_8wekyb3d8bbwe!Microsoft.Xbox.App" ->
+  # ""). The Xbox app itself stays. Undo puts the previous value back.
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GamingConfiguration', value: 'GamingHomeApp', data: '', type: REG_SZ}
+
+  # Game Mode is left on, as Windows ships it: AMD's 3D V-Cache driver on Ryzen X3D with two CCDs uses it to keep
+  # games on the V-Cache CCD, and it keeps Windows Update from installing drivers or asking to restart during a game.
+  # Versions 1.5.x switched it off; Restore-Defaults.ps1 puts it back.
 
   # Pointer acceleration off ("Enhance pointer precision"): the cursor moves the same distance for the same hand movement.
   - !registryValue: {path: 'HKCU\Control Panel\Mouse', value: 'MouseSpeed', data: '0', type: REG_SZ}
@@ -29,10 +48,6 @@ actions:
   # (NVIDIA GTX 10 and newer, AMD RX 5000 and newer, Intel Arc); on others Windows ignores the value. Takes effect
   # after a restart. Undo puts the previous value back. 2 = on, 1 = off.
   - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers', value: 'HwSchMode', data: '2', type: REG_DWORD, option: 'gpu-hags'}
-
-  # Game Mode is left on, as Windows ships it: AMD's 3D V-Cache driver on Ryzen X3D with two CCDs recognises games
-  # through Game Mode / Game Bar and keeps them on the V-Cache CCD, and Game Mode keeps Windows Update from installing
-  # drivers or asking to restart during a game. Versions 1.5.x switched it off; Restore-Defaults.ps1 puts it back.
 
   # Versions 1.5.7–1.6.0 set hypervisorlaunchtype off when virtualization was off in the BIOS. If virtualization is
   # switched on later, memory integrity / VBS would then silently not start, so the step is gone: the previous value

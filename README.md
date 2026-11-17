@@ -11,7 +11,7 @@ A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 2
 > **Before you start**
 > - **It can be undone without reinstalling Windows** (see [Undo](#undo)). Removed apps are installed again from the Store. Still, try it in a virtual machine first.
 > - **Average FPS does not go up** because of a playbook. What you get is fewer background processes, no advertising, no forced restarts and a system that is set up the same way every time.
-> - Version 1.6.7 is new and has had little testing. Report what breaks.
+> - Version 1.6.8 is new and has had little testing. Report what breaks.
 
 ## What stays untouched — on purpose
 
@@ -20,7 +20,7 @@ A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 2
 | Microsoft Defender, SmartScreen, Windows Security | Removing them leaves the PC unprotected and breaks anti-cheats. |
 | Secure Boot, TPM, VBS, memory integrity, kernel mitigations | FACEIT, Vanguard, EasyAntiCheat and BattlEye check them. |
 | Security and quality updates, Defender definitions | A system without them is unsafe within weeks. |
-| Xbox Identity Provider, Gaming Services, Game Bar | Games sign in, save and record through them. |
+| Xbox Identity Provider, Gaming Services, the Game Bar app | Games sign in and save through them. The Game Bar overlay is off, but the app is not removed. |
 | Microsoft Store, App Installer (winget), Edge, WebView2 | Launchers and many programs need them. The Store can be removed with the "Maximum" option. |
 | Core Windows services | Only services with no use on a gaming PC are disabled, each one named and explained. Blind mass disabling breaks features. |
 
@@ -70,10 +70,12 @@ Removes apps that advertise or start in the background: Clipchamp, News, Weather
 Security updates keep coming. On Windows Home some of these policies may be ignored by Windows. The Start menu folder "Domain OS" has a shortcut that puts everything back.
 
 ### Gaming settings
-- **Background recording (Game DVR) off.** It costs GPU and disk time in every game. Game Bar stays: recording by hand still works.
+- **Game capture fully off:** background recording (Game DVR), recording by hand, recorded sound, cursor and microphone, plus the policy that forbids recording and broadcasting. Background recording costs GPU and disk time in every game.
 - **Pointer acceleration off.**
 - **Sticky / Filter / Toggle Keys shortcuts off**, so five presses of Shift no longer throw a window over the game.
-- **Game Mode stays on**, as Windows ships it: AMD's 3D V-Cache driver on Ryzen X3D with two CCDs uses it to keep games on the V-Cache CCD, and it keeps Windows Update from installing drivers or asking to restart during a game. Versions 1.5.x switched it off; installing 1.6.2 or later puts your previous setting back.
+- **Game Bar off (since 1.6.8).** It does not open on Win+G or the controller's Xbox button, but the app stays installed and can be switched on in Settings > Gaming. Undo puts the previous values back.
+- **Xbox mode off (since 1.6.8):** the full-screen Xbox experience (Settings > Gaming > Xbox mode) is not used as the home screen. The Xbox app itself stays. Undo puts the previous value back.
+- **Game Mode stays on**, as Windows ships it: AMD's 3D V-Cache driver on Ryzen X3D with two CCDs uses it to keep games on the V-Cache CCD, and it keeps Windows Update from installing drivers or asking to restart during a game.
 - **Hardware-accelerated GPU scheduling (HAGS), on by default (option):** `HwSchMode` = 2 in `HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers`. The graphics card schedules its own work, which takes some CPU work and latency off frame submission. Needs a supported GPU and driver (NVIDIA GTX 10 and newer, AMD RX 5000 and newer, Intel Arc); otherwise Windows ignores it. Works after a restart; Undo puts the previous value back.
 - **`Win32PrioritySeparation` = 0x18:** long, fixed time slices, the same length for the program in front and for background programs (Windows' own value 2 gives short, variable slices with three times the slice in front). Versions 1.4.0–1.6.6 used 0x25. Measure it against 2 with Domain FrameTime; Undo restores the previous value.
 
