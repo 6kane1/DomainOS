@@ -1,0 +1,48 @@
+---
+title: More services off
+description: Error reporting, telemetry-related services and scheduled telemetry jobs, always applied. Only the start-up type changes (4 = disabled) or the task is disabled; nothing is deleted, and "Undo Domain OS" puts every one back. Services and tasks this Windows does not have are skipped.
+actions:
+  # ---- error reporting and telemetry services --------------------------------------------------------------
+  # Windows Error Reporting, the program compatibility assistant, the telemetry service.
+  # Stops working: crash reports and "this program may not have installed correctly" prompts.
+  - !service: {name: 'WerSvc', operation: change, startup: 4, errorAction: Ignore}
+  - !service: {name: 'PcaSvc', operation: change, startup: 4, errorAction: Ignore}
+  - !service: {name: 'DiagTrack', operation: change, startup: 4, errorAction: Ignore}
+  # Windows AI components host (Click to Do, AI actions; it ran on a PC without an NPU in a user report),
+  # the inventory collector behind the compatibility appraiser (its tasks and the policy are already off, the
+  # service still ran), distributed link tracking (follows moved files on network volumes).
+  # Stops working: AI actions in Click to Do / Photos, shortcuts that follow a file moved to another PC.
+  - !service: {name: 'WSAIFabricSvc', operation: change, startup: 4, errorAction: Ignore}
+  - !service: {name: 'InventorySvc', operation: change, startup: 4, errorAction: Ignore}
+  - !service: {name: 'TrkWks', operation: change, startup: 4, errorAction: Ignore}
+
+  # SysMain stays on in every case: it keeps memory compression and prefetch working. If an earlier test build
+  # or another tweak switched it off, it is set back to automatic here.
+  - !service: {name: 'SysMain', operation: change, startup: 2, errorAction: Ignore}
+
+  # ---- scheduled telemetry jobs -----------------------------------------------------------------------------
+  # Seen starting at sign-in and in idle time in a Domain Analyzer report: device census, usage-data reporting,
+  # sustainability telemetry, startup-app scan, troubleshooting scans, disk-footprint and power-efficiency
+  # diagnostics, WinSAT, error-report upload.
+  # Kept on purpose: defragmentation/TRIM, registry backup, restore points, SysMain, time sync, Defender, Store.
+  # Stops working: Windows' automatic troubleshooting suggestions and the WinSAT score.
+  - !scheduledTask: {path: '\Microsoft\Windows\Device Information\Device', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Device Information\Device User', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Flighting\FeatureConfig\UsageDataFlushing', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Flighting\FeatureConfig\UsageDataReceiver', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Flighting\FeatureConfig\UsageDataReporting', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Sustainability\SustainabilityTelemetry', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\UsageAndQualityInsights\UsageAndQualityInsights-MaintenanceTask', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Application Experience\StartupAppTask', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Diagnosis\RecommendedTroubleshootingScanner', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Diagnosis\Scheduled', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\DiskFootprint\Diagnostics', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Power Efficiency Diagnostics\AnalyzeSystem', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Maintenance\WinSAT', operation: disable, errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Windows Error Reporting\QueueReporting', operation: disable, errorAction: Ignore}
+
+  # Left as Windows sets them (they were switched off in 1.5.0–1.5.8 and are put back by Restore-Defaults.ps1):
+  # diagnostic policy and its hosts, troubleshooters, Performance Logs and Alerts, event forwarding, sync and cloud
+  # services, File History, data usage, AutoPlay, Spot Verifier, payments/NFC, the small system drivers (Ndu, bam,
+  # dam, ACPI extras, PRM, kdnic, Intel PMT, Beep) and the OneSettings refresh, power-grid forecast, consent,
+# device-directory, unexpected-codepath, hotpatch and Work Folders tasks.

@@ -1,0 +1,39 @@
+---
+title: Gaming settings
+description: Only settings with a documented, checkable effect. Timer, MMCSS and network "throttling" values are not included, as they have no reproducible effect.
+actions:
+  # Background recording of the last minutes of play (Game DVR) costs GPU and disk time in every game.
+  # Game Bar itself and Game Mode stay: recording by hand (Win+Alt+R) still works.
+  - !registryValue: {path: 'HKCU\System\GameConfigStore', value: 'GameDVR_Enabled', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'AppCaptureEnabled', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'HistoricalCaptureEnabled', data: '0', type: REG_DWORD}
+
+  # Pointer acceleration off ("Enhance pointer precision"): the cursor moves the same distance for the same hand movement.
+  - !registryValue: {path: 'HKCU\Control Panel\Mouse', value: 'MouseSpeed', data: '0', type: REG_SZ}
+  - !registryValue: {path: 'HKCU\Control Panel\Mouse', value: 'MouseThreshold1', data: '0', type: REG_SZ}
+  - !registryValue: {path: 'HKCU\Control Panel\Mouse', value: 'MouseThreshold2', data: '0', type: REG_SZ}
+
+  # Sticky / Filter / Toggle Keys shortcuts (five presses of Shift, holding Shift) no longer throw a window over the game.
+  - !registryValue: {path: 'HKCU\Control Panel\Accessibility\StickyKeys', value: 'Flags', data: '506', type: REG_SZ}
+  - !registryValue: {path: 'HKCU\Control Panel\Accessibility\Keyboard Response', value: 'Flags', data: '122', type: REG_SZ}
+  - !registryValue: {path: 'HKCU\Control Panel\Accessibility\ToggleKeys', value: 'Flags', data: '58', type: REG_SZ}
+
+  # Processor time slices (Win32PrioritySeparation = 0x25 = 37): short, variable quanta; the program in front gets
+  # twice the slice of background programs (Windows' own value 2 gives three times). Requested by the author as the
+  # Domain OS default; measure it with Domain FrameTime. Undo restores the previous value.
+  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl', value: 'Win32PrioritySeparation', data: '37', type: REG_DWORD}
+
+  # Game Mode is left on, as Windows ships it: AMD's 3D V-Cache driver on Ryzen X3D with two CCDs recognises games
+  # through Game Mode / Game Bar and keeps them on the V-Cache CCD, and Game Mode keeps Windows Update from installing
+  # drivers or asking to restart during a game. Versions 1.5.x switched it off; Restore-Defaults.ps1 puts it back.
+
+  # Versions 1.5.7–1.6.0 set hypervisorlaunchtype off when virtualization was off in the BIOS. If virtualization is
+  # switched on later, memory integrity / VBS would then silently not start, so the step is gone: the previous value
+  # is put back here (the script does nothing when it never changed this PC).
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Set-Hypervisor.ps1" -Restore'
+    exeDir: true
+    wait: true
+    weight: 1
+    errorAction: Log

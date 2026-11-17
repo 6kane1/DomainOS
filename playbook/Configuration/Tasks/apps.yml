@@ -1,0 +1,64 @@
+---
+title: Preinstalled apps
+description: Removes apps that run in the background or advertise and that a gaming PC does not need. The Store, Xbox services and Edge stay.
+actions:
+  # ---- basic list: nothing here is needed by games, drivers or anti-cheats -------------------------
+  - !appx: {name: 'Clipchamp.Clipchamp*', type: family, option: 'apps-basic'}                 # video editor (advertised)
+  - !appx: {name: 'Microsoft.BingNews*', type: family, option: 'apps-basic'}                  # news feed
+  - !appx: {name: 'Microsoft.BingWeather*', type: family, option: 'apps-basic'}               # weather
+  - !appx: {name: 'Microsoft.BingSearch*', type: family, option: 'apps-basic'}                # web results in Start
+  - !appx: {name: 'Microsoft.MicrosoftSolitaireCollection*', type: family, option: 'apps-basic'}
+  - !appx: {name: 'MSTeams*', type: family, option: 'apps-basic'}                             # Teams (starts with Windows)
+  - !appx: {name: 'MicrosoftTeams*', type: family, option: 'apps-basic'}
+  - !appx: {name: 'Microsoft.Copilot*', type: family, option: 'apps-basic'}                   # Copilot app
+  - !appx: {name: 'Microsoft.OutlookForWindows*', type: family, option: 'apps-basic'}         # new Outlook
+  - !appx: {name: 'Microsoft.Windows.DevHome*', type: family, option: 'apps-basic'}
+  - !appx: {name: 'Microsoft.WindowsFeedbackHub*', type: family, option: 'apps-basic'}
+  - !appx: {name: 'Microsoft.GetHelp*', type: family, option: 'apps-basic'}
+  - !appx: {name: 'Microsoft.Getstarted*', type: family, option: 'apps-basic'}                # Tips
+  - !appx: {name: 'Microsoft.MicrosoftOfficeHub*', type: family, option: 'apps-basic'}        # "Microsoft 365" advertising hub
+  - !appx: {name: 'Microsoft.PowerAutomateDesktop*', type: family, option: 'apps-basic'}
+  - !appx: {name: 'Microsoft.Todos*', type: family, option: 'apps-basic'}
+  - !appx: {name: 'Microsoft.ZuneVideo*', type: family, option: 'apps-basic'}                 # Films & TV
+  - !appx: {name: 'Microsoft.549981C3F5F10*', type: family, option: 'apps-basic'}             # Cortana
+  - !appx: {name: 'Microsoft.WindowsMaps*', type: family, option: 'apps-basic'}
+  - !appx: {name: 'microsoft.windowscommunicationsapps*', type: family, option: 'apps-basic'} # old Mail and Calendar
+  - !appx: {name: 'MicrosoftCorporationII.MicrosoftFamily*', type: family, option: 'apps-basic'}
+  - !appx: {name: 'Microsoft.YourPhone*', type: family, option: 'apps-basic'}                 # Phone Link (starts with Windows)
+  - !appx: {name: 'MicrosoftWindows.CrossDevice*', type: family, option: 'apps-basic'}        # "Mobile devices": keeps CrossDeviceService.exe running from startup
+  - !appx: {name: 'MicrosoftWindows.Client.WebExperience*', type: family, option: 'apps-basic'} # Widgets
+  - !appx: {name: 'SpotifyAB.SpotifyMusic*', type: family, option: 'apps-basic'}              # sponsored stub
+  - !appx: {name: 'Disney.37853FC22B2CE*', type: family, option: 'apps-basic'}                # sponsored stub
+  - !appx: {name: '7EE7776C.LinkedInforWindows*', type: family, option: 'apps-basic'}         # sponsored stub
+
+  # Windows Update would bring Dev Home and the new Outlook back: these two entries are its to-do list for that.
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\DevHomeUpdate', option: 'apps-basic'}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\CrossDeviceUpdate', option: 'apps-basic'}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\OutlookUpdate', option: 'apps-basic'}
+
+  # Windows installs "suggested" apps silently for every user: switched off.
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SilentInstalledAppsEnabled', data: '0', type: REG_DWORD, option: 'apps-basic'}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'PreInstalledAppsEnabled', data: '0', type: REG_DWORD, option: 'apps-basic'}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'OemPreInstalledAppsEnabled', data: '0', type: REG_DWORD, option: 'apps-basic'}
+
+  # ---- OneDrive ---------------------------------------------------------------------------------------
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Remove-OneDrive.ps1"'
+    runas: currentUserElevated
+    exeDir: true
+    wait: true
+    weight: 20
+    option: 'apps-onedrive'
+    errorAction: Log
+
+  # ---- maximum (off by default): the user gives up the Store and the Xbox app -------------------------
+  - !appx: {name: 'Microsoft.WindowsStore*', type: family, option: 'apps-max'}
+  - !appx: {name: 'Microsoft.GamingApp*', type: family, option: 'apps-max'}                   # Xbox app (Game Pass)
+  - !appx: {name: 'Microsoft.Windows.Photos*', type: family, option: 'apps-max'}
+  - !appx: {name: 'Microsoft.WindowsCamera*', type: family, option: 'apps-max'}
+  - !appx: {name: 'Microsoft.WindowsSoundRecorder*', type: family, option: 'apps-max'}
+  - !appx: {name: 'Microsoft.WindowsAlarms*', type: family, option: 'apps-max'}
+  - !appx: {name: 'Microsoft.MicrosoftStickyNotes*', type: family, option: 'apps-max'}
+  # Deliberately NOT removed even here: Xbox Identity Provider, Gaming Services and Game Bar (games sign in and
+  # record through them), App Installer / winget, WebView2 (many launchers need it), Windows Security.

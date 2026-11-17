@@ -1,0 +1,109 @@
+---
+title: Domain OS tools
+description: Copies the tools, installs the runtimes games expect, registers DomainScheduler to start with Windows and prepares the driver guide.
+actions:
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Install-DomainOS.ps1" -Part Tools'
+    exeDir: true
+    wait: true
+    weight: 5
+    handleExitCodes: { "!0": error }
+
+  - !writeStatus: {status: 'Installing Visual C++, DirectX and 7-Zip', option: 'install-runtimes'}
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Install-Runtimes.ps1"'
+    exeDir: true
+    wait: true
+    weight: 60
+    option: 'install-runtimes'
+    errorAction: Log
+
+  - !writeStatus: {status: 'Installing the Domain OS app', option: 'install-scheduler'}
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Install-DomainOS.ps1" -Part Scheduler'
+    exeDir: true
+    wait: true
+    weight: 10
+    option: 'install-scheduler'
+    handleExitCodes: { "!0": error }
+
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Install-DomainOS.ps1" -Part Guide'
+    exeDir: true
+    wait: true
+    weight: 3
+    option: 'open-guide'
+    errorAction: Log
+
+  # The Domain OS wallpaper: an ordinary setting, the user can pick another picture at any time (no policy is set).
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Install-DomainOS.ps1" -Part Wallpaper'
+    exeDir: true
+    wait: true
+    weight: 2
+    option: 'wallpaper'
+    errorAction: Log
+  - !registryValue: {path: 'HKCU\Control Panel\Desktop', value: 'Wallpaper', data: 'C:\Windows\Web\Wallpaper\Domain OS\DomainOS.png', type: REG_SZ, option: 'wallpaper'}
+  - !registryValue: {path: 'HKCU\Control Panel\Desktop', value: 'WallpaperStyle', data: '10', type: REG_SZ, option: 'wallpaper'}
+  - !registryValue: {path: 'HKCU\Control Panel\Desktop', value: 'TileWallpaper', data: '0', type: REG_SZ, option: 'wallpaper'}
+
+  # The "Domain OS" power plan: a copy of Balanced with USB selective suspend and PCIe ASPM off, display and disk never turned off.
+  - !writeStatus: {status: 'Creating the Domain OS power plan', option: 'power-plan'}
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Set-PowerPlan.ps1"'
+    exeDir: true
+    wait: true
+    weight: 3
+    option: 'power-plan'
+    errorAction: Log
+
+  # What is left of the removed apps (entries without an icon named "ms-resource:...", or Teams/Outlook/Copilot
+  # registered again for the signed-in account) is removed, and checked once more at the next sign-in.
+  - !writeStatus: {status: 'Cleaning the Start menu of removed apps', option: 'apps-basic'}
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Remove-AppLeftovers.ps1"'
+    runas: currentUserElevated
+    exeDir: true
+    wait: true
+    weight: 3
+    option: 'apps-basic'
+    errorAction: Log
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Remove-AppLeftovers.ps1" -Max'
+    runas: currentUserElevated
+    exeDir: true
+    wait: true
+    weight: 2
+    option: 'apps-max'
+    errorAction: Log
+
+  # Start menu pins rebuilt from installed programs (the tiles of removed apps disappear). First install only.
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Set-StartPins.ps1"'
+    runas: currentUserElevated
+    exeDir: true
+    wait: true
+    weight: 2
+    option: 'apps-basic'
+    errorAction: Log
+
+  # Unpins every program from the taskbar (as the signed-in user; the original pins are kept for Undo).
+  # Runs last: the taskbar blinks once while Explorer restarts.
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Set-Taskbar.ps1"'
+    runas: currentUserElevated
+    exeDir: true
+    wait: true
+    weight: 3
+    option: 'taskbar-clean'
+    errorAction: Log

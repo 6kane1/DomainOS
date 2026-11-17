@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domain OS — first steps</title>
+<style>
+:root{--bg:#09090b;--panel:rgba(255,255,255,.028);--line:rgba(255,255,255,.08);--strong:#f2f3f5;--text:#c9cbd1;--dim:#8a8d96;--faint:#5d606a;
+ --accent:#f4b6cb;--accent-soft:rgba(244,182,203,.13);--accent-line:rgba(244,182,203,.30);--silver:#eceef2;--warn:#e2b872}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg)}
+body{min-height:100vh;color:var(--text);font:15px/1.55 "Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+ background:radial-gradient(900px 520px at 10% -8%,rgba(244,182,203,.14),transparent 62%),radial-gradient(800px 600px at 105% 110%,rgba(190,198,214,.10),transparent 60%),var(--bg);background-attachment:fixed}
+.wrap{max-width:860px;margin:0 auto;padding:44px 20px 80px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--strong);font-weight:600;letter-spacing:-.01em}
+.brand i{width:16px;height:16px;border-radius:5px;background:linear-gradient(135deg,var(--accent),#c9cdd8)}
+.lang{margin-left:auto;display:flex;gap:4px}
+.lang button{font:inherit;font-size:13px;color:var(--dim);background:none;border:0;padding:5px 10px;border-radius:8px;cursor:pointer}
+.lang button.on{color:var(--strong);background:rgba(255,255,255,.07)}
+h1{font-size:30px;line-height:1.2;color:var(--strong);font-weight:600;letter-spacing:-.02em;margin:34px 0 8px}
+.lead{color:var(--dim);max-width:640px}
+.pc{margin:22px 0 8px;display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;padding:5px 12px;border-radius:999px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);color:var(--text)}
+.chip b{color:var(--dim);font-weight:400;margin-right:6px}
+.progress{position:sticky;top:0;z-index:2;margin:22px -20px 0;padding:14px 20px;background:rgba(9,9,11,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px}
+.track{flex:1;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.track i{display:block;height:100%;width:0;border-radius:2px;background:linear-gradient(90deg,#c9cdd8,var(--accent));transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.count{font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums;min-width:74px;text-align:right}
+.step{position:relative;margin-top:14px;padding:20px 22px 20px 70px;border-radius:14px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);
+ opacity:0;transform:translateY(14px);animation:in .55s cubic-bezier(.2,.7,.2,1) forwards;transition:box-shadow .3s,background .3s}
+@keyframes in{to{opacity:1;transform:none}}
+.step.next{box-shadow:inset 0 0 0 1px var(--accent-line);background:linear-gradient(160deg,rgba(244,182,203,.07),rgba(255,255,255,.02) 60%)}
+.step.done{opacity:.62}
+.num{position:absolute;left:20px;top:20px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font:500 14px "Cascadia Mono",Consolas,monospace;color:var(--dim);
+ box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);cursor:pointer;background:none;border:0;transition:background .3s,color .3s,box-shadow .3s,transform .2s}
+.num:hover{transform:scale(1.06)}
+.step.next .num{color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent-line)}
+.step.done .num{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent-line)}
+.step.done .num span{display:none}.step.done .num:after{content:"✓"}
+.step h2{font-size:17px;color:var(--strong);font-weight:500;letter-spacing:-.01em}
+.state{display:inline-block;margin:8px 0 0;font-size:13px;padding:3px 11px;border-radius:999px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--line);color:var(--text)}
+.state.bad{color:var(--warn);box-shadow:inset 0 0 0 1px rgba(226,184,114,.4);background:rgba(226,184,114,.08)}
+.state.ok{color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent-line);background:var(--accent-soft)}
+.step p{margin-top:9px;color:var(--text)}
+.step p.why{color:var(--dim);font-size:14px}
+.step ul{margin:8px 0 0 18px;color:var(--dim);font-size:14px}
+.step ol{margin:10px 0 0 20px;color:var(--text);font-size:14.5px}.step ol li{margin-top:5px;padding-left:4px}.step ol li::marker{color:var(--accent);font-variant-numeric:tabular-nums}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+a.btn,button.btn{font:inherit;font-size:14px;font-weight:500;text-decoration:none;padding:8px 16px;border-radius:9px;border:0;cursor:pointer;color:#0b0b0d;background:var(--silver);transition:opacity .2s}
+a.btn:hover,button.btn:hover{opacity:.86}
+button.btn.ghost,a.btn.ghost{color:var(--text);background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--line)}
+.foot{margin-top:34px;color:var(--faint);font-size:13px}
+@media (prefers-reduced-motion:reduce){.step{animation:none;opacity:1;transform:none}.track i,.num,.step{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><i></i>Domain OS<div class="lang"><button data-l="en">English</button><button data-l="ru">Русский</button></div></div>
+  <h1 id="t"></h1>
+  <p class="lead" id="lead"></p>
+  <div class="pc" id="pc"></div>
+  <div class="progress"><div class="track"><i id="bar"></i></div><div class="count" id="count"></div></div>
+  <div id="steps"></div>
+  <p class="foot" id="foot"></p>
+</div>
+<script>
+// Filled in by New-DriverGuide.ps1 on this computer. The sample below is only for previewing the page.
+const DATA = /*DATA*/{"lang":"en","cpu":"AMD Ryzen 7 7800X3D 8-Core Processor","cpuVendor":"amd","board":"ASUSTeK COMPUTER INC. ROG STRIX B650-A GAMING WIFI","boardVendor":"asus",
+ "gpus":[{"name":"Microsoft Basic Display Adapter","vendor":"nvidia","version":"10.0.26100.1","date":"2006-06-21","basic":true}],
+ "audio":["High Definition Audio Device"],"net":["Realtek Gaming 2.5GbE Family Controller"],"problems":["PCI Device","SM Bus Controller"],
+ "refresh":60,"ramRated":6000,"ramNow":4800,"online":true,"scheduler":true}/*END*/;
+
+const T = {
+ en:{t:"Finish setting up your PC",lead:"Domain OS does not let Windows Update install drivers on its own, so the drivers below are yours to install. Go top to bottom; tick a step when it is done. This page was made for this computer.",
+  count:(a,b)=>`${a} of ${b} done`,cpu:"Processor",board:"Board",gpu:"Graphics",open:"Open the official page",mark:"Mark as done",undo:"Not done yet",devmgr:"How to open Device Manager",
+  foot:"You can open this page again from the Start menu: Domain OS → First steps. Nothing on this page is sent anywhere.",
+  installed:"Installed",missing:"Not installed",check:"Check",
+  s_net:["Network driver","Without it nothing else can be downloaded. If there is no internet on this PC, download the LAN or Wi-Fi driver on another device and bring it on a USB stick.","Why: the driver from the board maker supports all functions of the adapter; the generic one may lack them."],
+  s_chip:["Chipset driver","Install it first, before the graphics driver, and restart.","Why: it gives Windows the right power and core information for this processor. On Ryzen X3D with two chip blocks it also contains the component that keeps games on the big-cache cores."],
+  s_gpu:["Graphics driver","Download the current driver from the maker of the card. Choose a clean installation if the installer offers it.","Why: without it games run on a basic adapter with no acceleration."],
+  gpu_nvidia:["Download NVCleanstall from its official page (TechPowerUp) and start it.","Choose \"Install best driver for my hardware\" and press Next.","On the component list keep only Display Driver. Add HD Audio via HDMI only if sound goes through the monitor or TV, and PhysX only if a game asks for it.","Leave NVIDIA app / GeForce Experience and telemetry unticked. You lose game recording and automatic driver updates from NVIDIA, nothing else.","On the tweaks page tick only \"Perform a clean installation\" and \"Disable installer telemetry and advertising\". Leave every other tweak as it is.","Install and restart."],
+  gpu_amd:["Download AMD Software from the official AMD page and start it.","When the installer asks what to install, choose \"Driver Only\" (or \"Minimal Install\" if you want the settings panel).","Tick \"Factory Reset\" for a clean installation if it is offered, then install and restart."],
+  gpu_intel:["Download the graphics driver for your card from the official Intel page.","Run the installer, choose a clean installation if it is offered, then restart."],
+  nvc:"NVCleanstall (official page)",
+  s_audio:["Audio driver","Take it from the support page of your board or laptop: choose your exact model there.","Why: the built-in generic driver works, but the maker's one adds the outputs, the microphone processing and the control panel of your board."],
+  s_dev:["Check Device Manager","There should be no devices with a yellow mark.","Why: a device without a driver does not work and may keep the system from saving power or sleeping correctly."],
+  s_hz:["Refresh rate of the monitor","Settings → System → Display → Advanced display: choose the highest refresh rate your monitor supports.","Why: Windows often starts at 60 Hz even on a 144 or 240 Hz monitor; the game then shows fewer frames than the monitor can."],
+  s_ram:["Memory profile (XMP / EXPO)","Enter the BIOS (Del or F2 at start-up) and turn on the XMP or EXPO profile.","Why: without the profile the memory runs slower than it was sold as, which lowers the minimum FPS."],
+  s_app:["DomainScheduler","It is installed and starts with Windows in the tray. Open it, press Turn on and start your game.","Why: it places the game's threads and lowers background programs while you play, and puts everything back afterwards."],
+  now:"now",rated:"rated",hz:"Hz",mhz:"MHz",none:"none found",problems:n=>`${n} device(s) need a driver`,noproblems:"No problem devices",basic:"basic display adapter — the real driver is missing",
+  offline:"This PC is offline"},
+ ru:{t:"Завершите настройку компьютера",lead:"Domain OS не даёт Windows Update самостоятельно ставить драйверы, поэтому драйверы ниже нужно установить вам. Идите сверху вниз и отмечайте шаг, когда он сделан. Страница составлена для этого компьютера.",
+  count:(a,b)=>`Сделано ${a} из ${b}`,cpu:"Процессор",board:"Плата",gpu:"Видеокарта",open:"Открыть официальную страницу",mark:"Отметить выполненным",undo:"Ещё не сделано",devmgr:"Как открыть Диспетчер устройств",
+  foot:"Эту страницу можно открыть снова из меню «Пуск»: Domain OS → First steps. Данные с этой страницы никуда не отправляются.",
+  installed:"Установлен",missing:"Не установлен",check:"Проверьте",
+  s_net:["Сетевой драйвер","Без него ничего больше не скачать. Если на этом ПК нет интернета, скачайте драйвер LAN или Wi-Fi на другом устройстве и перенесите на флешке.","Зачем: драйвер от производителя платы поддерживает все функции адаптера, у стандартного их может не быть."],
+  s_chip:["Драйвер чипсета","Установите его первым, до драйвера видеокарты, и перезагрузитесь.","Зачем: он сообщает Windows правильные данные о питании и ядрах этого процессора. На Ryzen X3D с двумя кристаллами в нём же находится компонент, который держит игры на ядрах с большим кэшем."],
+  s_gpu:["Драйвер видеокарты","Скачайте актуальный драйвер у производителя карты. Если установщик предлагает чистую установку — выберите её.","Зачем: без него игры работают на базовом адаптере без ускорения."],
+  gpu_nvidia:["Скачайте NVCleanstall с официальной страницы (TechPowerUp) и запустите.","Выберите «Install best driver for my hardware» и нажмите Next.","В списке компонентов оставьте только Display Driver. HD Audio via HDMI добавьте, только если звук идёт через монитор или телевизор, а PhysX — только если его просит игра.","NVIDIA app / GeForce Experience и телеметрию не отмечайте. Вы теряете запись игр и автообновление драйвера от NVIDIA, больше ничего.","На странице твиков отметьте только «Perform a clean installation» и «Disable installer telemetry and advertising». Остальные твики не трогайте.","Установите и перезагрузитесь."],
+  gpu_amd:["Скачайте AMD Software с официальной страницы AMD и запустите.","Когда установщик спросит, что ставить, выберите «Driver Only» (или «Minimal Install», если нужна панель настроек).","Отметьте «Factory Reset» для чистой установки, если он предлагается, затем установите и перезагрузитесь."],
+  gpu_intel:["Скачайте графический драйвер для своей карты с официальной страницы Intel.","Запустите установщик, выберите чистую установку, если она предлагается, затем перезагрузитесь."],
+  nvc:"NVCleanstall (официальная страница)",
+  s_audio:["Аудиодрайвер","Возьмите его на странице поддержки вашей платы или ноутбука: выберите там точную модель.","Зачем: встроенный стандартный драйвер работает, но фирменный добавляет выходы, обработку микрофона и панель управления вашей платы."],
+  s_dev:["Проверьте Диспетчер устройств","В нём не должно быть устройств с жёлтым значком.","Зачем: устройство без драйвера не работает и может мешать системе экономить энергию и корректно засыпать."],
+  s_hz:["Частота обновления монитора","Параметры → Система → Дисплей → Расширенные параметры дисплея: выберите максимальную частоту, которую поддерживает монитор.","Зачем: Windows часто запускается на 60 Гц даже с монитором 144 или 240 Гц, и игра показывает меньше кадров, чем может монитор."],
+  s_ram:["Профиль памяти (XMP / EXPO)","Зайдите в BIOS (Del или F2 при включении) и включите профиль XMP или EXPO.","Зачем: без профиля память работает медленнее, чем заявлено, а это снижает минимальный FPS."],
+  s_app:["DomainScheduler","Он установлен и запускается вместе с Windows в трее. Откройте его, нажмите Turn on и запустите игру.","Зачем: он расставляет потоки игры и понижает фоновые программы, пока вы играете, а потом всё возвращает."],
+  now:"сейчас",rated:"заявлено",hz:"Гц",mhz:"МГц",none:"не найдено",problems:n=>`Устройств без драйвера: ${n}`,noproblems:"Проблемных устройств нет",basic:"базовый видеоадаптер — настоящего драйвера нет",
+  offline:"Этот ПК не в сети"}
+};
+const LINKS = {
+ chip:{amd:"https://www.amd.com/en/support/download/drivers.html",intel:"https://www.intel.com/content/www/us/en/support/detect.html"},
+ nvc:"https://www.techpowerup.com/download/techpowerup-nvcleanstall/",
+ gpu:{nvidia:"https://www.nvidia.com/en-us/drivers/",amd:"https://www.amd.com/en/support/download/drivers.html",intel:"https://www.intel.com/content/www/us/en/download-center/home.html"},
+ board:{asus:"https://www.asus.com/support/download-center/",msi:"https://www.msi.com/support/download",gigabyte:"https://www.gigabyte.com/Support",asrock:"https://www.asrock.com/support/index.asp",
+  biostar:"https://www.biostar.com.tw/app/en/support/download.php",lenovo:"https://pcsupport.lenovo.com/",hp:"https://support.hp.com/drivers",dell:"https://www.dell.com/support/home/",acer:"https://www.acer.com/support",
+  huawei:"https://consumer.huawei.com/en/support/",samsung:"https://www.samsung.com/support/",razer:"https://mysupport.razer.com/",microsoft:"https://support.microsoft.com/surface"}
+};
+const KEY = "domainos-guide-done";
+let done = {}; try { done = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) {}
+let lang = T[DATA.lang] ? DATA.lang : "en";
+
+function steps(t) {
+  const board = LINKS.board[DATA.boardVendor], gpu0 = (DATA.gpus || [])[0] || {};
+  const list = [];
+  const noNet = !(DATA.net || []).length || !DATA.online;
+  list.push({id:"net",s:t.s_net,state:(DATA.net||[]).length ? (DATA.net.join(", ") + (DATA.online ? "" : " · " + t.offline)) : t.none,bad:noNet,link:board});
+  list.push({id:"chip",s:t.s_chip,state:DATA.cpu,link:LINKS.chip[DATA.cpuVendor]});
+  for (const g of (DATA.gpus || [])) list.push({id:"gpu-"+g.name,s:t.s_gpu,state:g.basic ? g.name + " — " + t.basic : `${g.name} · ${g.version} · ${g.date}`,bad:!!g.basic,
+    link:g.vendor === "nvidia" ? LINKS.nvc : LINKS.gpu[g.vendor], linkText:g.vendor === "nvidia" ? t.nvc : null, link2:g.vendor === "nvidia" ? LINKS.gpu.nvidia : null, how:t["gpu_" + g.vendor]});
+  list.push({id:"audio",s:t.s_audio,state:(DATA.audio||[]).join(", ") || t.none,bad:!(DATA.audio||[]).length,link:board});
+  list.push({id:"dev",s:t.s_dev,state:(DATA.problems||[]).length ? t.problems(DATA.problems.length) : t.noproblems,bad:(DATA.problems||[]).length>0,ok:!(DATA.problems||[]).length,items:DATA.problems,auto:!(DATA.problems||[]).length});
+  if (DATA.refresh) list.push({id:"hz",s:t.s_hz,state:`${t.now}: ${DATA.refresh} ${t.hz}`,bad:DATA.refresh<=60});
+  if (DATA.ramRated && DATA.ramNow && DATA.ramNow < DATA.ramRated - 50) list.push({id:"ram",s:t.s_ram,state:`${t.now}: ${DATA.ramNow} ${t.mhz} · ${t.rated}: ${DATA.ramRated} ${t.mhz}`,bad:true});
+  if (DATA.scheduler) list.push({id:"app",s:t.s_app,state:t.installed,ok:true});
+  return list;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function draw() {
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.querySelectorAll(".lang button").forEach(b => b.classList.toggle("on", b.dataset.l === lang));
+  document.getElementById("t").textContent = t.t;
+  document.getElementById("lead").textContent = t.lead;
+  document.getElementById("foot").textContent = t.foot;
+  const chips = [[t.cpu, DATA.cpu], [t.board, DATA.board]].concat((DATA.gpus||[]).map(g => [t.gpu, g.name]));
+  document.getElementById("pc").innerHTML = chips.filter(c => c[1]).map(c => `<span class="chip"><b>${esc(c[0])}</b>${esc(c[1])}</span>`).join("");
+  const list = steps(t);
+  const isDone = s => done[s.id] === true || (done[s.id] === undefined && s.auto);
+  const next = list.find(s => !isDone(s));
+  document.getElementById("steps").innerHTML = list.map((s, i) => `
+    <section class="step ${isDone(s) ? "done" : ""} ${next && next.id === s.id ? "next" : ""}" style="animation-delay:${i * 70}ms">
+      <button class="num" data-id="${esc(s.id)}" title="${esc(isDone(s) ? t.undo : t.mark)}"><span>${i + 1}</span></button>
+      <h2>${esc(s.s[0])}</h2>
+      <span class="state ${s.bad ? "bad" : s.ok ? "ok" : ""}">${esc(s.state)}</span>
+      ${s.how ? "" : `<p>${esc(s.s[1])}</p>`}
+      ${s.items && s.items.length ? "<ul>" + s.items.slice(0, 8).map(x => `<li>${esc(x)}</li>`).join("") + "</ul>" : ""}
+      ${s.how ? "<ol>" + s.how.map(x => `<li>${esc(x)}</li>`).join("") + "</ol>" : ""}
+      <p class="why">${esc(s.s[2])}</p>
+      <div class="row">${s.link ? `<a class="btn" href="${esc(s.link)}" target="_blank" rel="noopener">${esc(s.linkText || t.open)}</a>` : ""}
+        ${s.link2 ? `<a class="btn ghost" href="${esc(s.link2)}" target="_blank" rel="noopener">${esc(t.open)}</a>` : ""}
+        <button class="btn ghost" data-id="${esc(s.id)}">${esc(isDone(s) ? t.undo : t.mark)}</button></div>
+    </section>`).join("");
+  const n = list.filter(isDone).length;
+  document.getElementById("count").textContent = t.count(n, list.length);
+  requestAnimationFrame(() => document.getElementById("bar").style.width = (list.length ? n / list.length * 100 : 0) + "%");
+  document.querySelectorAll("[data-id]").forEach(b => b.onclick = () => {
+    const s = list.find(x => x.id === b.dataset.id);
+    done[s.id] = !isDone(s);
+    try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {}
+    draw();
+  });
+}
+document.querySelectorAll(".lang button").forEach(b => b.onclick = () => { lang = b.dataset.l; draw(); });
+draw();
+</script>
+</body>
+</html>

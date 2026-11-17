@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Domain OS: what runs on the computer when a game frame is late.
+  Kernel: processes, threads, context switches, ready threads, CPU samples, DPC, interrupts, disk I/O, hard faults.
+  Plus the game's own frame events (DXGI Present), so the late frames can be found in WPA and everything else
+  can be looked at in exactly that moment.
+  Record:  wpr -start DomainOS-Hitch.wprp -filemode      Stop:  wpr -stop <file>.etl
+-->
+<WindowsPerformanceRecorder Version="1.0" Author="Domain OS">
+  <Profiles>
+    <SystemCollector Id="DomainOS_System" Name="NT Kernel Logger">
+      <BufferSize Value="1024" />
+      <Buffers Value="256" />
+    </SystemCollector>
+    <EventCollector Id="DomainOS_Events" Name="DomainOS Frames">
+      <BufferSize Value="1024" />
+      <Buffers Value="64" />
+    </EventCollector>
+    <SystemProvider Id="DomainOS_Kernel">
+      <Keywords>
+        <Keyword Value="ProcessThread" />
+        <Keyword Value="Loader" />
+        <Keyword Value="CSwitch" />
+        <Keyword Value="ReadyThread" />
+        <Keyword Value="SampledProfile" />
+        <Keyword Value="DPC" />
+        <Keyword Value="Interrupt" />
+        <Keyword Value="DiskIO" />
+        <Keyword Value="HardFaults" />
+      </Keywords>
+      <Stacks>
+        <Stack Value="SampledProfile" />
+        <Stack Value="CSwitch" />
+        <Stack Value="ReadyThread" />
+      </Stacks>
+    </SystemProvider>
+    <EventProvider Id="DomainOS_DXGI" Name="CA11C036-0102-4A2D-A6AD-F03CFED5D3C9" Level="4" />
+    <Profile Id="DomainOSHitch.Verbose.File" Name="DomainOSHitch" Description="Domain OS: what runs when a game frame is late" LoggingMode="File" DetailLevel="Verbose">
+      <Collectors>
+        <SystemCollectorId Value="DomainOS_System">
+          <SystemProviderId Value="DomainOS_Kernel" />
+        </SystemCollectorId>
+        <EventCollectorId Value="DomainOS_Events">
+          <EventProviders>
+            <EventProviderId Value="DomainOS_DXGI" />
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+  </Profiles>
+</WindowsPerformanceRecorder>

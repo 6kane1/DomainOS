@@ -1,0 +1,34 @@
+---
+title: Services and background work
+description: Switches off scheduled jobs that do nothing useful on a gaming PC, and optionally file indexing. Services stay as Windows sets them (printing, Bluetooth, maps, fax and the rest are not touched). Security, updates, audio, network, input and the Xbox services are never touched.
+actions:
+  # ---- basic set (option svc-basic, on by default) -------------------------------------------------------
+  # Offline maps: map data updates for the removed Maps app.
+  - !scheduledTask: {path: '\Microsoft\Windows\Maps\MapsUpdateTask', operation: disable, option: 'svc-basic', errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Maps\MapsToastTask', operation: disable, option: 'svc-basic', errorAction: Ignore}
+  # Parental controls: the Family app is removed.
+  - !scheduledTask: {path: '\Microsoft\Windows\Shell\FamilySafetyMonitor', operation: disable, option: 'svc-basic', errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\Shell\FamilySafetyRefreshTask', operation: disable, option: 'svc-basic', errorAction: Ignore}
+  # More scheduled data collection.
+  - !scheduledTask: {path: '\Microsoft\Windows\Autochk\Proxy', operation: disable, option: 'svc-basic', errorAction: Ignore}
+  - !scheduledTask: {path: '\Microsoft\Windows\PI\Sqm-Tasks', operation: disable, option: 'svc-basic', errorAction: Ignore}
+
+  # Edge stays installed, but it no longer keeps processes running when its window is closed.
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Edge', value: 'StartupBoostEnabled', data: '0', type: REG_DWORD, option: 'svc-basic'}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Edge', value: 'BackgroundModeEnabled', data: '0', type: REG_DWORD, option: 'svc-basic'}
+
+  # ---- the user's choice (off by default): each takes a real function away ------------------------------
+  # File indexing: Start menu search still finds programs and settings, file search becomes slow.
+  - !service: {name: 'WSearch', operation: stop, option: 'svc-search', errorAction: Ignore}
+  - !service: {name: 'WSearch', operation: change, startup: 4, option: 'svc-search'}
+
+  # Hibernation and Fast Startup: the hibernation file (gigabytes) is removed and every start is a full, clean one.
+  - !run: {exe: 'powercfg.exe', args: '/hibernate off', option: 'hibernate-off', errorAction: Log}
+
+  # Store apps do not run in the background (their live tiles, sync and notifications stop).
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', value: 'LetAppsRunInBackground', data: '2', type: REG_DWORD, option: 'bg-apps'}
+
+  # NOT touched, whatever is chosen: Defender and Security Center, Windows Update, BITS, audio, network, DNS, DHCP,
+  # Plug and Play, input, Task Scheduler, WMI, the Xbox services (XblAuthManager, XblGameSave,
+  # XboxNetApiSvc, GamingServices), TPM and Secure Boot services, anti-cheat services.
+  # SysMain is never switched off. Error reporting and telemetry services are in Tasks\services-extended.yml.

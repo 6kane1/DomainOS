@@ -1,0 +1,15 @@
+---
+title: Windows Update
+description: Security and quality updates and Defender definitions stay on. Feature updates and drivers are switched off by the user's choice; restarts stay as Windows schedules them.
+actions:
+  # Stay on the installed release: Windows Update offers only updates for it. One line per supported build;
+  # the wizard applies the line whose build matches the PC (26100 = 24H2, 26200 = 25H2).
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'TargetReleaseVersion', data: '1', type: REG_DWORD, option: 'updates-no-feature'}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'ProductVersion', data: 'Windows 11', type: REG_SZ, option: 'updates-no-feature'}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'TargetReleaseVersionInfo', data: '24H2', type: REG_SZ, option: 'updates-no-feature', builds: ['26100']}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'TargetReleaseVersionInfo', data: '25H2', type: REG_SZ, option: 'updates-no-feature', builds: ['26200']}
+
+  # Drivers are not delivered by Windows Update: the user installs the makers' own (see the driver guide).
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'ExcludeWUDriversInQualityUpdate', data: '1', type: REG_DWORD, option: 'updates-no-drivers'}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching', value: 'SearchOrderConfig', data: '0', type: REG_DWORD, option: 'updates-no-drivers'}
+

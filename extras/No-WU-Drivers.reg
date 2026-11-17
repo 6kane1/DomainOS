@@ -1,0 +1,13 @@
+Windows Registry Editor Version 5.00
+
+; Domain OS: Windows Update does not deliver drivers.
+; Run before the first connection to the internet. The same two values are set by the playbook
+; (option "No drivers from Windows Update"). Because this file runs before the playbook, "Undo Domain OS"
+; treats these values as your own and keeps them. To let Windows Update deliver drivers again:
+; delete ExcludeWUDriversInQualityUpdate and set SearchOrderConfig to 1.
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate]
+"ExcludeWUDriversInQualityUpdate"=dword:00000001
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching]
+"SearchOrderConfig"=dword:00000000

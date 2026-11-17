@@ -1,0 +1,13 @@
+# built files and the closed Toolbox binary
+*.apbx
+*.zip
+playbook/Executables/DomainScheduler.exe
+toolbox/
+# website (published separately, branch gh-pages) and local copies
+site/
+site-*/
+rollback-*/
+playbook-research-*.md
+tests/results/
+tools/psparse/bin/
+tools/psparse/obj/

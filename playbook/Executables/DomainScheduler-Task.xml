@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<!--
+  Autostart of DomainScheduler for EVERY user that signs in (group Users, S-1-5-32-545), with the
+  highest rights the user has. The task the program creates by itself is bound to one account;
+  a playbook runs as SYSTEM, so it registers this one instead (same name: the program then keeps it).
+-->
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo><Description>DomainScheduler at logon (Domain OS)</Description></RegistrationInfo>
+  <Triggers><LogonTrigger><Enabled>true</Enabled></LogonTrigger></Triggers>
+  <Principals><Principal id="Author"><GroupId>S-1-5-32-545</GroupId><RunLevel>HighestAvailable</RunLevel></Principal></Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+    <Enabled>true</Enabled>
+    <Priority>5</Priority>
+  </Settings>
+  <Actions Context="Author"><Exec><Command>{EXE}</Command><Arguments>--autostart</Arguments></Exec></Actions>
+</Task>

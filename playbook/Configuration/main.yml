@@ -1,0 +1,50 @@
+---
+title: Domain OS
+description: Applies the documented Domain OS changes. Security components are never touched.
+privilege: TrustedInstaller
+actions:
+  # Before anything else: the current state of everything the playbook may touch is written down for "Undo Domain OS".
+  - !writeStatus: {status: 'Saving the current state for Undo'}
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Save-State.ps1"'
+    runas: currentUserElevated
+    exeDir: true
+    wait: true
+    weight: 5
+    errorAction: Log
+
+  # Items earlier versions switched off and this one leaves alone go back to what they were (from the saved state).
+  - !writeStatus: {status: 'Putting back settings earlier versions changed'}
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Restore-Defaults.ps1"'
+    runas: currentUserElevated
+    exeDir: true
+    wait: true
+    weight: 2
+    errorAction: Log
+
+  - !writeStatus: {status: 'Removing preinstalled apps'}
+  - !task: {path: 'Tasks\apps.yml'}
+
+  - !writeStatus: {status: 'Privacy and advertising'}
+  - !task: {path: 'Tasks\privacy.yml'}
+
+  - !writeStatus: {status: 'Services and background work'}
+  - !task: {path: 'Tasks\services.yml'}
+  - !task: {path: 'Tasks\services-extended.yml'}
+
+  - !writeStatus: {status: 'Windows Update'}
+  - !task: {path: 'Tasks\updates.yml'}
+
+  - !writeStatus: {status: 'Gaming settings'}
+  - !task: {path: 'Tasks\gaming.yml'}
+
+  - !writeStatus: {status: 'Interface'}
+  - !task: {path: 'Tasks\interface.yml'}
+
+  - !writeStatus: {status: 'Installing Domain OS tools'}
+  - !task: {path: 'Tasks\software.yml'}
+
+  - !writeStatus: {status: 'Finished. Restart the computer.'}

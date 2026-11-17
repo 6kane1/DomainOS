@@ -1,0 +1,28 @@
+---
+title: Interface
+description: A few defaults that most people change by hand on a new installation. No effect on performance is claimed.
+actions:
+  # File name extensions are shown (you see that "game.exe" is a program and "photo.jpg.exe" is not a photo).
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', value: 'HideFileExt', data: '0', type: REG_DWORD}
+  # Explorer opens on "This PC".
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', value: 'LaunchTo', data: '1', type: REG_DWORD}
+  # Taskbar. With "Clean taskbar" (on by default) only the Start button stays: no search, Task view or Chat button,
+  # and every pinned program is unpinned (Set-Taskbar.ps1 in software.yml). Without it, search becomes an icon.
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search', value: 'SearchboxTaskbarMode', data: '0', type: REG_DWORD, option: 'taskbar-clean'}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search', value: 'SearchboxTaskbarMode', data: '1', type: REG_DWORD, option: '!taskbar-clean'}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', value: 'ShowTaskViewButton', data: '0', type: REG_DWORD, option: 'taskbar-clean'}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', value: 'TaskbarMn', data: '0', type: REG_DWORD, option: 'taskbar-clean'}
+
+  # Dark theme for Windows and for apps (Settings → Personalization → Colors). Option, on by default.
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize', value: 'AppsUseLightTheme', data: '0', type: REG_DWORD, option: 'ui-dark'}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize', value: 'SystemUsesLightTheme', data: '0', type: REG_DWORD, option: 'ui-dark'}
+
+  # Notifications off (Settings → System → Notifications, the main switch): no pop-ups and no sounds over a game.
+  # Defender keeps protecting; its state stays visible in Windows Security. Turn the switch back on in Settings at any time.
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\PushNotifications', value: 'ToastEnabled', data: '0', type: REG_DWORD, option: 'ui-no-notifications'}
+
+  # Administrator prompts: the account stays an administrator and UAC stays on, but a program that asks for
+  # administrator rights gets them without the "Do you want to allow this app to make changes?" window
+  # (Settings → UAC slider "Never notify" for administrators). Store apps, Xbox and anti-cheats keep working.
+  # Any program you start that asks for rights now gets them silently. Option, on by default; Undo restores the prompt.
+  - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System', value: 'ConsentPromptBehaviorAdmin', data: '0', type: REG_DWORD, option: 'uac-no-prompt'}
