@@ -1,0 +1,26 @@
+name: Discord status card
+# The card in the Discord channel "00・status": version, members, website. Every hour, or by hand (Run workflow).
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: discord-status
+  cancel-in-progress: true
+jobs:
+  card:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/discord-status
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet pillow==11.0.0
+      - run: python .github/discord-status/status.py
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
