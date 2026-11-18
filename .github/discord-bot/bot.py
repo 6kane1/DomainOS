@@ -8,7 +8,7 @@ A post is handled once: the bot looks for its own reply in the thread.
 Needs the secret DISCORD_TOKEN and the bot's "Message Content" intent (to read attachments).
 """
 import io, json, os, re, sys, time, uuid, zipfile, urllib.request, urllib.error, urllib.parse
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from statistics import mean
 from PIL import Image, ImageDraw, ImageFont
 
@@ -292,7 +292,7 @@ def handle_result(t, me, store):
     m = reply(t['id'], [card([T(text[:3900]), {'type': 12, 'items': [{'media': {'url': 'attachment://chart.png'}}]},
                               T('-# 🗑️ Owner/Admin: react 🗑️ to this message to remove the result from the website. · Owner/Admin: реакция 🗑️ на это сообщение убирает замер с сайта.')])],
               [('chart.png', png)])
-    store.append({'thread': t['id'], 'reply': (m or {}).get('id', ''), 'title': title, 'note': note_of(starter), 'url': f'https://discord.com/channels/{GUILD}/{t["id"]}', 'date': runs[0]['date'][:10],
+    store.append({'thread': t['id'], 'reply': (m or {}).get('id', ''), 'title': title, 'note': note_of(starter), 'week': week_of(posted_of(t['id'])), 'url': f'https://discord.com/channels/{GUILD}/{t["id"]}', 'date': runs[0]['date'][:10],
                   'cpu': hw['cpu'], 'windows': hw['windows'], 'game': hw['game'], 'domainos': hw['domainos'], 'runs': n, 'mode': mode,
                   'metrics': [{'key': k, 'en': en, 'ru': ru, 'hi': hi} for k, en, ru, hi, _ in mets],
                   'groups': [{'name': g, **{k: round(av(g, k), 3) for k, *_ in mets}} for g in eq]})
@@ -565,6 +565,94 @@ def prune(store):
     return keep
 
 
+# ---- weekly top 5 -----------------------------------------------------------------------------------------------
+# Results of the current week (Monday–Sunday, Moscow time) all stay on the website. When a week is over, the bot keeps
+# its 5 most interesting results there and the rest stay only on Discord. "Interesting" is measured, not guessed:
+#   * the biggest clear difference between a variant and the first group (the base) in the main measurements —
+#     better OR worse, both are worth knowing; under 2 % counts as noise, more than 30 % counts as 30 %;
+#   * times 1 + 0.1 per run (up to 5 runs): more runs, more trust;
+#   * +5 for a real comparison (2 or more variants), +1 per variant (up to 6);
+#   * when two results are close, a processor that is not in the week's top yet goes first (-3 for a repeat).
+MSK = timezone(timedelta(hours=3))
+TOP_N = 5
+MAIN_KEYS = {'game': ['low1', 'low01', 'ft_p99', 'hitch', 'fps', 'gw_p99'], 'idle': ['p99', 'p999', 'o50', 'p50']}
+OLD_METS = [{'key': 'fps', 'hi': True}, {'key': 'low1', 'hi': True}, {'key': 'low01', 'hi': True}]
+
+
+def posted_of(tid):
+    return datetime.fromtimestamp(((int(tid) >> 22) + 1420070400000) / 1000, MSK)
+
+
+def week_of(dt):
+    y, w, _ = dt.isocalendar()
+    return f'{y}-W{w:02d}'
+
+
+def score_of(x):
+    """(score, why): why = {'key', 'group', 'diff'} — the difference that made the result interesting, or None."""
+    groups = x.get('groups') or []
+    mets = {m['key']: m for m in (x.get('metrics') or OLD_METS)}
+    best = None
+    if len(groups) >= 2:
+        base = groups[0]
+        for k in MAIN_KEYS.get(x.get('mode') or 'game', MAIN_KEYS['game']):
+            if k not in mets or not base.get(k): continue
+            for g in groups[1:]:
+                v = g.get(k)
+                if v is None: continue
+                diff = (v / base[k] - 1) * 100            # as measured (+ = the number went up)
+                d = min(abs(diff), 30.0)
+                if d >= 2 and (best is None or d > best[0]): best = (d, {'key': k, 'group': g['name'], 'diff': round(diff, 1)})
+    eff = best[0] if best else 0.0
+    s = eff * (1 + 0.1 * min(int(x.get('runs') or 1), 5)) + (5 if len(groups) >= 2 else 0) + min(len(groups), 6)
+    return round(s, 1), (best[1] if best else None)
+
+
+def finish_weeks(store):
+    """Every week that is over keeps only its top 5 on the website. Returns {week: [picked entries]} for the post."""
+    now = week_of(datetime.now(MSK))
+    for x in store:
+        if 'week' not in x and str(x.get('thread', '')).isdigit(): x['week'] = week_of(posted_of(x['thread']))
+    done = {}
+    for wk in sorted({x.get('week') for x in store if x.get('week') and x['week'] < now}):
+        items = [x for x in store if x.get('week') == wk]
+        if all('top' in x for x in items): continue                      # already finished
+        for x in items: x['score'], x['why'] = score_of(x)
+        left, picked, cpus = list(items), [], set()
+        while left and len(picked) < TOP_N:
+            x = max(left, key=lambda y: y['score'] - (3 if y.get('cpu') in cpus else 0))
+            left.remove(x); picked.append(x); cpus.add(x.get('cpu'))
+        for i, x in enumerate(picked, 1): x['top'] = i
+        for x in left: store.remove(x); print('week', wk, 'not in top 5, left on Discord only:', x.get('thread'))
+        done[wk] = picked
+    return done
+
+
+WEEKLY_TITLE = '🏆 Weekly top 5 · Топ-5 недели'
+
+
+def announce_weeks(done, me):
+    """One post per finished week in the results forum thread "Weekly top 5" (created by the bot on first use)."""
+    if not done or DRY: return
+    th = next((t for t in threads(RESULTS) if t.get('owner_id') == me and t.get('name') == WEEKLY_TITLE), None)
+    for wk, picked in done.items():
+        mon = datetime.strptime(wk + '-1', '%G-W%V-%u'); sun = mon + timedelta(days=6)
+        span = f'{mon:%d.%m}–{sun:%d.%m.%Y}'
+        def line(x, ru):
+            w = x.get('why'); m = next((m for m in (x.get('metrics') or []) if m['key'] == (w or {}).get('key')), None)
+            why = (f" · `{w['group']}` {w['diff']:+.1f}% {m['ru' if ru else 'en'] if m else w['key']}" if w else '')
+            return f"**{x['top']}.** [{x['title']}]({x['url']}){why}"
+        en = (f'## 🇬🇧 🏆 Top {len(picked)} of the week {span}\n' + '\n'.join(line(x, False) for x in picked)
+              + '\n-# Chosen by the bot: the biggest clear difference between variants (over 2 % noise), more runs, different processors. These stay on the website; the other results of the week stay here on Discord.')
+        ru = (f'## 🇷🇺 🏆 Топ-{len(picked)} недели {span}\n' + '\n'.join(line(x, True) for x in picked)
+              + '\n-# Выбирает бот: самая заметная разница между вариантами (больше 2 % разброса), больше прогонов, разные процессоры. Эти замеры остаются на сайте, остальные замеры недели остаются здесь, в Discord.')
+        comps = [card([T(en[:3900]), {'type': 14, 'divider': True, 'spacing': 2}, T(ru[:3900])])]
+        if th is None:
+            th = dc('POST', f'/channels/{RESULTS}/threads', {'name': WEEKLY_TITLE, 'message': {'flags': 1 << 15, 'components': comps, 'allowed_mentions': {'parse': []}}})
+        else:
+            reply(th['id'], comps)
+
+
 def note_of(starter):
     """The author's own words from the forum post (what was tested and how), shown on the website with the numbers.
     Mentions are dropped; at most 1500 characters."""
@@ -641,6 +729,8 @@ def main():
             except Exception as e: print('results pass', e)
             try: store[:] = prune(store)
             except Exception as e: print('prune', e)
+            try: announce_weeks(finish_weeks(store), me)
+            except Exception as e: print('weekly top', e)
             if json.dumps(store, sort_keys=True) != before: publish(store)   # the site gets it right away
             last_results = time.time()
         if time.time() + 12 >= end: break
