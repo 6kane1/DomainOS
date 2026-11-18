@@ -292,7 +292,7 @@ def handle_result(t, me, store):
     m = reply(t['id'], [card([T(text[:3900]), {'type': 12, 'items': [{'media': {'url': 'attachment://chart.png'}}]},
                               T('-# 🗑️ Owner/Admin: react 🗑️ to this message to remove the result from the website. · Owner/Admin: реакция 🗑️ на это сообщение убирает замер с сайта.')])],
               [('chart.png', png)])
-    store.append({'thread': t['id'], 'reply': (m or {}).get('id', ''), 'title': title, 'url': f'https://discord.com/channels/{GUILD}/{t["id"]}', 'date': runs[0]['date'][:10],
+    store.append({'thread': t['id'], 'reply': (m or {}).get('id', ''), 'title': title, 'note': note_of(starter), 'url': f'https://discord.com/channels/{GUILD}/{t["id"]}', 'date': runs[0]['date'][:10],
                   'cpu': hw['cpu'], 'windows': hw['windows'], 'game': hw['game'], 'domainos': hw['domainos'], 'runs': n, 'mode': mode,
                   'metrics': [{'key': k, 'en': en, 'ru': ru, 'hi': hi} for k, en, ru, hi, _ in mets],
                   'groups': [{'name': g, **{k: round(av(g, k), 3) for k, *_ in mets}} for g in eq]})
@@ -565,8 +565,22 @@ def prune(store):
     return keep
 
 
+def note_of(starter):
+    """The author's own words from the forum post (what was tested and how), shown on the website with the numbers.
+    Mentions are dropped; at most 1500 characters."""
+    t = re.sub(r'<(@[!&]?|#)\d+>', '', starter.get('content') or '')
+    t = re.sub(r'<a?:\w+:\d+>', '', t)
+    t = '\n'.join(l.rstrip() for l in t.strip().splitlines())
+    return t[:1500] + ('…' if len(t) > 1500 else '')
+
+
 def pass_results(me, store, known):
     done = 0
+    # entries saved before 2026-11-18 have no author text yet: fetch it once
+    for x in store:
+        if 'note' not in x and str(x.get('thread', '')).isdigit():
+            try: x['note'] = note_of(dc('GET', f'/channels/{x["thread"]}/messages/{x["thread"]}'))
+            except Exception as e: print('note', x.get('thread'), e)
     for t in threads(RESULTS):
         if t.get('owner_id') == me or t['id'] in known or answered(t['id'], me): continue
         try: handle_result(t, me, store); known.add(t['id']); done += 1
