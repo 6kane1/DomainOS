@@ -104,17 +104,65 @@ def summaries_from(name, data):
     return [s for s in out if 'Domain SchedTest' in s[:200]]
 
 
+NUM = lambda x: float(x.replace(',', '').replace(' ', ''))
+
+# Every measurement DomainSchedTest writes: key, English / Russian name, higher is better, mode (game / idle / both)
+METRICS = [
+    ('fps', 'Average FPS', 'средний FPS', True, 'game'),
+    ('low1', '1% low FPS', '1% low', True, 'game'),
+    ('low01', '0.1% low FPS', '0.1% low', True, 'game'),
+    ('ft_p99', 'Frame time p99, ms', 'время кадра p99, мс', False, 'game'),
+    ('hitch', 'Hitches per run', 'рывков за прогон', False, 'game'),
+    ('gw_p99', 'Game-thread wait p99, µs', 'ожидание потоков игры p99, мкс', False, 'game'),
+    ('bg', 'Steam + Discord CPU, ms/s', 'Steam + Discord, мс процессора/с', False, 'game'),
+    ('tb', 'Toolbox CPU, % of a core', 'нагрузка Toolbox, % ядра', False, 'both'),
+    ('ft_max', 'Longest frame, ms', 'самый долгий кадр, мс', False, 'game'),
+    ('gw_o50', 'Game waits > 50 µs', 'ожиданий игры > 50 мкс', False, 'game'),
+    ('steal', 'Game delayed by Steam + Discord, ms', 'задержка игры из-за Steam + Discord, мс', False, 'game'),
+    ('p50', 'Wait p50, µs', 'ожидание p50, мкс', False, 'idle'),
+    ('p99', 'Wait p99, µs', 'ожидание p99, мкс', False, 'idle'),
+    ('p999', 'Wait p99.9, µs', 'ожидание p99.9, мкс', False, 'idle'),
+    ('o50', 'Waits > 50 µs, %', 'ожиданий > 50 мкс, %', False, 'idle'),
+    ('o100', 'Waits > 100 µs', 'ожиданий > 100 мкс', False, 'idle'),
+    ('dpc', 'Long waits with DPC/ISR, %', 'долгих ожиданий с DPC/ISR, %', False, 'idle'),
+]
+MAX_PANELS = 8
+
+
 def parse(s):
+    """All numbers of one DomainSchedTest summary.txt (versions 1.4–1.6); missing ones stay absent."""
     r = {}
     m = re.search(r'Подпись: ([^\r\n]+)', s); r['label'] = m.group(1).strip() if m else 'run'
     m = re.search(r'Дата: ([\d\- :]+)', s); r['date'] = m.group(1).strip() if m else ''
-    m = re.search(r'средний FPS ([\d.]+)\s+1% low ([\d.]+)\s+0\.1% low ([\d.]+)', s)
-    if not m: return None
-    r['fps'], r['low1'], r['low01'] = map(float, m.groups())
     m = re.search(r'Процессор: ([^\r\n]+)', s); r['cpu'] = m.group(1).strip() if m else ''
     m = re.search(r'Windows: ([^\r\n]+)', s); r['windows'] = m.group(1).strip() if m else ''
     m = re.search(r'процесс: (\S+) \(', s); r['game'] = m.group(1) if m else ''
     m = re.search(r'\nDomain OS: [^\r\n]*?(\d+\.\d+\.\d+)', s); r['domainos'] = m.group(1) if m else ''
+    fr = re.search(r'средний FPS ([\d.,]+)\s+1% low ([\d.,]+)\s+0\.1% low ([\d.,]+)', s)
+    if fr: r['fps'], r['low1'], r['low01'] = (NUM(x) for x in fr.groups())
+    m = re.search(r'время кадра: медиана ([\d.,]+) мс, p99 ([\d.,]+) мс, самый долгий ([\d.,]+) мс', s)
+    if m: r['ft_p99'], r['ft_max'] = NUM(m.group(2)), NUM(m.group(3))
+    m = re.search(r'рывков \([^)]*\): ([\d,]+)', s)
+    if m: r['hitch'] = NUM(m.group(1))
+    m = re.search(r'Ожидание готового потока[^\n]*\n\s+среднее ([\d.,]+)\s+p50 ([\d.,]+)\s+p90 ([\d.,]+)\s+p99 ([\d.,]+)\s+p99\.9 ([\d.,]+)', s)
+    if m: r['p50'], r['p99'], r['p999'] = NUM(m.group(2)), NUM(m.group(4)), NUM(m.group(5))
+    blk = s.split('Ожидание готового потока', 1)[-1].split('\n\n', 1)[0] if 'Ожидание готового потока' in s else ''
+    m = re.search(r'дольше\s+50 мкс:\s+([\d,]+)\s+\(([\d.,]+)%\)', blk)
+    if m: r['o50'] = NUM(m.group(2))
+    m = re.search(r'дольше\s+100 мкс:\s+([\d,]+)', blk)
+    if m: r['o100'] = NUM(m.group(1))
+    gb = re.search(r'Только потоки [^\n]*\n\s+среднее [\d.,]+\s+p50 [\d.,]+\s+p90 [\d.,]+\s+p99 ([\d.,]+)[^\n]*\n\s+дольше\s+50 мкс:\s+([\d,]+)', s)
+    if gb: r['gw_p99'], r['gw_o50'] = NUM(gb.group(1)), NUM(gb.group(2))
+    m = re.search(r'Все процессы: ожиданий дольше 50 мкс.*?на ядре во время ожидания был DPC/ISR:\s+[\d,]+\s+\(\s*([\d.,]+)%\)', s, re.S)
+    if m: r['dpc'] = NUM(m.group(1))
+    m = re.search(r'Нагрузка Domain OS Toolbox за замер: ([\d.,]+)%', s)
+    if m: r['tb'] = NUM(m.group(1))
+    bg = re.findall(r'^\s+(steam|steamwebhelper|gameoverlayui|steamservice|discord)\s+\d+\s+([\d.,]+)\s+[\d.,]+\s+[\d.,]+\s+\S+\s+\S+\s+([\d.,]+|—)', s, re.M)
+    if bg:
+        r['bg'] = sum(NUM(c) for _, c, _ in bg)
+        r['steal'] = sum(NUM(x) for _, _, x in bg if x != '—')
+    r['mode'] = 'game' if fr else 'idle'
+    if not fr and 'p99' not in r: return None
     return r
 
 
@@ -124,36 +172,43 @@ def group_of(label):
     return g or label
 
 
-def chart(title, groups, n):
+def fmt(v):
+    return f'{v:.0f}' if abs(v) >= 100 else f'{v:.1f}' if abs(v) >= 10 else f'{v:.2f}'
+
+
+def chart(title, groups, n, metrics):
+    """One panel per measurement (up to 8, 4 per row): bar = average, dot = one run, the best bar is pink."""
     fd = lambda f, s: ImageFont.truetype(os.path.join(FONTS, f), s)
     BG, PANEL, FG, DIM, PINKc, SIL = (11, 12, 16), (16, 17, 22), (236, 237, 240), (150, 154, 164), (244, 182, 203), (170, 174, 186)
-    W, H = 2400, 1180
+    cols = min(4, len(metrics)); rows = (len(metrics) + cols - 1) // cols
+    W = 2400; PH = 620; H = 200 + rows * (PH + 30) + 40
     im = Image.new('RGB', (W, H), BG); d = ImageDraw.Draw(im)
     d.text((80, 56), title[:90], font=fd('Inter-SemiBold.ttf', 50), fill=FG)
-    d.text((80, 122), f'{n} run(s) per group · {n} прогон(а) на группу · dot = one run, bar = average', font=fd('Inter-Regular.ttf', 28), fill=DIM)
+    d.text((80, 122), f'{n} run(s) per group · {n} прогон(а) на группу · dot = one run, bar = average · pink = best', font=fd('Inter-Regular.ttf', 28), fill=DIM)
     d.text((W - 80, 60), 'Domain OS · RESULTS', font=fd('JetBrainsMono-Medium.ttf', 26), fill=PINKc, anchor='ra')
-    metrics = [('Average FPS', 'средний FPS', 'fps'), ('1% low FPS', '1% low', 'low1'), ('0.1% low FPS', '0.1% low', 'low01')]
     names = list(groups)
-    pw = (W - 160) // 3; top, base = 300, 1010
-    best = {k: max(names, key=lambda g: mean(r[k] for r in groups[g])) for _, _, k in metrics}
-    for i, (en, ru, key) in enumerate(metrics):
-        px = 80 + i * pw
-        d.rounded_rectangle((px + 10, top - 100, px + pw - 10, base + 90), radius=22, fill=PANEL)
-        d.text((px + pw / 2, top - 82), en, font=fd('Inter-SemiBold.ttf', 32), fill=FG, anchor='ma')
-        d.text((px + pw / 2, top - 40), ru + '  ·  higher = better', font=fd('Inter-Regular.ttf', 22), fill=DIM, anchor='ma')
+    pw = (W - 160) // cols
+    for i, (key, en, ru, hi, _) in enumerate(metrics):
+        px = 80 + (i % cols) * pw; py = 200 + (i // cols) * (PH + 30)
+        top, base = py + 150, py + PH - 70
+        d.rounded_rectangle((px + 10, py, px + pw - 10, py + PH), radius=22, fill=PANEL)
+        d.text((px + pw / 2, py + 22), en, font=fd('Inter-SemiBold.ttf', 30), fill=FG, anchor='ma')
+        d.text((px + pw / 2, py + 62), ru + ('  ·  ↑ better' if hi else '  ·  ↓ better'), font=fd('Inter-Regular.ttf', 21), fill=DIM, anchor='ma')
         vals = [[r[key] for r in groups[g]] for g in names]
-        mx = max(max(v) for v in vals) * 1.15 or 1
-        step = (pw - 80) / len(names); bw = step * 0.62
+        mx = max(max(v) for v in vals) * 1.18 or 1
+        means = [mean(v) for v in vals]
+        best = (max if hi else min)(range(len(names)), key=lambda j: means[j])
+        step = (pw - 60) / len(names); bw = step * 0.62
         Y = lambda v: base - (v / mx) * (base - top)
         for j, (g, vs) in enumerate(zip(names, vals)):
-            x = px + 40 + j * step + (step - bw) / 2; m_ = mean(vs)
-            col = PINKc if g == best[key] else ((150, 110, 124) if j else SIL)
+            x = px + 30 + j * step + (step - bw) / 2; m_ = means[j]
+            col = PINKc if j == best and len(names) > 1 else (SIL if j == 0 else (150, 110, 124))
             d.rectangle((x, Y(m_), x + bw, base), fill=col)
             for k, v in enumerate(vs):
-                xx = x + bw / 2 + (k - (len(vs) - 1) / 2) * 12
-                d.ellipse((xx - 5, Y(v) - 5, xx + 5, Y(v) + 5), fill=(255, 255, 255), outline=BG, width=2)
-            d.text((x + bw / 2, min(Y(m_), min(Y(v) for v in vs)) - 12), f'{m_:.0f}', font=fd('Inter-SemiBold.ttf', 26), fill=FG, anchor='mb')
-            d.text((x + bw / 2, base + 16), g[:10], font=fd('JetBrainsMono-Medium.ttf', 22), fill=FG, anchor='ma')
+                xx = x + bw / 2 + (k - (len(vs) - 1) / 2) * 10
+                d.ellipse((xx - 4, Y(v) - 4, xx + 4, Y(v) + 4), fill=(255, 255, 255), outline=BG, width=2)
+            d.text((x + bw / 2, min(Y(m_), min(Y(v) for v in vs)) - 10), fmt(m_), font=fd('Inter-SemiBold.ttf', 22 if len(names) > 5 else 26), fill=FG, anchor='mb')
+            d.text((x + bw / 2, base + 14), g[:9], font=fd('JetBrainsMono-Medium.ttf', 18 if len(names) > 5 else 21), fill=FG, anchor='ma')
     b = io.BytesIO(); im.save(b, 'PNG', optimize=True); return b.getvalue()
 
 
@@ -171,37 +226,48 @@ def handle_result(t, me, store):
         reply(t['id'], [card([T('🇬🇧 No DomainSchedTest runs found in this post. Attach the **zipped `results` folder** (zip or 7z) with all runs — every run folder has a `summary.txt`.\n'
                                 '🇷🇺 В посте не нашлось прогонов DomainSchedTest. Приложите **архив папки `results`** (zip или 7z) со всеми прогонами — в каждой папке прогона есть `summary.txt`.')])])
         return
+    game = [r for r in runs if r['mode'] == 'game']
+    runs = game or runs                                  # game runs win when a post mixes game and idle runs
+    mode = 'game' if game else 'idle'
     runs.sort(key=lambda r: r['date'])
     groups = {}
     for r in runs: groups.setdefault(group_of(r['label']), []).append(r)
     groups = dict(list(groups.items())[:10])
     n = min(len(v) for v in groups.values())
     eq = {g: v[:n] for g, v in groups.items()}
+    allr = [r for v in eq.values() for r in v]
+    mets = [m for m in METRICS if m[4] in (mode, 'both') and all(m[0] in r for r in allr)]
+    if mode == 'idle':
+        mets += [m for m in METRICS if m[4] == 'game' and m[0] in ('gw_p99',) and all(m[0] in r for r in allr)]
+    mets = mets[:MAX_PANELS]
     base = next(iter(eq))
+    av = lambda g, k: mean(r[k] for r in eq[g])
+    main3 = [m for m in mets[:3]]
     lines = []
-    for g, v in eq.items():
-        f, l1, l01 = mean(r['fps'] for r in v), mean(r['low1'] for r in v), mean(r['low01'] for r in v)
-        if g == base: lines.append(f'`{g:<12}` {f:7.1f} · {l1:6.1f} · {l01:6.1f}')
+    for g in eq:
+        cells = ' · '.join(fmt(av(g, k)) for k, *_ in main3)
+        if g == base: lines.append(f'`{g:<12}` {cells}')
         else:
-            bf = mean(r['fps'] for r in eq[base]); bl = mean(r['low1'] for r in eq[base])
-            lines.append(f'`{g:<12}` {f:7.1f} · {l1:6.1f} · {l01:6.1f}   ({(f / bf - 1) * 100:+.1f}% avg, {(l1 / bl - 1) * 100:+.1f}% 1% low)')
+            dif = ', '.join(f'{(av(g, k) / av(base, k) - 1) * 100:+.1f}% {k}' for k, *_ in main3[:2] if av(base, k))
+            lines.append(f'`{g:<12}` {cells}   ({dif})')
     extra = '' if all(len(v) == n for v in groups.values()) else \
         f'\n-# 🇬🇧 Groups had different numbers of runs: the first {n} of each (by time) are compared. · 🇷🇺 В группах разное число прогонов: сравниваются первые {n} в каждой (по времени).'
     hw = runs[0]
-    info = ' · '.join(x for x in (hw['cpu'], hw['windows'], hw['game'], ('Domain OS ' + hw['domainos']) if hw['domainos'] else '') if x)
+    info = ' · '.join(x for x in (hw['cpu'], hw['windows'], hw['game'], ('Domain OS ' + hw['domainos']) if hw['domainos'] else '', 'idle · простой' if mode == 'idle' else '') if x)
     title = (t.get('name') or 'Results')[:80]
-    png = chart(title, eq, n)
-    text = (f'## 📊 {title}\n-# {info}\n'
-            '🇬🇧 group · average FPS · 1% low · 0.1% low (vs the first group) · 🇷🇺 группа · средний FPS · 1% low · 0.1% low (к первой группе)\n'
-            + '\n'.join(lines) + extra +
+    png = chart(title + (' · idle' if mode == 'idle' else ''), eq, n, mets)
+    head = ('🇬🇧 group · ' + ' · '.join(m[1] for m in main3) + ' (vs the first group) · 🇷🇺 группа · ' + ' · '.join(m[2] for m in main3) + ' (к первой группе)\n'
+            + '-# 🇬🇧 The chart shows all ' + str(len(mets)) + ' measurements. · 🇷🇺 На графике все ' + str(len(mets)) + ' показателей.\n')
+    text = (f'## 📊 {title}\n-# {info}\n' + head + '\n'.join(lines) + extra +
             '\n-# 🇬🇧 Differences under ~2% are usually noise. · 🇷🇺 Разница меньше ~2% — обычно разброс.')
     m = reply(t['id'], [card([T(text[:3900]), {'type': 12, 'items': [{'media': {'url': 'attachment://chart.png'}}]},
                               T('-# 🗑️ Owner/Admin: react 🗑️ to this message to remove the result from the website. · Owner/Admin: реакция 🗑️ на это сообщение убирает замер с сайта.')])],
               [('chart.png', png)])
     store.append({'thread': t['id'], 'reply': (m or {}).get('id', ''), 'title': title, 'url': f'https://discord.com/channels/{GUILD}/{t["id"]}', 'date': runs[0]['date'][:10],
-                  'cpu': hw['cpu'], 'windows': hw['windows'], 'game': hw['game'], 'domainos': hw['domainos'], 'runs': n,
-                  'groups': [{'name': g, 'fps': round(mean(r['fps'] for r in v), 1), 'low1': round(mean(r['low1'] for r in v), 1),
-                              'low01': round(mean(r['low01'] for r in v), 1)} for g, v in eq.items()]})
+                  'cpu': hw['cpu'], 'windows': hw['windows'], 'game': hw['game'], 'domainos': hw['domainos'], 'runs': n, 'mode': mode,
+                  'metrics': [{'key': k, 'en': en, 'ru': ru, 'hi': hi} for k, en, ru, hi, _ in mets],
+                  'groups': [{'name': g, **{k: round(av(g, k), 3) for k, *_ in mets}} for g in eq]})
+
 
 # ===================================================================================================================
 # help
