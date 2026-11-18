@@ -500,6 +500,21 @@ def save(store):
         json.dump(store, open(OUT_JSON, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 
 
+def publish(store):
+    """Writes results.json and pushes it to the site at once (the workflow checked out gh-pages next to it)."""
+    if not OUT_JSON or DRY: return
+    save(store)
+    import subprocess
+    repo = os.path.dirname(os.path.dirname(os.path.abspath(OUT_JSON)))
+    g = lambda *a: subprocess.run(['git', '-C', repo, *a], capture_output=True, text=True)
+    if not g('status', '--porcelain', 'results').stdout.strip(): return
+    g('-c', 'user.name=Domain OS bot', '-c', 'user.email=41898282+github-actions[bot]@users.noreply.github.com', 'commit', '-qam', 'results: community benchmarks')
+    for _ in range(3):
+        if g('push', '-q').returncode == 0: print('published'); return
+        g('pull', '-q', '--rebase')
+    print('publish failed')
+
+
 def main():
     if not TOKEN: sys.exit('DISCORD_TOKEN is not set')
     me = dc('GET', '/users/@me')['id']
@@ -515,14 +530,16 @@ def main():
         try: done += pass_help(me)
         except Exception as e: print('help pass', e)
         if time.time() - last_results >= 300:
+            before = json.dumps(store, sort_keys=True)
             try: done += pass_results(me, store, known)
             except Exception as e: print('results pass', e)
+            try: store[:] = prune(store)
+            except Exception as e: print('prune', e)
+            if json.dumps(store, sort_keys=True) != before: publish(store)   # the site gets it right away
             last_results = time.time()
         if time.time() + 12 >= end: break
         time.sleep(12)
-    try: store = prune(store)
-    except Exception as e: print('prune', e)
-    save(store)
+    publish(store)
     print('handled', done)
 
 
