@@ -78,7 +78,7 @@ Security updates keep coming. The Start menu folder "Domain OS" has a shortcut t
 - **Xbox mode off (since 1.6.8):** the full-screen Xbox experience (Settings > Gaming > Xbox mode) is not used as the home screen. The Xbox app itself stays. Undo puts the previous value back.
 - **Game Mode stays on**, as Windows ships it: AMD's 3D V-Cache driver on Ryzen X3D with two CCDs uses it to keep games on the V-Cache CCD, and it keeps Windows Update from installing drivers or asking to restart during a game.
 - **Hardware-accelerated GPU scheduling (HAGS), on by default (option):** `HwSchMode` = 2 in `HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers`. The graphics card schedules its own work, which takes some CPU work and latency off frame submission. Needs a supported GPU and driver (NVIDIA GTX 10 and newer, AMD RX 5000 and newer, Intel Arc); otherwise Windows ignores it. Works after a restart; Undo puts the previous value back.
-- **`Win32PrioritySeparation` = 0x18:** long, fixed time slices, the same length for the program in front and for background programs (Windows' own value gives short, variable slices with three times the slice in front). The author's choice since 1.6.7; Undo restores the previous value.
+- **`Win32PrioritySeparation` = 0x18:** long, fixed time slices, the same length for the program in front and for background programs (Windows' own value gives short, variable slices with three times the slice in front). Why 0x18: measurements by Zero Unflesh found 0x18 **together with Game Mode on** to be the best combination, and that is exactly what Domain OS ships (Game Mode stays on). Our own CS2 test on 18.11.2026 on one PC showed Windows' 0x26 slightly ahead in 1% / 0.1% low — one PC and a small difference, so more runs from different PCs are welcome on the results page. Undo restores the previous value.
 
 ### Interface
 File extensions are shown and Explorer opens on "This PC". No effect on performance is claimed.
@@ -142,6 +142,21 @@ You can also apply a newer version **over** an older one without undoing: the or
 | Disabling mitigations, VBS, Defender | Measurable on some systems, but it trades away security and anti-cheat support. Not offered. |
 
 If you can show a measured, repeatable improvement for something on this list, open an issue with the numbers.
+
+## Earlier versions: what they did and how it was put back
+
+Domain OS has not always been as careful as it is now. Everything below was removed, and machines that had it get the previous values back by themselves.
+
+| Versions | What it did | Now |
+|---|---|---|
+| Toolbox 1.6–1.11 | Optional "test mode" switches that traded protection for speed: memory integrity / VBS / hypervisor off, Spectre and Meltdown workarounds off, exploit-protection defaults off, Defender and SmartScreen policies off. Off by default, switched on only by hand. | Removed in **1.12.0**. Every start and the factory reset put back the values saved before any of them was switched on. |
+| Toolbox test builds (before 1.12.0) | Could add the running game's exe to Defender's exclusions while it ran. | Removed. Toolbox only takes off exclusions such a build left behind (at every start and exit); it never adds any. |
+| Playbook up to 1.5.8 | Switched off diagnostic services, sync and background services and small system drivers; printing and Bluetooth could be switched off with optional ticks. | Removed in **1.5.9**; installing a newer version puts the previous values back from the saved state. |
+| Playbook 1.5.7–1.6.0 | Turned the hypervisor start off when virtualization was off in the BIOS. | Removed; the step now restores the hypervisor start (see above). |
+| Playbook 1.6.7–2.1.0 | Removed the Distributed Link Tracking Client (TrkWks). | 2.1.1 restores it and sets it back to automatic. |
+| Playbook up to 2.1.1 (before the evening of 18.11.2026) | Removed the Microsoft Store Spotify together with the advertising stubs and blocked its return. | Spotify is no longer removed; the block is lifted on install. |
+
+Since 2.0 the rule is: Defender, SmartScreen, VBS / memory integrity, TPM and Secure Boot are not touched, by the playbook or by Toolbox.
 
 ## How to use
 1. Install a clean Windows 11 Pro, 25H2 or 26H2. **Before the first connection to the internet** run `extras/No-WU-Drivers.reg`: otherwise Windows Update installs its own drivers before the playbook can forbid it. Then finish Windows Update and restart.

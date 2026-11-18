@@ -46,9 +46,10 @@ actions:
   - !registryValue: {path: 'HKCU\Control Panel\Accessibility\ToggleKeys', value: 'Flags', data: '58', type: REG_SZ}
 
   # Processor time slices (Win32PrioritySeparation = 0x18 = 24): long, fixed quanta, the same length for the program
-  # in front and for background programs (no foreground boost of the quantum). The author's choice (since 1.6.7);
-  # in the 2026-11-18 CS2 test 0x26 (Windows' own scheduling) showed slightly higher 1% / 0.1% low, with the same
-  # average FPS. Undo restores the previous value.
+  # in front and for background programs (no foreground boost of the quantum). Since 1.6.7. Measurements by
+  # Zero Unflesh found 0x18 together with Game Mode on to be the best combination, which is what Domain OS ships
+  # (Game Mode stays on). Our own 2026-11-18 CS2 test on one PC showed 0x26 (Windows' own scheduling) slightly higher
+  # in 1% / 0.1% low with the same average FPS: one PC, a small difference. Undo restores the previous value.
   - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl', value: 'Win32PrioritySeparation', data: '24', type: REG_DWORD}
 
   # Hardware-accelerated GPU scheduling (Settings > Display > Graphics): the graphics card schedules its own work,
