@@ -351,9 +351,12 @@ ALIAS = {
     'вылеты': 'crash', 'бсод': 'crash', 'журнал': 'logs', 'логи': 'logs', 'помощь': 'help', 'команды': 'help', 'вопрос': 'ask',
     'человек': 'human', 'автор': 'human', 'admin': 'human', 'owner': 'human',
 }
-COMMANDS_HINT = ('-# 🇬🇧 Not it? Type `!help` for all commands, `!ask your question`, or `!human` to call the author. · '
-                 '🇷🇺 Не то? `!help` — все команды, `!ask ваш вопрос`, или `!human` — позвать автора.')
-HELP_TEXT = ('## ⌨️ Commands · Команды\n'
+COMMANDS_HINT = ('🙋 **Didn\'t help? Type `!human` — the author will answer. · Не помогло? Напишите `!человек` — ответит автор.**\n'
+                 '-# 🇬🇧 All commands: `!help` · ask the bot: `!ask your question`. · 🇷🇺 Все команды: `!help` · спросить бота: `!ask ваш вопрос`.')
+HUMAN_BLOCK = ('> ## 🙋 `!human` · `!человек`\n'
+               '> 🇬🇧 **Remember this one: it calls the author.** The bot did not help, the answer does not fit, something is broken — type `!human` and the author answers right here.\n'
+               '> 🇷🇺 **Запомните эту команду: она зовёт автора.** Бот не помог, ответ не подходит, что-то сломалось — напишите `!человек`, и автор ответит прямо здесь.\n')
+HELP_TEXT = (HUMAN_BLOCK + '\n## ⌨️ All commands · Все команды\n'
              '🇬🇧 Type a command in this discussion — the bot answers in a few seconds. Russian names work too.\n'
              '🇷🇺 Напишите команду в этом обсуждении — бот ответит за несколько секунд. Русские названия тоже работают.\n'
              '```\n'
@@ -376,7 +379,6 @@ HELP_TEXT = ('## ⌨️ Commands · Команды\n'
              '!logs      !логи        which files to attach · какие файлы приложить\n'
              '!about     !что         what Domain OS is · что такое Domain OS\n'
              '!ask …     !вопрос …    the bot looks for an answer · бот ищет ответ\n'
-             '!human     !человек     call the author · позвать автора\n'
              '```')
 LOGS = ('### 📄 Logs to attach · Какие файлы приложить\n'
         '🇬🇧 `%ProgramData%\\Domain OS\\Logs\\install.log` (the install) and `%LOCALAPPDATA%\\DomainScheduler\\log.txt` (Toolbox). Paste the path into Win+R, the folder opens.\n'
