@@ -127,6 +127,10 @@ METRICS = [
     ('dpc', 'Long waits with DPC/ISR, %', 'долгих ожиданий с DPC/ISR, %', False, 'idle'),
 ]
 MAX_PANELS = 8
+ORDER = {
+    'game': ['fps', 'low1', 'low01', 'ft_p99', 'hitch', 'gw_p99', 'bg', 'tb', 'ft_max', 'gw_o50', 'steal'],
+    'idle': ['p99', 'p999', 'o50', 'p50', 'o100', 'dpc', 'tb', 'gw_p99'],
+}
 
 
 def parse(s):
@@ -177,24 +181,48 @@ def fmt(v):
 
 
 def chart(title, groups, n, metrics):
-    """One panel per measurement (up to 8, 4 per row): bar = average, dot = one run, the best bar is pink."""
-    fd = lambda f, s: ImageFont.truetype(os.path.join(FONTS, f), s)
-    BG, PANEL, FG, DIM, PINKc, SIL = (11, 12, 16), (16, 17, 22), (236, 237, 240), (150, 154, 164), (244, 182, 203), (170, 174, 186)
+    """One panel per measurement (up to 8, 4 per row). 2+ groups: bar = average, dot = one run, pink = best.
+    One group: a tile with the average, the min–max range and every run (nothing to compare against)."""
+    fd = lambda f, z: ImageFont.truetype(os.path.join(FONTS, f), z)
+    BG, PANEL, FG, DIM, PINKc, SIL, LINE = (11, 12, 16), (16, 17, 22), (236, 237, 240), (150, 154, 164), (244, 182, 203), (170, 174, 186), (46, 48, 56)
+    names = list(groups); single = len(names) == 1
     cols = min(4, len(metrics)); rows = (len(metrics) + cols - 1) // cols
-    W = 2400; PH = 620; H = 200 + rows * (PH + 30) + 40
+    W = 2400; PH = 380 if single else 620; H = 200 + rows * (PH + 30) + 40
     im = Image.new('RGB', (W, H), BG); d = ImageDraw.Draw(im)
     d.text((80, 56), title[:90], font=fd('Inter-SemiBold.ttf', 50), fill=FG)
-    d.text((80, 122), f'{n} run(s) per group · {n} прогон(а) на группу · dot = one run, bar = average · pink = best', font=fd('Inter-Regular.ttf', 28), fill=DIM)
+    sub = (f'one group «{names[0]}» · {n} run(s) · одна группа, {n} прогон(а) · average, range and every run' if single else
+           f'{n} run(s) per group · {n} прогон(а) на группу · dot = one run, bar = average · pink = best')
+    d.text((80, 122), sub[:150], font=fd('Inter-Regular.ttf', 28), fill=DIM)
     d.text((W - 80, 60), 'Domain OS · RESULTS', font=fd('JetBrainsMono-Medium.ttf', 26), fill=PINKc, anchor='ra')
-    names = list(groups)
     pw = (W - 160) // cols
+
+    def fit(text, width, size, font='JetBrainsMono-Medium.ttf', minsize=13):
+        while size > minsize and d.textlength(text, font=fd(font, size)) > width: size -= 1
+        f = fd(font, size)
+        while d.textlength(text, font=f) > width and len(text) > 2: text = text[:-2] + '…'
+        return text, f
+
     for i, (key, en, ru, hi, _) in enumerate(metrics):
         px = 80 + (i % cols) * pw; py = 200 + (i // cols) * (PH + 30)
-        top, base = py + 150, py + PH - 70
         d.rounded_rectangle((px + 10, py, px + pw - 10, py + PH), radius=22, fill=PANEL)
         d.text((px + pw / 2, py + 22), en, font=fd('Inter-SemiBold.ttf', 30), fill=FG, anchor='ma')
         d.text((px + pw / 2, py + 62), ru + ('  ·  ↑ better' if hi else '  ·  ↓ better'), font=fd('Inter-Regular.ttf', 21), fill=DIM, anchor='ma')
         vals = [[r[key] for r in groups[g]] for g in names]
+        if single:
+            vs = vals[0]; m_ = mean(vs); lo, hi_ = min(vs), max(vs)
+            d.text((px + pw / 2, py + 175), fmt(m_), font=fd('Inter-SemiBold.ttf', 76), fill=PINKc, anchor='mm')
+            d.text((px + pw / 2, py + 238), f'range {fmt(lo)} – {fmt(hi_)} · разброс', font=fd('Inter-Regular.ttf', 22), fill=DIM, anchor='mm')
+            # a strip: min–max with every run as a dot
+            x0, x1, yy = px + 60, px + pw - 60, py + 300
+            d.line((x0, yy, x1, yy), fill=LINE, width=4)
+            span = (hi_ - lo) or 1
+            for v in vs:
+                xx = x0 + (v - lo) / span * (x1 - x0) if hi_ > lo else (x0 + x1) / 2
+                d.ellipse((xx - 7, yy - 7, xx + 7, yy + 7), fill=(255, 255, 255), outline=BG, width=2)
+            d.text((x0, yy + 22), fmt(lo), font=fd('JetBrainsMono-Medium.ttf', 18), fill=DIM, anchor='la')
+            d.text((x1, yy + 22), fmt(hi_), font=fd('JetBrainsMono-Medium.ttf', 18), fill=DIM, anchor='ra')
+            continue
+        top, base = py + 150, py + PH - 80
         mx = max(max(v) for v in vals) * 1.18 or 1
         means = [mean(v) for v in vals]
         best = (max if hi else min)(range(len(names)), key=lambda j: means[j])
@@ -202,13 +230,14 @@ def chart(title, groups, n, metrics):
         Y = lambda v: base - (v / mx) * (base - top)
         for j, (g, vs) in enumerate(zip(names, vals)):
             x = px + 30 + j * step + (step - bw) / 2; m_ = means[j]
-            col = PINKc if j == best and len(names) > 1 else (SIL if j == 0 else (150, 110, 124))
+            col = PINKc if j == best else (SIL if j == 0 else (150, 110, 124))
             d.rectangle((x, Y(m_), x + bw, base), fill=col)
             for k, v in enumerate(vs):
                 xx = x + bw / 2 + (k - (len(vs) - 1) / 2) * 10
                 d.ellipse((xx - 4, Y(v) - 4, xx + 4, Y(v) + 4), fill=(255, 255, 255), outline=BG, width=2)
             d.text((x + bw / 2, min(Y(m_), min(Y(v) for v in vs)) - 10), fmt(m_), font=fd('Inter-SemiBold.ttf', 22 if len(names) > 5 else 26), fill=FG, anchor='mb')
-            d.text((x + bw / 2, base + 14), g[:9], font=fd('JetBrainsMono-Medium.ttf', 18 if len(names) > 5 else 21), fill=FG, anchor='ma')
+            lab, f = fit(g, step - 4, 21)
+            d.text((x + bw / 2, base + 14), lab, font=f, fill=FG, anchor='ma')
     b = io.BytesIO(); im.save(b, 'PNG', optimize=True); return b.getvalue()
 
 
@@ -236,10 +265,8 @@ def handle_result(t, me, store):
     n = min(len(v) for v in groups.values())
     eq = {g: v[:n] for g, v in groups.items()}
     allr = [r for v in eq.values() for r in v]
-    mets = [m for m in METRICS if m[4] in (mode, 'both') and all(m[0] in r for r in allr)]
-    if mode == 'idle':
-        mets += [m for m in METRICS if m[4] == 'game' and m[0] in ('gw_p99',) and all(m[0] in r for r in allr)]
-    mets = mets[:MAX_PANELS]
+    by = {m[0]: m for m in METRICS}
+    mets = [by[k] for k in ORDER[mode] if all(k in r for r in allr) and any(r[k] for r in allr)][:MAX_PANELS]
     base = next(iter(eq))
     av = lambda g, k: mean(r[k] for r in eq[g])
     main3 = [m for m in mets[:3]]
@@ -256,10 +283,12 @@ def handle_result(t, me, store):
     info = ' · '.join(x for x in (hw['cpu'], hw['windows'], hw['game'], ('Domain OS ' + hw['domainos']) if hw['domainos'] else '', 'idle · простой' if mode == 'idle' else '') if x)
     title = (t.get('name') or 'Results')[:80]
     png = chart(title + (' · idle' if mode == 'idle' else ''), eq, n, mets)
-    head = ('🇬🇧 group · ' + ' · '.join(m[1] for m in main3) + ' (vs the first group) · 🇷🇺 группа · ' + ' · '.join(m[2] for m in main3) + ' (к первой группе)\n'
+    single = len(eq) == 1
+    head = ('🇬🇧 group · ' + ' · '.join(m[1] for m in main3) + ('' if single else ' (vs the first group)') + ' · 🇷🇺 группа · ' + ' · '.join(m[2] for m in main3) + ('' if single else ' (к первой группе)') + '\n'
             + '-# 🇬🇧 The chart shows all ' + str(len(mets)) + ' measurements. · 🇷🇺 На графике все ' + str(len(mets)) + ' показателей.\n')
     text = (f'## 📊 {title}\n-# {info}\n' + head + '\n'.join(lines) + extra +
-            '\n-# 🇬🇧 Differences under ~2% are usually noise. · 🇷🇺 Разница меньше ~2% — обычно разброс.')
+            ('\n-# 🇬🇧 One group only: to compare, label the runs of the other variant differently (base-1 … test-1 …). · 🇷🇺 Группа одна: чтобы сравнить, подпишите прогоны другого варианта иначе (base-1 … test-1 …).' if single else
+             '\n-# 🇬🇧 Differences under ~2% are usually noise. · 🇷🇺 Разница меньше ~2% — обычно разброс.'))
     m = reply(t['id'], [card([T(text[:3900]), {'type': 12, 'items': [{'media': {'url': 'attachment://chart.png'}}]},
                               T('-# 🗑️ Owner/Admin: react 🗑️ to this message to remove the result from the website. · Owner/Admin: реакция 🗑️ на это сообщение убирает замер с сайта.')])],
               [('chart.png', png)])
