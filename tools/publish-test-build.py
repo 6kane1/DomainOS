@@ -81,7 +81,7 @@ def main():
         p = os.path.join(upd, old)
         if os.path.exists(p): os.remove(p)
     print('sealed', binf, os.path.getsize(binf), '| 7z', os.path.getsize(sz), '| feed', tb)
-    print('exe md5', hashlib.md5(open(exe, 'rb').read()).hexdigest())
+    print('exe sha256', hashlib.sha256(open(exe, 'rb').read()).hexdigest())
     if dry: print('dry run: nothing uploaded; files in', tmp); return
     subprocess.run(['gh', 'release', 'create', tag, binf, sz, '-R', REPO, '--prerelease', '--target', 'main',
                     '--title', f'Toolbox test build {version}',
