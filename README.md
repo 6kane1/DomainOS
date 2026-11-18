@@ -175,6 +175,8 @@ AME Wizard will say that the playbook is not verified: verification is issued by
 - `./build.sh --toolbox-from-source` — builds Toolbox from `toolbox/src` first (needs the .NET 8 SDK);
 - tests: `dotnet test toolbox/tests/DomainScheduler.Tests`.
 
+**Proof that a Toolbox exe is built from this source:** from 1.15.0 on, Toolbox is built on GitHub's own machines by `.github/workflows/toolbox-build.yml` (tests first), and every exe gets a signed build-provenance attestation. Check any copy with the GitHub CLI: `gh attestation verify DomainScheduler.exe -R 6kane1/DomainOS` — it names the workflow and the exact commit; a file changed by even one byte fails. (1.14.1 and the test builds before 1.15.0 were built before this existed.)
+
 Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-2.1.1.apbx` in PowerShell must match the value on the website and in the release notes.
 
 ## License

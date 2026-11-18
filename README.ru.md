@@ -175,6 +175,8 @@ AME Wizard сообщит, что плейбук не верифицирован
 - `./build.sh --toolbox-from-source` — сначала собирает Toolbox из `toolbox/src` (нужен .NET 8 SDK);
 - тесты: `dotnet test toolbox/tests/DomainScheduler.Tests`.
 
+**Доказательство, что exe Toolbox собран из этого исходника:** начиная с 1.15.0 Toolbox собирается на машинах самого GitHub workflow-ом `.github/workflows/toolbox-build.yml` (сначала тесты), и каждый exe получает подписанное подтверждение происхождения сборки. Проверить любую копию можно через GitHub CLI: `gh attestation verify DomainScheduler.exe -R 6kane1/DomainOS` — команда назовёт workflow и точный коммит; файл, изменённый хоть на один байт, проверку не пройдёт. (1.14.1 и тестовые сборки до 1.15.0 собраны до появления этой проверки.)
+
 Скачанные файлы проверяются по SHA-256: `Get-FileHash .\Domain-OS-2.1.1.apbx` в PowerShell должен совпасть со значением на сайте и в описании релиза.
 
 ## Лицензия
