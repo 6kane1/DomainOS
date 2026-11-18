@@ -1,0 +1,72 @@
+# Builds Domain OS Toolbox from the source in toolbox/ on GitHub's own machines, runs the tests and attests the
+# exe: a signed statement (Sigstore) that this exact file was built by this workflow from this commit.
+# Anyone can check a downloaded Toolbox:
+#   gh attestation verify DomainScheduler.exe -R 6kane1/DomainOS
+# With a release tag the exe is also attached to that release. The update-feed key and the tester key never come
+# here: sealing test builds and signing feeds stay on the author's PC, done on the exe built and attested here.
+name: Toolbox build (attested)
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release to attach the exe to (empty: only a build artifact)"
+        required: false
+        default: ""
+      asset_name:
+        description: "File name in the release (empty: DomainScheduler-<version>.exe)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write        # attach the exe to a release
+  id-token: write        # Sigstore signing for the attestation
+  attestations: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Tests
+        run: dotnet test toolbox/tests/DomainScheduler.Tests -c Release
+
+      - name: Publish (self-contained single file, win-x64)
+        run: >
+          dotnet publish toolbox/src/DomainScheduler/DomainScheduler.csproj -c Release -r win-x64
+          --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o out
+
+      - name: Name and checksums
+        id: meta
+        shell: pwsh
+        run: |
+          [xml]$p = Get-Content toolbox/Directory.Build.props
+          $v = ($p.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1)
+          $name = if ('${{ inputs.asset_name }}') { '${{ inputs.asset_name }}' } else { "DomainScheduler-$v.exe" }
+          Move-Item out/DomainScheduler.exe "out/$name"
+          $h = (Get-FileHash "out/$name" -Algorithm SHA256).Hash.ToLower()
+          "name=$name" >> $env:GITHUB_OUTPUT
+          "version=$v" >> $env:GITHUB_OUTPUT
+          "### Toolbox $v`n`n``$name`` SHA-256 ``$h```n`nCommit ${{ github.sha }}" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: out/${{ steps.meta.outputs.name }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toolbox-${{ steps.meta.outputs.version }}
+          path: out/${{ steps.meta.outputs.name }}
+          retention-days: 30
+
+      - name: Attach to the release
+        if: inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ inputs.release_tag }}" "out/${{ steps.meta.outputs.name }}" --clobber -R ${{ github.repository }}
