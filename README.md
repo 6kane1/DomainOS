@@ -2,16 +2,16 @@
 
 **English** | [Русский](README.ru.md)
 
-A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 24H2 and 25H2 (builds 26100, 26200), Home and Pro**, for games.
+A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 25H2 and 26H2 (builds 26200, 26300), Home and Pro**, for games.
 
-> **Best on 25H2:** the playbook currently runs most stably on Windows 11 25H2. Support for 26H2 comes in the first update after 2.0.0.
+> **25H2 and 26H2 since 2.1.0.** 24H2 is no longer supported: its security updates have ended. "No feature updates" holds the system on 26H2 (supported until October 2028).
 
 **A short list of changes, each one explained and checkable.** Every value below names the registry key, service or setting it changes.
 
 > **Before you start**
 > - **It can be undone without reinstalling Windows** (see [Undo](#undo)). Removed apps are installed again from the Store. Still, try it in a virtual machine first.
 > - **Average FPS does not go up** because of a playbook. What you get is fewer background processes, no advertising, no forced restarts and a system that is set up the same way every time.
-> - Version 2.0.0 is new and has had little testing. Report what breaks.
+> - Version 2.1.1 is new and has had little testing. Report what breaks.
 
 ## What stays untouched — on purpose
 
@@ -28,12 +28,13 @@ A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 2
 
 | Version | Build | Security updates from Microsoft (Home and Pro) |
 |---|---|---|
-| 25H2 | 26200 | until October 2027 — **recommended** |
-| 24H2 | 26100 | ended in October 2026 |
+| 26H2 | 26300 | until October 2028 |
+| 25H2 | 26200 | until October 2027 |
+| 24H2 | 26100 | ended in October 2026 — **not supported** since 2.1.0 |
 
-Dates are from [Microsoft's lifecycle page](https://learn.microsoft.com/lifecycle/products/windows-11-home-and-pro). The playbook does not switch security updates off on any version, but on 24H2 Microsoft simply no longer publishes them. With "Stay on the installed version" ticked, such a PC stays without security fixes; untick it there if you want Windows to move to a supported release.
+Dates are from [Microsoft's lifecycle page](https://learn.microsoft.com/lifecycle/products/windows-11-home-and-pro). The playbook does not switch security updates off on any version. AME Wizard refuses to run it on builds other than 26200 and 26300.
 
-The playbook was run on 25H2 only. On 24H2 the same task list applies; items that do not exist there are skipped.
+The playbook was run on 25H2 and 26H2. On 25H2 Windows offers the 26H2 update: it is an ordinary update and does not break the playbook.
 
 ## What Domain OS changes
 
@@ -58,13 +59,13 @@ Removes apps that advertise or start in the background: Clipchamp, News, Weather
 ### Services and background work
 - **Basic set (option, on):** eight scheduled jobs of removed apps and of data collection (maps, family safety, disk check proxy, SQM). Edge stays, but no longer keeps processes running after its window is closed. Services themselves are left as Windows sets them: printing, Bluetooth, maps, fax, diagnostics, sync and the small system drivers are not touched.
 - **Your choice (options, off):** file indexing, hibernation with Fast Startup, background activity of Store apps. Each of these removes a function, so each is a separate tick.
-- **Telemetry services and jobs (always applied):** error reporting (WerSvc), compatibility assistant (PcaSvc), telemetry (DiagTrack), Windows AI components host (WSAIFabricSvc), the inventory collector (InventorySvc); the Distributed Link Tracking Client (TrkWks) is deleted from Windows after a backup of its registration, and Undo registers it again; plus 14 scheduled telemetry jobs: device census, usage-data reporting, sustainability telemetry, startup-app scan, troubleshooting scans, disk and power diagnostics, WinSAT, error-report upload. Defragmentation/TRIM, registry backup, restore points, SysMain, time sync and Defender stay. Versions 1.5.0–1.6.0 switched off more (diagnostics, sync, small drivers, printing, Bluetooth, the basic services, the restart policy); installing 1.6.0 puts all of those back to what they were before the first install.
+- **Telemetry services and jobs (always applied):** error reporting (WerSvc), compatibility assistant (PcaSvc), telemetry (DiagTrack), Windows AI components host (WSAIFabricSvc), the inventory collector (InventorySvc); the Distributed Link Tracking Client (TrkWks) is switched off (versions 1.6.7–2.1.0 deleted it; on such PCs its saved registration is put back first); plus 14 scheduled telemetry jobs: device census, usage-data reporting, sustainability telemetry, startup-app scan, troubleshooting scans, disk and power diagnostics, WinSAT, error-report upload. Defragmentation/TRIM, registry backup, restore points, SysMain, time sync and Defender stay. Versions 1.5.0–1.6.0 switched off more (diagnostics, sync, small drivers, printing, Bluetooth, the basic services, the restart policy); installing 1.6.0 puts all of those back to what they were before the first install.
 - **Hypervisor launch type:** versions 1.5.7–1.6.0 switched the hypervisor start off when virtualization was off in the BIOS. That step is gone (if virtualization is switched on later, memory integrity and VBS would silently not start); installing 1.6.2 or later puts the previous value back.
 - What this gives: fewer processes and less memory in use after start-up — you can see it in Task Manager. It does not raise FPS by itself.
 - Never switched off: Defender, Windows Update, audio, network, input, Task Scheduler, WMI, the Xbox services, TPM and Secure Boot services, anti-cheat services.
 
 ### Windows Update (two options, on by default)
-- **Stay on the installed version** (24H2 or 25H2): no feature updates. Mind the note on supported versions below.
+- **No feature updates**: holds the system on 26H2 (TargetReleaseVersion). On 25H2 that means one update to 26H2, then no further feature updates.
 - **No drivers from Windows Update:** you install the makers' drivers; the driver guide shows which.
 
 Security updates keep coming. On Windows Home some of these policies may be ignored by Windows. The Start menu folder "Domain OS" has a shortcut that puts everything back.
@@ -77,7 +78,7 @@ Security updates keep coming. On Windows Home some of these policies may be igno
 - **Xbox mode off (since 1.6.8):** the full-screen Xbox experience (Settings > Gaming > Xbox mode) is not used as the home screen. The Xbox app itself stays. Undo puts the previous value back.
 - **Game Mode stays on**, as Windows ships it: AMD's 3D V-Cache driver on Ryzen X3D with two CCDs uses it to keep games on the V-Cache CCD, and it keeps Windows Update from installing drivers or asking to restart during a game.
 - **Hardware-accelerated GPU scheduling (HAGS), on by default (option):** `HwSchMode` = 2 in `HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers`. The graphics card schedules its own work, which takes some CPU work and latency off frame submission. Needs a supported GPU and driver (NVIDIA GTX 10 and newer, AMD RX 5000 and newer, Intel Arc); otherwise Windows ignores it. Works after a restart; Undo puts the previous value back.
-- **`Win32PrioritySeparation` = 0x18:** long, fixed time slices, the same length for the program in front and for background programs (Windows' own value 2 gives short, variable slices with three times the slice in front). Versions 1.4.0–1.6.6 used 0x25. Measure it against 2 with Domain FrameTime; Undo restores the previous value.
+- **`Win32PrioritySeparation` = 0x18:** long, fixed time slices, the same length for the program in front and for background programs (Windows' own value gives short, variable slices with three times the slice in front). The author's choice since 1.6.7; Undo restores the previous value.
 
 ### Interface
 File extensions are shown and Explorer opens on "This PC". No effect on performance is claimed.
@@ -86,7 +87,7 @@ File extensions are shown and Explorer opens on "This PC". No effect on performa
 - **Start menu pins** (with "remove preinstalled apps"): the pinned list is rebuilt from installed programs — Settings, File Explorer, Edge, Domain OS Toolbox, and the Store, Xbox, Terminal and Notepad when present — so the tiles of removed apps (Copilot, Teams, Outlook, Solitaire, the "Other" folder) disappear. It uses the `ConfigureStartPins` policy with `applyOnce` (Windows 11 24H2 with KB5062660 and later): Start replaces its pinned list at the next sign-in and never again, so pins can be changed as usual. On older builds a one-time task removes the policy after it was applied. First install only; Undo puts the original Start pins back.
 
 - **Dark theme** (option, on): for Windows and for apps.
-- **Notifications off** (option, on): the main switch in Settings → System → Notifications. No pop-ups or sounds over a game. Defender keeps working; its state is visible in Windows Security. Switch notifications back on in Settings at any time.
+- **Notifications off** (option, off by default since 2.1.1): the main switch in Settings → System → Notifications. No pop-ups or sounds over a game. Defender keeps working; its state is visible in Windows Security. Switch notifications back on in Settings at any time.
 - **Administrator rights without the UAC prompt** (option, on): your account was already an administrator; now a program that asks for administrator rights gets them without the "Do you want to allow this app to make changes?" window. UAC itself stays on, so Store apps, Xbox and anti-cheats keep working. The price: any program you start that asks for rights gets them silently, so run only what you trust. Untick it to keep the prompt; Undo brings it back.
 
 ### Power plan (option, on)
@@ -105,7 +106,7 @@ The plan that was active before is remembered; Undo makes it active again and de
 - **DomainScheduler** (option, on): installed to `Program Files\Domain OS` and started with Windows for every user. It places a game's threads and lowers background programs while you play.
 - **Runtimes** (option, on): Visual C++ 2015–2022 x64 and x86, the DirectX June 2010 runtime, 7-Zip — downloaded from the vendors; Microsoft files are accepted only with a valid Microsoft signature.
 - **Driver guide** (option, on): after the restart a page opens that was built for your PC: which drivers to install, in which order, with links to the official pages, and how to install an NVIDIA driver without extras using NVCleanstall. It also checks the monitor's refresh rate and whether the memory runs at its rated speed.
-- **Wallpaper** (option, on): the Domain OS picture is copied to `Windows\Web\Wallpaper\Domain OS` and selected. It is an ordinary setting: choose another picture in Settings whenever you like.
+- **Wallpapers** (option, on): the Domain OS pictures are copied to `C:\Windows\Web\Wallpaper\Domain OS`. The desktop gets a slideshow of them (a new picture every 10 minutes, shuffled) and the lock screen gets one of them. A theme "Domain OS" appears in Settings → Personalization → Themes to choose the slideshow again later. Windows has no supported way for a program to turn on a lock screen slideshow, so to get one: Settings → Personalization → Lock screen → Slideshow → Browse → `C:\Windows\Web\Wallpaper\Domain OS`. These are ordinary settings, nothing is locked; Undo puts back the earlier desktop and lock screen pictures.
 - **Shortcut:** "Domain OS Toolbox" on the desktop and in the Start menu.
 
 ## Undo
@@ -143,8 +144,8 @@ You can also apply a newer version **over** an older one without undoing: the or
 If you can show a measured, repeatable improvement for something on this list, open an issue with the numbers.
 
 ## How to use
-1. Install a clean Windows 11 (Home or Pro) — 25H2 is recommended, 24H2 is accepted. **Before the first connection to the internet** run `extras/No-WU-Drivers.reg`: otherwise Windows Update installs its own drivers before the playbook can forbid it. Then finish Windows Update and restart.
-2. Download AME Wizard and `Domain-OS-1.2.1.apbx`.
+1. Install a clean Windows 11 (Home or Pro), 25H2 or 26H2. **Before the first connection to the internet** run `extras/No-WU-Drivers.reg`: otherwise Windows Update installs its own drivers before the playbook can forbid it. Then finish Windows Update and restart.
+2. Download AME Wizard and `Domain-OS-2.1.1.apbx`.
 3. Drag the `.apbx` into AME Wizard, choose the options, start.
 4. Restart. The driver guide opens: follow it from top to bottom.
 

@@ -106,6 +106,22 @@ if ($state.oneDrive -and -not (Test-Path (Join-Path $env:LOCALAPPDATA 'Microsoft
     $setup = Join-Path $env:SystemRoot 'System32\OneDriveSetup.exe'
     if ((Test-Path $setup) -and $PSCmdlet.ShouldProcess('OneDrive', 'install again')) { Start-Process $setup; $done++; Write-Log 'OneDrive setup started.' }
 }
+# Classic right-click menu: the switch key goes away again if it was not there before Domain OS.
+$classic = 'HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}'
+if (($state.classicMenu -eq $false) -and (Test-Path -LiteralPath $classic) -and $PSCmdlet.ShouldProcess('classic right-click menu', 'back to the Windows 11 menu')) {
+    try { Remove-Item -LiteralPath $classic -Recurse -Force -ErrorAction Stop; $done++ } catch { $failed++; Write-Log "FAILED classic menu: $($_.Exception.Message)" }
+}
+
+# Removed apps were marked "do not provision again" (apps.yml, Deprovisioned): the marks go, so the Store and feature
+# updates can bring the apps back.
+$depro = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned'
+$ours = @('clipchamp.clipchamp_yxz26nhyzhsrt', 'Microsoft.BingNews_8wekyb3d8bbwe', 'Microsoft.BingWeather_8wekyb3d8bbwe', 'Microsoft.BingSearch_8wekyb3d8bbwe', 'Microsoft.MicrosoftSolitaireCollection_8wekyb3d8bbwe', 'MSTeams_8wekyb3d8bbwe', 'MicrosoftTeams_8wekyb3d8bbwe', 'Microsoft.Copilot_8wekyb3d8bbwe', 'Microsoft.OutlookForWindows_8wekyb3d8bbwe', 'Microsoft.Windows.DevHome_8wekyb3d8bbwe', 'Microsoft.WindowsFeedbackHub_8wekyb3d8bbwe', 'Microsoft.GetHelp_8wekyb3d8bbwe', 'Microsoft.Getstarted_8wekyb3d8bbwe', 'Microsoft.MicrosoftOfficeHub_8wekyb3d8bbwe', 'Microsoft.PowerAutomateDesktop_8wekyb3d8bbwe', 'Microsoft.Todos_8wekyb3d8bbwe', 'Microsoft.ZuneVideo_8wekyb3d8bbwe', 'Microsoft.549981C3F5F10_8wekyb3d8bbwe', 'Microsoft.WindowsMaps_8wekyb3d8bbwe', 'microsoft.windowscommunicationsapps_8wekyb3d8bbwe', 'MicrosoftCorporationII.MicrosoftFamily_8wekyb3d8bbwe', 'Microsoft.YourPhone_8wekyb3d8bbwe', 'MicrosoftWindows.CrossDevice_cw5n1h2txyewy', 'MicrosoftWindows.Client.WebExperience_cw5n1h2txyewy', 'SpotifyAB.SpotifyMusic_zpdnekdrzrea0', 'Disney.37853FC22B2CE_6rarf9sa4v8jt', '7EE7776C.LinkedInforWindows_w1wdnht996qgy', 'Microsoft.Windows.AIHub_8wekyb3d8bbwe', 'Microsoft.PCManager_8wekyb3d8bbwe', 'Microsoft.MicrosoftPCManager_8wekyb3d8bbwe', 'Microsoft.M365Companions_8wekyb3d8bbwe')
+foreach ($f in $ours) {
+    $k = Join-Path $depro $f
+    if ((Test-Path -LiteralPath $k) -and $PSCmdlet.ShouldProcess($k, 'delete')) {
+        try { Remove-Item -LiteralPath $k -Force -ErrorAction Stop; $done++ } catch { $failed++; Write-Log "Could not delete $k ($($_.Exception.Message))" }
+    }
+}
 $nowApps = @(Get-AppxPackage -AllUsers | Select-Object -ExpandProperty Name -Unique)
 $missing = @($state.apps | Where-Object { $nowApps -notcontains $_ -and $_ -notmatch '^Microsoft\.(NET|VCLibs|UI\.Xaml|Services\.Store|WindowsAppRuntime)' })
 if ($missing -contains 'Microsoft.WindowsStore') {
@@ -139,6 +155,13 @@ if ((Test-Path (Join-Path $tb 'saved.txt')) -and $PSCmdlet.ShouldProcess('taskba
     $done++; Write-Log 'Taskbar pins put back.'
 }
 
+# ---- wallpapers: desktop and lock screen (saved by Set-Wallpapers.ps1 for this user) ---------------------------
+$wpScript = Join-Path $PSScriptRoot 'Set-Wallpapers.ps1'
+if ((Test-Path (Join-Path $env:ProgramData "Domain OS\Undo\Wallpaper\$env:USERNAME\state.json")) -and (Test-Path $wpScript) -and $PSCmdlet.ShouldProcess('wallpapers', 'put back the desktop and lock screen pictures')) {
+    & (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe') -NoProfile -ExecutionPolicy Bypass -File $wpScript -Restore
+    $done++; Write-Log 'Desktop and lock screen pictures put back.'
+}
+
 # ---- Start menu pins (saved by Set-StartPins.ps1 for this user) ---------------------------------------------
 $startScript = Join-Path $PSScriptRoot 'Set-StartPins.ps1'
 if ((Test-Path (Join-Path $env:ProgramData "Domain OS\Undo\StartPins\$env:USERNAME\saved.txt")) -and (Test-Path $startScript) -and $PSCmdlet.ShouldProcess('Start menu pins', 'put back')) {
@@ -153,9 +176,26 @@ if ((Test-Path (Join-Path $env:ProgramData 'Domain OS\Undo\hypervisorlaunchtype.
     $done++; Write-Log 'Hypervisor launch type put back.'
 }
 
+# ---- Toolbox: device changes (interrupt layout, MSI, power saving) go back to what they were --------------------
+$tbExe = Join-Path $env:ProgramFiles 'Domain OS\DomainScheduler.exe'
+if ((Test-Path -LiteralPath $tbExe) -and $PSCmdlet.ShouldProcess('Toolbox device changes', 'revert')) {
+    try {
+        $p = Start-Process -FilePath $tbExe -ArgumentList '--revert-devices' -PassThru -WindowStyle Hidden
+        if ($p.WaitForExit(60000)) { $done++; Write-Log 'Toolbox: device changes reverted (they apply after the restart).' }
+        else { $failed++; Write-Log 'FAILED Toolbox device revert: no answer within 60 s' }
+    } catch { $failed++; Write-Log "FAILED Toolbox device revert: $($_.Exception.Message)" }
+}
+
 # ---- the tools ----------------------------------------------------------------------------------------------
 if ($RemoveTools -and $PSCmdlet.ShouldProcess('Domain OS app', 'remove')) {
-    Get-Process -Name 'DomainScheduler' | Stop-Process -Force      # the program reverts its own changes on a normal exit; close it from the tray first
+    # The running copy is closed, then the program's own full reset puts back everything it changed (priorities,
+    # power, overclocking, devices) before its files go.
+    Get-Process -Name 'DomainScheduler' | Stop-Process -Force
+    Start-Sleep -Seconds 1
+    if (Test-Path -LiteralPath $tbExe) {
+        try { $p = Start-Process -FilePath $tbExe -ArgumentList '--uninstall' -PassThru -WindowStyle Hidden; [void]$p.WaitForExit(90000); Write-Log 'Toolbox: full reset done.' }
+        catch { Write-Log "Toolbox full reset: $($_.Exception.Message)" }
+    }
     Unregister-ScheduledTask -TaskName 'DomainScheduler' -Confirm:$false
     Remove-Item -Recurse -Force (Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs\Domain OS')
     Remove-Item -Force (Join-Path ([Environment]::GetFolderPath('CommonDesktopDirectory')) 'Domain OS Toolbox.lnk')

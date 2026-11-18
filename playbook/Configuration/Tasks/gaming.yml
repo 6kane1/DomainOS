@@ -18,7 +18,7 @@ actions:
   - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'UseNexusForGameBarEnabled', data: '0', type: REG_DWORD}
   - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'ShowStartupPanel', data: '0', type: REG_DWORD}
   - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'GamePanelStartupTipIndex', data: '3', type: REG_DWORD}
-  # Xbox mode (Settings > Gaming > Xbox mode, the full-screen Xbox home on 25H2) off: the switch only empties the
+  # Xbox mode (Settings > Gaming > Xbox mode, the full-screen Xbox home on 25H2 and later) off: the switch only empties the
   # home app of the account (checked on the author's PC: "Microsoft.GamingApp_8wekyb3d8bbwe!Microsoft.Xbox.App" ->
   # ""). The Xbox app itself stays. Undo puts the previous value back.
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GamingConfiguration', value: 'GamingHomeApp', data: '', type: REG_SZ}
@@ -26,6 +26,14 @@ actions:
   # Game Mode is left on, as Windows ships it: AMD's 3D V-Cache driver on Ryzen X3D with two CCDs uses it to keep
   # games on the V-Cache CCD, and it keeps Windows Update from installing drivers or asking to restart during a game.
   # Versions 1.5.x switched it off; Restore-Defaults.ps1 puts it back.
+  # Written explicitly, so it is on even if the user or another tool switched it off before (Windows' own default is
+  # also on). Undo puts the previous values back.
+  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'AutoGameModeEnabled', data: '1', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'AllowAutoGameMode', data: '1', type: REG_DWORD}
+
+  # Communications: Windows lowers all other sound by 80% when Discord, TeamSpeak or a call opens a voice stream
+  # (Sound > More sound settings > Communications). Set to "Do nothing": the game keeps its volume.
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Multimedia\Audio', value: 'UserDuckingPreference', data: '3', type: REG_DWORD}
 
   # Pointer acceleration off ("Enhance pointer precision"): the cursor moves the same distance for the same hand movement.
   - !registryValue: {path: 'HKCU\Control Panel\Mouse', value: 'MouseSpeed', data: '0', type: REG_SZ}
@@ -38,9 +46,9 @@ actions:
   - !registryValue: {path: 'HKCU\Control Panel\Accessibility\ToggleKeys', value: 'Flags', data: '58', type: REG_SZ}
 
   # Processor time slices (Win32PrioritySeparation = 0x18 = 24): long, fixed quanta, the same length for the program
-  # in front and for background programs (no foreground boost of the quantum). Windows' own value 2 gives short,
-  # variable quanta with three times the slice in front. The Domain OS default since 1.6.7 (the author's choice; 1.4.0–
-  # 1.6.6 used 0x25). Measure it with Domain FrameTime. Undo restores the previous value.
+  # in front and for background programs (no foreground boost of the quantum). The author's choice (since 1.6.7);
+  # in the 2026-11-18 CS2 test 0x26 (Windows' own scheduling) showed slightly higher 1% / 0.1% low, with the same
+  # average FPS. Undo restores the previous value.
   - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl', value: 'Win32PrioritySeparation', data: '24', type: REG_DWORD}
 
   # Hardware-accelerated GPU scheduling (Settings > Display > Graphics): the graphics card schedules its own work,

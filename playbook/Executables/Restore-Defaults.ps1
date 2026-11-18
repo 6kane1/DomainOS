@@ -48,10 +48,9 @@ $tasks = @(
 )
 $values = @(
     @('HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU', 'NoAutoRebootWithLoggedOnUsers'),
-    @('HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU', 'AUPowerManagement'),
-    # Game Mode (switched off by 1.5.x)
-    @('HKCU\Software\Microsoft\GameBar', 'AutoGameModeEnabled'),
-    @('HKCU\Software\Microsoft\GameBar', 'AllowAutoGameMode')
+    @('HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU', 'AUPowerManagement')
+    # Game Mode is no longer here: since 2.1.0 gaming.yml switches it on explicitly. Putting back the value saved before
+    # the first install switched it off again on PCs where it had been off then.
 )
 
 if (-not (Test-Path $file)) { Write-Log 'No saved state: nothing was changed by an earlier version'; exit 0 }

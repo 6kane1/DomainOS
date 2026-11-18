@@ -83,6 +83,8 @@ if ($old) {
         tasks     = $tasks
     }
 }
+# Classic right-click menu (interface.yml): whether the switch key existed before Domain OS first set it.
+$state['classicMenu'] = if ($old -and $null -ne $old.classicMenu) { [bool]$old.classicMenu } else { Test-Path -LiteralPath 'HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}' }
 $state | ConvertTo-Json -Depth 6 | Set-Content -Path $file -Encoding UTF8
 if ($old) { Write-Host ("The original state was kept; {0} items new in version {1} were added to it." -f ($registry.Count + $services.Count + $tasks.Count - $before), $version) }
 else { Write-Host ("Original state saved: {0} registry values, {1} services, {2} scheduled tasks." -f $registry.Count, $services.Count, $tasks.Count) }

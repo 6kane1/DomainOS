@@ -30,11 +30,54 @@ actions:
   - !appx: {name: 'SpotifyAB.SpotifyMusic*', type: family, option: 'apps-basic'}              # sponsored stub
   - !appx: {name: 'Disney.37853FC22B2CE*', type: family, option: 'apps-basic'}                # sponsored stub
   - !appx: {name: '7EE7776C.LinkedInforWindows*', type: family, option: 'apps-basic'}         # sponsored stub
+  - !appx: {name: 'Microsoft.Windows.AIHub*', type: family, option: 'apps-basic'}             # AI Hub (25H2/26H2 Copilot+ feature showcase)
+  - !appx: {name: 'Microsoft.PCManager*', type: family, option: 'apps-basic'}                 # PC Manager ("cleaner", runs in the background)
+  - !appx: {name: 'Microsoft.MicrosoftPCManager*', type: family, option: 'apps-basic'}
+  - !appx: {name: 'Microsoft.M365Companions*', type: family, option: 'apps-basic'}            # Microsoft 365 companions (People/Files/Calendar, start with Windows)
+
+  # Removed apps stay removed after a feature update (for example 25H2 -> 26H2): Windows does not provision a package
+  # again when its family is listed under Deprovisioned. Undo deletes these keys, so the Store can bring the apps back.
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\clipchamp.clipchamp_yxz26nhyzhsrt', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.BingNews_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.BingWeather_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.BingSearch_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.MicrosoftSolitaireCollection_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\MSTeams_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\MicrosoftTeams_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.Copilot_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.OutlookForWindows_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.Windows.DevHome_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.WindowsFeedbackHub_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.GetHelp_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.Getstarted_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.MicrosoftOfficeHub_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.PowerAutomateDesktop_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.Todos_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.ZuneVideo_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.549981C3F5F10_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.WindowsMaps_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\microsoft.windowscommunicationsapps_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\MicrosoftCorporationII.MicrosoftFamily_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.YourPhone_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\MicrosoftWindows.CrossDevice_cw5n1h2txyewy', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\MicrosoftWindows.Client.WebExperience_cw5n1h2txyewy', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\SpotifyAB.SpotifyMusic_zpdnekdrzrea0', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Disney.37853FC22B2CE_6rarf9sa4v8jt', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\7EE7776C.LinkedInforWindows_w1wdnht996qgy', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.Windows.AIHub_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.PCManager_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.MicrosoftPCManager_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.M365Companions_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
 
   # Windows Update would bring Dev Home and the new Outlook back: these two entries are its to-do list for that.
   - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\DevHomeUpdate', option: 'apps-basic'}
   - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\CrossDeviceUpdate', option: 'apps-basic'}
   - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\OutlookUpdate', option: 'apps-basic'}
+
+  # Teams (chat) and the new Outlook are not installed again by Windows itself. Outlook: documented by Microsoft
+  # (Microsoft 365 Apps, 'Block new Outlook preinstall'); Teams: the chat auto-install switch of Windows 11.
+  - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications', value: 'ConfigureChatAutoInstall', data: '0', type: REG_DWORD, option: 'apps-basic', errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe', value: 'BlockedOobeUpdaters', data: '["MS_Outlook"]', type: REG_SZ, option: 'apps-basic', errorAction: Log}
 
   # Windows installs "suggested" apps silently for every user: switched off.
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SilentInstalledAppsEnabled', data: '0', type: REG_DWORD, option: 'apps-basic'}

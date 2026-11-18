@@ -4,11 +4,10 @@
     -Part Scheduler  DomainScheduler.exe + a logon task for every user (highest rights the user has),
                      shortcut "Domain OS Toolbox" in the Start menu and on the desktop
     -Part Guide      the driver guide opens once after the next sign-in
-    -Part Wallpaper  copies the Domain OS wallpaper next to the Windows ones (the playbook then selects it)
   Log: %ProgramData%\Domain OS\Logs\install.log
 #>
 [CmdletBinding()]
-param([Parameter(Mandatory)][ValidateSet('Tools', 'Scheduler', 'Guide', 'Wallpaper')][string]$Part)
+param([Parameter(Mandatory)][ValidateSet('Tools', 'Scheduler', 'Guide')][string]$Part)
 
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -35,7 +34,7 @@ try {
         'Tools' {
             $tools = Join-Path $app 'Tools'
             New-Item -ItemType Directory -Force -Path $tools | Out-Null
-            Copy-Item -Path (Join-Path $here 'Install-Runtimes.ps1'), (Join-Path $here 'Restore-Updates.ps1'), (Join-Path $here 'Undo-DomainOS.ps1'), (Join-Path $here 'Set-PowerPlan.ps1'), (Join-Path $here 'Set-StartPins.ps1'), (Join-Path $here 'Set-Hypervisor.ps1'), (Join-Path $here 'Remove-AppLeftovers.ps1') -Destination $tools -Force
+            Copy-Item -Path (Join-Path $here 'Install-Runtimes.ps1'), (Join-Path $here 'Restore-Updates.ps1'), (Join-Path $here 'Undo-DomainOS.ps1'), (Join-Path $here 'Set-PowerPlan.ps1'), (Join-Path $here 'Set-StartPins.ps1'), (Join-Path $here 'Set-Hypervisor.ps1'), (Join-Path $here 'Set-Wallpapers.ps1'), (Join-Path $here 'Remove-AppLeftovers.ps1') -Destination $tools -Force
             Copy-Item -Path (Join-Path $here 'Guide') -Destination $app -Recurse -Force
             $guide = Join-Path $app 'Guide\New-DriverGuide.ps1'
             New-Shortcut 'First steps (drivers)' $ps "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$guide`"" 'What to install on this PC, step by step'
@@ -81,13 +80,6 @@ try {
             # The same shortcut on the desktop of every account (Public Desktop).
             New-Shortcut 'Domain OS Toolbox' $exe '' $about ([Environment]::GetFolderPath('CommonDesktopDirectory'))
             Write-Log "DomainScheduler installed, autostart task registered and read back ($exe)"
-        }
-        'Wallpaper' {
-            $dir = Join-Path $env:SystemRoot 'Web\Wallpaper\Domain OS'
-            New-Item -ItemType Directory -Force -Path $dir | Out-Null
-            Copy-Item -Path (Join-Path $here 'Wallpaper\DomainOS.png') -Destination $dir -Force
-            if (-not (Test-Path (Join-Path $dir 'DomainOS.png'))) { throw 'the wallpaper was not copied' }
-            Write-Log "Wallpaper copied to $dir"
         }
         'Guide' {
             $guide = Join-Path $app 'Guide\New-DriverGuide.ps1'

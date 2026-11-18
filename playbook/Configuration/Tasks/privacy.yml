@@ -66,6 +66,9 @@ actions:
   - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System', value: 'UploadUserActivities', data: '0', type: REG_DWORD}
   # Recall (snapshots of the screen) stays off.
   - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI', value: 'DisableAIDataAnalysis', data: '1', type: REG_DWORD}
+  # Click to Do (AI actions on what is on the screen; it reads the screen in the background) stays off.
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI', value: 'DisableClickToDo', data: '1', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Policies\Microsoft\Windows\WindowsAI', value: 'DisableClickToDo', data: '1', type: REG_DWORD}
 
   # Suggestions and advertising: Start, Settings, lock screen, notifications.
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SystemPaneSuggestionsEnabled', data: '0', type: REG_DWORD}
@@ -81,4 +84,5 @@ actions:
   # Start menu search asks only the PC, not Bing.
   - !registryValue: {path: 'HKCU\Software\Policies\Microsoft\Windows\Explorer', value: 'DisableSearchBoxSuggestions', data: '1', type: REG_DWORD}
   # Widgets board (news feed process).
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Dsh', value: 'AllowNewsAndInterests', data: '0', type: REG_DWORD}
+  # On some 26H2 builds this key is locked even for TrustedInstaller: then it is logged and the install goes on.
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Dsh', value: 'AllowNewsAndInterests', data: '0', type: REG_DWORD, errorAction: Log}

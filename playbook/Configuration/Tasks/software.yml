@@ -39,18 +39,19 @@ actions:
     option: 'open-guide'
     errorAction: Log
 
-  # The Domain OS wallpaper: an ordinary setting, the user can pick another picture at any time (no policy is set).
+  # The Domain OS wallpapers: a desktop slideshow and one picture on the lock screen, for the installing account.
+  # Ordinary settings (no policy is set): the user can change both in Settings at any time; the earlier look is saved
+  # and "Undo Domain OS" puts it back. Lock screen slideshow: Settings > Personalization > Lock screen > Slideshow.
+  - !writeStatus: {status: 'Setting the Domain OS wallpapers', option: 'wallpaper'}
   - !run:
     exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
-    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Install-DomainOS.ps1" -Part Wallpaper'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Set-Wallpapers.ps1"'
+    runas: currentUserElevated
     exeDir: true
     wait: true
     weight: 2
     option: 'wallpaper'
     errorAction: Log
-  - !registryValue: {path: 'HKCU\Control Panel\Desktop', value: 'Wallpaper', data: 'C:\Windows\Web\Wallpaper\Domain OS\DomainOS.png', type: REG_SZ, option: 'wallpaper'}
-  - !registryValue: {path: 'HKCU\Control Panel\Desktop', value: 'WallpaperStyle', data: '10', type: REG_SZ, option: 'wallpaper'}
-  - !registryValue: {path: 'HKCU\Control Panel\Desktop', value: 'TileWallpaper', data: '0', type: REG_SZ, option: 'wallpaper'}
 
   # The "Domain OS" power plan: a copy of Balanced with USB selective suspend and PCIe ASPM off, display and disk never turned off.
   - !writeStatus: {status: 'Creating the Domain OS power plan', option: 'power-plan'}

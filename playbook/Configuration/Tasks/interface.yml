@@ -26,3 +26,13 @@ actions:
   # (Settings → UAC slider "Never notify" for administrators). Store apps, Xbox and anti-cheats keep working.
   # Any program you start that asks for rights now gets them silently. Option, on by default; Undo restores the prompt.
   - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System', value: 'ConsentPromptBehaviorAdmin', data: '0', type: REG_DWORD, option: 'uac-no-prompt'}
+
+  # "End task" in the taskbar's right-click menu (Settings > System > For developers): a frozen game is closed in two clicks.
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings', value: 'TaskbarEndTask', data: '1', type: REG_DWORD}
+  # A blue screen shows its stop code and parameters: helps to find the driver that crashed when you ask for help.
+  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\CrashControl', value: 'DisplayParameters', data: '1', type: REG_DWORD}
+
+  # Right-click menu: the full menu opens at once (7-Zip, "Open with", "Send to" and the rest), without "Show more
+  # options" first. Same as Windows 10. Undo removes the switch and brings back the Windows 11 menu. Takes effect
+  # after the restart at the end of the install.
+  - !registryValue: {path: 'HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32', value: '', data: '', type: REG_SZ}
