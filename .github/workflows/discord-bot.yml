@@ -1,0 +1,43 @@
+name: Discord bot (results charts, help answers)
+# Every 15 minutes: new posts in the results forum get a chart, new help posts a first FAQ answer;
+# the numbers go to the site's results page (gh-pages: results/results.json).
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: discord-bot
+  cancel-in-progress: false
+jobs:
+  bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: site
+          sparse-checkout: results
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet pillow==11.0.0 py7zr==0.22.0
+      - run: python .github/discord-bot/bot.py
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          RESULTS_JSON: site/results/results.json
+      - name: Publish the results page data
+        run: |
+          cd site
+          if [ -n "$(git status --porcelain results)" ]; then
+            git config user.name "Domain OS bot"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add results/results.json
+            git commit -m "results: new community benchmark"
+            git push
+          fi
