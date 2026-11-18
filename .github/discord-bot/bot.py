@@ -310,11 +310,12 @@ def faq_reply(text):
 
 
 OWNER = '528659324193734659'
+OWNER_ROLE = '1572228603498864734'   # @Owner
 
 
 def say(tid, text, ref=None, ping_owner=False):
     """A plain message (so a mention really notifies), optionally a reply to a message."""
-    body = {'content': text[:1990], 'allowed_mentions': {'users': [OWNER] if ping_owner else [], 'parse': []}}
+    body = {'content': text[:1990], 'allowed_mentions': {'roles': [OWNER_ROLE] if ping_owner else [], 'parse': []}}
     if ref: body['message_reference'] = {'message_id': ref, 'fail_if_not_exists': False}
     if DRY: print('DRY say', tid, text[:200]); return None
     return dc('POST', f'/channels/{tid}/messages', body)
@@ -327,7 +328,7 @@ def handle_help(t):
     if faq_hits(text):
         reply(t['id'], faq_reply(text) + [card([T(COMMANDS_HINT)])])
     else:
-        say(t['id'], f'<@{OWNER}> 🙋 a new question needs a person · новый вопрос — нужен человек.\n'
+        say(t['id'], f'<@&{OWNER_ROLE}> 🙋 a new question needs a person · новый вопрос — нужен человек.\n'
                      '🇬🇧 Thanks! The author will answer here. Meanwhile add: versions, `winver`, CPU/GPU and the two logs (`!logs`). · '
                      '🇷🇺 Спасибо! Автор ответит здесь. Пока добавьте: версии, `winver`, процессор/видеокарту и два журнала (`!logs`).', ping_owner=True)
 
@@ -337,13 +338,13 @@ def handle_help(t):
 CMD = {   # command → FAQ title (start), or a special action
     'about': 'What Domain OS is', 'download': 'Where to download', 'install': 'How to install', 'windows': 'Which Windows',
     'safe': 'Is it safe', 'toolbox': 'How to use Toolbox', 'nogame': 'Toolbox does not pick up', 'laptop': 'Laptops',
-    'update': 'Updates', 'wallpaper': 'Wallpapers', 'bench': 'Benchmarks', 'epic': 'Epic Games Launcher', 'pro': 'The install stops',
+    'update': 'Updates', 'wallpaper': 'Wallpapers', 'bench': 'Benchmarks', 'pro': 'The install stops',
     'undo': 'How to undo', 'drivers': 'Drivers', 'fps': 'FPS / stutter', 'anticheat': 'Anti-cheat', 'crash': 'Crashes',
 }
 ALIAS = {
     'что': 'about', 'о': 'about', 'скачать': 'download', 'установка': 'install', 'установить': 'install', 'винда': 'windows', 'windows': 'windows',
     'безопасно': 'safe', 'бан': 'safe', 'тулбокс': 'toolbox', 'игра': 'nogame', 'ноутбук': 'laptop', 'ноут': 'laptop', 'обновления': 'update',
-    'обои': 'wallpaper', 'замеры': 'bench', 'тест': 'bench', 'эпик': 'epic', 'pro': 'pro', 'home': 'pro', 'откат': 'undo', 'вернуть': 'undo',
+    'обои': 'wallpaper', 'замеры': 'bench', 'тест': 'bench', 'pro': 'pro', 'home': 'pro', 'откат': 'undo', 'вернуть': 'undo',
     'драйверы': 'drivers', 'драйвера': 'drivers', 'дрова': 'drivers', 'фпс': 'fps', 'лаги': 'fps', 'античит': 'anticheat', 'вылет': 'crash',
     'вылеты': 'crash', 'бсод': 'crash', 'журнал': 'logs', 'логи': 'logs', 'помощь': 'help', 'команды': 'help', 'вопрос': 'ask',
     'человек': 'human', 'автор': 'human', 'admin': 'human', 'owner': 'human',
@@ -366,7 +367,6 @@ HELP_TEXT = ('## ⌨️ Commands · Команды\n'
              '!nogame    !игра        Toolbox does not see the game · не видит игру\n'
              '!anticheat !античит     FACEIT, Vanguard, EAC · античиты\n'
              '!safe      !бан         safe? bans? · безопасно? бан?\n'
-             '!epic      !эпик        Epic offline / AS-3 · Epic офлайн\n'
              '!laptop    !ноут        laptops · ноутбуки\n'
              '!update    !обновления  updates · обновления\n'
              '!wallpaper !обои        wallpapers · обои\n'
@@ -401,12 +401,12 @@ def answer_command(tid, m):
     if cmd == 'logs':
         reply_ref(tid, [card([T(LOGS)])], ref); return
     if cmd in ('human', 'person'):
-        say(tid, f'<@{OWNER}> 🙋 {m["author"].get("global_name") or m["author"]["username"]} asks for the author · просит автора.', ref, ping_owner=True); return
+        say(tid, f'<@&{OWNER_ROLE}> 🙋 {m["author"].get("global_name") or m["author"]["username"]} asks for the author · просит автора.', ref, ping_owner=True); return
     if cmd == 'ask':
         if faq_hits(rest):
             reply_ref(tid, faq_reply(rest) + [card([T(COMMANDS_HINT)])], ref)
         else:
-            say(tid, f'<@{OWNER}> 🙋 no basic answer for this question · на этот вопрос нет готового ответа: «{rest[:300]}»\n'
+            say(tid, f'<@&{OWNER_ROLE}> 🙋 no basic answer for this question · на этот вопрос нет готового ответа: «{rest[:300]}»\n'
                      '-# 🇬🇧 The author will answer here. · 🇷🇺 Автор ответит здесь.', ref, ping_owner=True)
         return
     if cmd in CMD:
