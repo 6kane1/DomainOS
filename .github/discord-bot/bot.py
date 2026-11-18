@@ -209,6 +209,39 @@ def handle_result(t, me, store):
 
 
 FAQ = [
+    (r'what is|что такое|зачем|для чего|what does|что делает|о сборке', '**What Domain OS is** · **Что такое Domain OS**',
+     '🇬🇧 A playbook (installer) that cleans up a fresh Windows 11 Pro for games in ~10 min: removes ads, bloat and telemetry, sets up power and Game Mode. Windows protection stays, everything can be undone. Plus **Toolbox** — an app that helps the game while you play. https://6kane1.github.io/DomainOS/\n'
+     '🇷🇺 Плейбук (установщик), который за ~10 минут приводит свежую Windows 11 Pro в порядок для игр: убирает рекламу, лишние программы и телеметрию, настраивает питание и игровой режим. Защита Windows остаётся, всё откатывается. Плюс **Toolbox** — программа, которая помогает игре, пока вы играете. https://6kane1.github.io/DomainOS/ru/'),
+    (r'download|скача|где взять|ссылк|link|apbx', '**Where to download** · **Где скачать**',
+     '🇬🇧 Everything is in <#1572231027588333700> and on the website: No-WU-Drivers.reg, AME Wizard, Domain-OS.apbx. Toolbox comes with the build.\n'
+     '🇷🇺 Всё в <#1572231027588333700> и на сайте: No-WU-Drivers.reg, AME Wizard, Domain-OS.apbx. Toolbox ставится вместе со сборкой.'),
+    (r'install|установ|как постав|ame wizard|wizard', '**How to install** · **Как установить**',
+     '🇬🇧 Step-by-step guide from a clean Windows: https://6kane1.github.io/DomainOS/install.html — short version in <#1572228626425057305>. AME Wizard needs the internet and, on a laptop, the charger plugged in.\n'
+     '🇷🇺 Пошаговая инструкция с чистой Windows: https://6kane1.github.io/DomainOS/ru/install.html — коротко в <#1572228626425057305>. AME Wizard нужен интернет, а на ноутбуке — зарядка.'),
+    (r'25h2|26h2|24h2|win ?10|windows 10|какая windows|which windows|версия windows|winver', '**Which Windows** · **Какая Windows нужна**',
+     '🇬🇧 Windows 11 **Pro**, version **25H2 or 26H2** (Win+R → `winver`). Windows 10 and 24H2 are not supported.\n'
+     '🇷🇺 Windows 11 **Pro**, версия **25H2 или 26H2** (Win+R → `winver`). Windows 10 и 24H2 не поддерживаются.'),
+    (r'\bban|бан|safe|безопасн|вирус|virus|defender|защитник|антивирус', '**Is it safe? Can I get banned?** · **Это безопасно? Не забанят?**',
+     '🇬🇧 Domain OS does not touch Defender, Memory Integrity, Secure Boot or TPM and does not inject into games. Anti-cheat developers have not officially confirmed compatibility, so use it at your own risk — but nothing here works like a cheat.\n'
+     '🇷🇺 Domain OS не трогает Defender, защиту памяти, Secure Boot и TPM и ничего не внедряет в игры. Разработчики античитов совместимость официально не подтверждали, поэтому — на свой риск, но ничего похожего на читы здесь нет.'),
+    (r'toolbox|тулбокс|\bauto\b|авто|оптимизация устройств|optimize devices', '**How to use Toolbox** · **Как пользоваться Toolbox**',
+     '🇬🇧 Open Toolbox → **Turn on Auto** → start the game. Once, with the game closed: **Optimize devices** → restart. Details in <#1572338781812559903>.\n'
+     '🇷🇺 Откройте Toolbox → **Включить Auto** → запустите игру. Один раз при закрытой игре: **Оптимизация устройств** → перезагрузка. Подробно в <#1572338781812559903>.'),
+    (r'не видит игр|doesn.?t see|game not found|не находит|не подхват', '**Toolbox does not pick up the game** · **Toolbox не видит игру**',
+     '🇬🇧 Auto must be on and the game in front (not minimised). Some games are protected by their anti-cheat — then Toolbox leaves the game alone but still quiets background programs.\n'
+     '🇷🇺 Auto должен быть включён, игра — на переднем плане (не свёрнута). Некоторые игры защищены своим античитом — тогда Toolbox не трогает саму игру, но фоновые программы всё равно приглушает.'),
+    (r'laptop|ноут|notebook|батаре|battery', '**Laptops** · **Ноутбуки**',
+     '🇬🇧 Laptop support is not confirmed yet — at your own risk. Keep the charger plugged in during the install.\n'
+     '🇷🇺 Поддержка ноутбуков пока не подтверждена — на свой риск. Во время установки держите ноутбук на зарядке.'),
+    (r'update|обновлен|windows update|новая версия|new version|поверх', '**Updates** · **Обновления**',
+     '🇬🇧 Security updates keep coming; big feature updates are held on 26H2 (option). A new Domain OS version installs right over the old one in AME Wizard.\n'
+     '🇷🇺 Обновления безопасности приходят как обычно; крупные обновления удерживаются на 26H2 (опция). Новая версия Domain OS ставится прямо поверх старой в AME Wizard.'),
+    (r'обои|wallpaper|экран блокировки|lock screen|слайд', '**Wallpapers** · **Обои**',
+     '🇬🇧 Change them as usual: Settings → Personalization. Lock screen slideshow: Personalization → Lock screen → Slideshow → `C:\\Windows\\Web\\Wallpaper\\Domain OS`.\n'
+     '🇷🇺 Меняются как обычно: «Параметры → Персонализация». Слайд-шоу на экране блокировки: Персонализация → Экран блокировки → Слайд-шоу → `C:\\Windows\\Web\\Wallpaper\\Domain OS`.'),
+    (r'schedtest|замер|benchmark|results', '**Benchmarks** · **Замеры**',
+     '🇬🇧 The benchmark tool and a beginner guide are in <#1572685486311342081>; post results in <#1572682487543365843> — the bot answers with a chart.\n'
+     '🇷🇺 Программа замеров и инструкция для новичков — в <#1572685486311342081>; результаты выкладывайте в <#1572682487543365843> — бот ответит графиком.'),
     (r'as-?3|offline|офлайн|epic', '**Epic Games Launcher offline / AS-3 / failed captcha** · **Epic офлайн / AS-3 / капча**',
      '🇬🇧 This is the internet provider blocking Epic servers, not Windows or Domain OS (check: does it work through a phone hotspot or a VPN?). Sign in once through a VPN with "Remember me".\n'
      '🇷🇺 Это провайдер блокирует серверы Epic, а не Windows или Domain OS (проверка: работает ли через раздачу с телефона или VPN?). Войдите один раз через VPN с «Запомнить меня».'),
@@ -230,16 +263,21 @@ FAQ = [
 ]
 
 
-def handle_help(t):
-    starter = dc('GET', f'/channels/{t["id"]}/messages/{t["id"]}')
-    text = ((t.get('name') or '') + ' ' + (starter.get('content') or '')).lower()
+def faq_reply(text):
+    """The first answer for a help post: up to 4 FAQ topics matched by keywords, else what to add to the post."""
+    text = text.lower()
     hits = [f for f in FAQ if re.search(f[0], text)]
-    body = '\n\n'.join(f'### {h}\n{a}' for _, h, a in hits[:3])
+    body = '\n\n'.join(f'### {h}\n{a}' for _, h, a in hits[:4])
     if not body:
         body = ('🇬🇧 Thanks! While you wait for a reply, please add: playbook and Toolbox versions, `winver`, CPU and GPU, what you did and what happened, and attach `%ProgramData%\\Domain OS\\Logs\\install.log` and `%LOCALAPPDATA%\\DomainScheduler\\log.txt`.\n'
                 '🇷🇺 Спасибо! Пока ждёте ответа, добавьте: версии сборки и Toolbox, `winver`, процессор и видеокарту, что делали и что произошло, и приложите `%ProgramData%\\Domain OS\\Logs\\install.log` и `%LOCALAPPDATA%\\DomainScheduler\\log.txt`.')
-    reply(t['id'], [card([T('## 🤖 First answer · Первый ответ\n' + body[:3500]),
-                          T('-# 🇬🇧 An automatic answer from the FAQ — a person will look at your post too. · 🇷🇺 Автоматический ответ из частых вопросов — человек тоже посмотрит вашу тему.')])])
+    return [card([T('## 🤖 First answer · Первый ответ\n' + body[:3500]),
+                  T('-# 🇬🇧 An automatic answer from the FAQ — a person will look at your post too. · 🇷🇺 Автоматический ответ из частых вопросов — человек тоже посмотрит вашу тему.')])]
+
+
+def handle_help(t):
+    starter = dc('GET', f'/channels/{t["id"]}/messages/{t["id"]}')
+    reply(t['id'], faq_reply((t.get('name') or '') + ' ' + (starter.get('content') or '')))
 
 
 STAFF_ROLES = ('Owner', 'Admin')
