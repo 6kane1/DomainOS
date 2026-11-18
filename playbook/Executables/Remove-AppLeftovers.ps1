@@ -37,7 +37,7 @@ $basic = @(
     'Microsoft.Getstarted', 'Microsoft.MicrosoftOfficeHub', 'Microsoft.PowerAutomateDesktop', 'Microsoft.Todos',
     'Microsoft.ZuneVideo', 'Microsoft.549981C3F5F10', 'Microsoft.WindowsMaps', 'microsoft.windowscommunicationsapps',
     'MicrosoftCorporationII.MicrosoftFamily', 'Microsoft.YourPhone', 'MicrosoftWindows.CrossDevice',
-    'MicrosoftWindows.Client.WebExperience', 'SpotifyAB.SpotifyMusic', 'Disney.37853FC22B2CE', '7EE7776C.LinkedInforWindows',
+    'MicrosoftWindows.Client.WebExperience', 'Disney.37853FC22B2CE', '7EE7776C.LinkedInforWindows',
     'Microsoft.Windows.AIHub', 'Microsoft.PCManager', 'Microsoft.MicrosoftPCManager', 'Microsoft.M365Companions'
 )
 $maxList = @(

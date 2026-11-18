@@ -41,7 +41,7 @@ The playbook was run on 25H2 and 26H2. On 25H2 Windows offers the 26H2 update: i
 Every item can be found in `playbook/Configuration/Tasks/*.yml` with a comment next to it.
 
 ### Preinstalled apps (option, on by default)
-Removes apps that advertise or start in the background: Clipchamp, News, Weather, Bing search, Solitaire, Teams, Copilot app, new Outlook, Dev Home, Feedback Hub, Get Help, Tips, Microsoft 365 hub, Power Automate, To Do, Films & TV, Cortana, Maps, old Mail, Family, Phone Link, Mobile devices (Cross Device), Widgets, and sponsored stubs (Spotify, Disney+, LinkedIn). Windows is told not to bring Dev Home and Outlook back and not to install "suggested" apps silently.
+Removes apps that advertise or start in the background: Clipchamp, News, Weather, Bing search, Solitaire, Teams, Copilot app, new Outlook, Dev Home, Feedback Hub, Get Help, Tips, Microsoft 365 hub, Power Automate, To Do, Films & TV, Cortana, Maps, old Mail, Family, Phone Link, Mobile devices (Cross Device), Widgets and sponsored stubs (Disney+, LinkedIn). Spotify is not removed (people install it on purpose; its Start advertising is gone with the clean Start pins). Windows is told not to bring Dev Home and Outlook back and not to install "suggested" apps silently.
 
 - **OneDrive** (option, on): removed with its own uninstaller. Your files stay.
 - **Maximum** (option, off): also the Store, Xbox app, Photos, Camera, Sound Recorder, Clock, Sticky Notes.
@@ -155,4 +155,5 @@ AME Wizard will say that the playbook is not verified: verification is issued by
 `./build.sh` (needs `7zr` and Python 3): checks the task files and packs `playbook/` into a 7z archive with the password `malte`, as AME Wizard expects. The Toolbox app is not in this repository: download `DomainOS-Toolbox-1.8.0.exe` from the [website](https://6kane1.github.io/DomainOS/scheduler.html) and save it as `toolbox/DomainScheduler.exe`, or pass its path: `./build.sh path/to/DomainScheduler.exe`. Without it the playbook is built without the app.
 
 ## License
-MIT. Windows is a trademark of Microsoft; this project ships no part of Windows.
+**Domain OS License** — all rights reserved (see [LICENSE](LICENSE)). You may read the code and use the official releases free of charge on your own PCs. Copying, re-uploading, publishing changed versions or builds based on this code, removing the author notices and selling are not allowed without the author's written permission. Versions published before 18 November 2026 under MIT stay MIT for the copies obtained then.
+Windows is a trademark of Microsoft; this project ships no part of Windows.
