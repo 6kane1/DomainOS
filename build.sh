@@ -4,8 +4,18 @@
 set -e
 cd "$(dirname "$0")"
 VERSION=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' playbook/playbook.conf)
-# The Toolbox shipped with the playbook is pinned here (Toolbox 1.7.0: the 1.4.0 interface with the new functions).
-EXE=${1:-toolbox/DomainScheduler.exe}
+# The Toolbox shipped with the playbook: a ready exe (default toolbox/DomainScheduler.exe, or a path), or
+# --toolbox-from-source to build it from toolbox/src (needs the .NET 8 SDK). The source in toolbox/ follows
+# development and can be newer than the released Toolbox, so releases are built from the pinned exe.
+if [ "$1" = "--toolbox-from-source" ]; then
+    command -v dotnet >/dev/null 2>&1 || { echo ".NET 8 SDK not found: cannot build Toolbox from source"; exit 1; }
+    TBOUT=$(mktemp -d)
+    dotnet publish toolbox/src/DomainScheduler/DomainScheduler.csproj -c Release -r win-x64 --self-contained true \
+        -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "$TBOUT" >/dev/null
+    EXE="$TBOUT/DomainScheduler.exe"
+else
+    EXE=${1:-toolbox/DomainScheduler.exe}
+fi
 if [ -f "$EXE" ]; then cp "$EXE" playbook/Executables/DomainScheduler.exe; else echo "DomainScheduler.exe not found: the playbook is built without it"; fi
 # Checks before packing: every task file must parse as YAML (AME Wizard stops on the first error), a checkbox
 # page holds at most 4 options and a page description is 50-85 characters.

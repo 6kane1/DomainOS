@@ -2,7 +2,9 @@
 *.apbx
 *.zip
 playbook/Executables/DomainScheduler.exe
-toolbox/
+toolbox/*.exe
+toolbox/**/bin/
+toolbox/**/obj/
 # website (published separately, branch gh-pages) and local copies
 site/
 site-*/

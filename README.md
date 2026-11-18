@@ -152,7 +152,15 @@ If you can show a measured, repeatable improvement for something on this list, o
 AME Wizard will say that the playbook is not verified: verification is issued by the AME team and this project does not have it yet.
 
 ## Build from source
-`./build.sh` (needs `7zr` and Python 3): checks the task files and packs `playbook/` into a 7z archive with the password `malte`, as AME Wizard expects. The Toolbox app is not in this repository: download `DomainOS-Toolbox-1.8.0.exe` from the [website](https://6kane1.github.io/DomainOS/scheduler.html) and save it as `toolbox/DomainScheduler.exe`, or pass its path: `./build.sh path/to/DomainScheduler.exe`. Without it the playbook is built without the app.
+`./build.sh` (needs `7zr` and Python 3): checks the task files and every PowerShell script, then packs `playbook/` into a 7z archive with the password `malte`, as AME Wizard expects.
+
+**Toolbox** is in this repository too: `toolbox/` holds its full source (C#, .NET 8, WPF) with the tests. The source follows development, so it can be newer than the released Toolbox; the released program is `DomainOS-Toolbox-1.14.1.exe` in [Releases](https://github.com/6kane1/DomainOS/releases).
+- `./build.sh` — packs the exe saved as `toolbox/DomainScheduler.exe` (the released one; the build goes on without the app if it is missing);
+- `./build.sh path/to/DomainScheduler.exe` — packs that exe;
+- `./build.sh --toolbox-from-source` — builds Toolbox from `toolbox/src` first (needs the .NET 8 SDK);
+- tests: `dotnet test toolbox/tests/DomainScheduler.Tests`.
+
+Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-2.1.1.apbx` in PowerShell must match the value on the website and in the release notes.
 
 ## License
 **Domain OS License** — all rights reserved (see [LICENSE](LICENSE)). You may read the code and use the official releases free of charge on your own PCs. Copying, re-uploading, publishing changed versions or builds based on this code, removing the author notices and selling are not allowed without the author's written permission. Versions published before 18 November 2026 under MIT stay MIT for the copies obtained then.
