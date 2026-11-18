@@ -309,9 +309,138 @@ def faq_reply(text):
                   T('-# 🇬🇧 An automatic answer from the FAQ — a person will look at your post too. · 🇷🇺 Автоматический ответ из частых вопросов — человек тоже посмотрит вашу тему.')])]
 
 
+OWNER = '528659324193734659'
+
+
+def say(tid, text, ref=None, ping_owner=False):
+    """A plain message (so a mention really notifies), optionally a reply to a message."""
+    body = {'content': text[:1990], 'allowed_mentions': {'users': [OWNER] if ping_owner else [], 'parse': []}}
+    if ref: body['message_reference'] = {'message_id': ref, 'fail_if_not_exists': False}
+    if DRY: print('DRY say', tid, text[:200]); return None
+    return dc('POST', f'/channels/{tid}/messages', body)
+
+
 def handle_help(t):
+    """A new help post: a FAQ answer when it is a basic question, otherwise the author is called."""
     starter = dc('GET', f'/channels/{t["id"]}/messages/{t["id"]}')
-    reply(t['id'], faq_reply((t.get('name') or '') + ' ' + (starter.get('content') or '')))
+    text = (t.get('name') or '') + ' ' + (starter.get('content') or '')
+    if faq_hits(text):
+        reply(t['id'], faq_reply(text) + [card([T(COMMANDS_HINT)])])
+    else:
+        say(t['id'], f'<@{OWNER}> 🙋 a new question needs a person · новый вопрос — нужен человек.\n'
+                     '🇬🇧 Thanks! The author will answer here. Meanwhile add: versions, `winver`, CPU/GPU and the two logs (`!logs`). · '
+                     '🇷🇺 Спасибо! Автор ответит здесь. Пока добавьте: версии, `winver`, процессор/видеокарту и два журнала (`!logs`).', ping_owner=True)
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# ! commands in help discussions
+CMD = {   # command → FAQ title (start), or a special action
+    'about': 'What Domain OS is', 'download': 'Where to download', 'install': 'How to install', 'windows': 'Which Windows',
+    'safe': 'Is it safe', 'toolbox': 'How to use Toolbox', 'nogame': 'Toolbox does not pick up', 'laptop': 'Laptops',
+    'update': 'Updates', 'wallpaper': 'Wallpapers', 'bench': 'Benchmarks', 'epic': 'Epic Games Launcher', 'pro': 'The install stops',
+    'undo': 'How to undo', 'drivers': 'Drivers', 'fps': 'FPS / stutter', 'anticheat': 'Anti-cheat', 'crash': 'Crashes',
+}
+ALIAS = {
+    'что': 'about', 'о': 'about', 'скачать': 'download', 'установка': 'install', 'установить': 'install', 'винда': 'windows', 'windows': 'windows',
+    'безопасно': 'safe', 'бан': 'safe', 'тулбокс': 'toolbox', 'игра': 'nogame', 'ноутбук': 'laptop', 'ноут': 'laptop', 'обновления': 'update',
+    'обои': 'wallpaper', 'замеры': 'bench', 'тест': 'bench', 'эпик': 'epic', 'pro': 'pro', 'home': 'pro', 'откат': 'undo', 'вернуть': 'undo',
+    'драйверы': 'drivers', 'драйвера': 'drivers', 'дрова': 'drivers', 'фпс': 'fps', 'лаги': 'fps', 'античит': 'anticheat', 'вылет': 'crash',
+    'вылеты': 'crash', 'бсод': 'crash', 'журнал': 'logs', 'логи': 'logs', 'помощь': 'help', 'команды': 'help', 'вопрос': 'ask',
+    'человек': 'human', 'автор': 'human', 'admin': 'human', 'owner': 'human',
+}
+COMMANDS_HINT = ('-# 🇬🇧 Not it? Type `!help` for all commands, `!ask your question`, or `!human` to call the author. · '
+                 '🇷🇺 Не то? `!help` — все команды, `!ask ваш вопрос`, или `!human` — позвать автора.')
+HELP_TEXT = ('## ⌨️ Commands · Команды\n'
+             '🇬🇧 Type a command in this discussion — the bot answers in a few seconds. Russian names work too.\n'
+             '🇷🇺 Напишите команду в этом обсуждении — бот ответит за несколько секунд. Русские названия тоже работают.\n'
+             '```\n'
+             '!install   !установка   how to install · как установить\n'
+             '!download  !скачать     where to download · где скачать\n'
+             '!windows   !винда       which Windows · какая Windows\n'
+             '!pro       !home        stops at step 1 · остановилась на 1 шаге\n'
+             '!undo      !откат       undo everything · откатить всё\n'
+             '!drivers   !дрова       drivers · драйверы\n'
+             '!fps       !лаги        FPS, stutter · FPS, рывки\n'
+             '!crash     !вылеты      crashes, blue screen · вылеты, синий экран\n'
+             '!toolbox   !тулбокс     how to use Toolbox · Toolbox\n'
+             '!nogame    !игра        Toolbox does not see the game · не видит игру\n'
+             '!anticheat !античит     FACEIT, Vanguard, EAC · античиты\n'
+             '!safe      !бан         safe? bans? · безопасно? бан?\n'
+             '!epic      !эпик        Epic offline / AS-3 · Epic офлайн\n'
+             '!laptop    !ноут        laptops · ноутбуки\n'
+             '!update    !обновления  updates · обновления\n'
+             '!wallpaper !обои        wallpapers · обои\n'
+             '!bench     !замеры      benchmarks · замеры\n'
+             '!logs      !логи        which files to attach · какие файлы приложить\n'
+             '!about     !что         what Domain OS is · что такое Domain OS\n'
+             '!ask …     !вопрос …    the bot looks for an answer · бот ищет ответ\n'
+             '!human     !человек     call the author · позвать автора\n'
+             '```')
+LOGS = ('### 📄 Logs to attach · Какие файлы приложить\n'
+        '🇬🇧 `%ProgramData%\\Domain OS\\Logs\\install.log` (the install) and `%LOCALAPPDATA%\\DomainScheduler\\log.txt` (Toolbox). Paste the path into Win+R, the folder opens.\n'
+        '🇷🇺 `%ProgramData%\\Domain OS\\Logs\\install.log` (установка) и `%LOCALAPPDATA%\\DomainScheduler\\log.txt` (Toolbox). Вставьте путь в Win+R — откроется папка.')
+
+
+def faq_hits(text):
+    norm = _norm(text); words = norm.split()
+    return [n for n, (k, h, a) in enumerate(FAQ) if faq_score(k, norm, words) > 0]
+
+
+def faq_by_title(start):
+    return next(((h, a) for k, h, a in FAQ if h.strip('*').startswith(start)), None)
+
+
+def answer_command(tid, m):
+    raw = (m.get('content') or '').strip()
+    word, _, rest = raw[1:].partition(' ')
+    cmd = word.lower().strip('.,!?')
+    cmd = ALIAS.get(cmd, cmd)
+    ref = m['id']
+    if cmd in ('help', 'commands', 'h'):
+        reply_ref(tid, [card([T(HELP_TEXT)])], ref); return
+    if cmd == 'logs':
+        reply_ref(tid, [card([T(LOGS)])], ref); return
+    if cmd in ('human', 'person'):
+        say(tid, f'<@{OWNER}> 🙋 {m["author"].get("global_name") or m["author"]["username"]} asks for the author · просит автора.', ref, ping_owner=True); return
+    if cmd == 'ask':
+        if faq_hits(rest):
+            reply_ref(tid, faq_reply(rest) + [card([T(COMMANDS_HINT)])], ref)
+        else:
+            say(tid, f'<@{OWNER}> 🙋 no basic answer for this question · на этот вопрос нет готового ответа: «{rest[:300]}»\n'
+                     '-# 🇬🇧 The author will answer here. · 🇷🇺 Автор ответит здесь.', ref, ping_owner=True)
+        return
+    if cmd in CMD:
+        hit = faq_by_title(CMD[cmd])
+        if hit:
+            reply_ref(tid, [card([T(f'### {hit[0]}\n{hit[1]}'), T(COMMANDS_HINT)])], ref); return
+    reply_ref(tid, [card([T(f'🇬🇧 Unknown command `!{word[:30]}`. · 🇷🇺 Нет такой команды `!{word[:30]}`.\n' + HELP_TEXT)])], ref)
+
+
+def reply_ref(tid, comps, ref):
+    payload = {'flags': 1 << 15, 'components': comps, 'message_reference': {'message_id': ref, 'fail_if_not_exists': False},
+               'allowed_mentions': {'parse': []}}
+    if DRY: print('DRY reply_ref', tid, json.dumps(comps, ensure_ascii=False)[:300]); return None
+    return dc('POST', f'/channels/{tid}/messages', payload)
+
+
+_seen = {}
+
+
+def commands_in(t, me):
+    """Answers every '!' message in a help discussion that the bot has not answered yet (replies point to it)."""
+    if _seen.get(t['id']) == t.get('last_message_id'): return 0
+    msgs = dc('GET', f'/channels/{t["id"]}/messages?limit=50')
+    done_refs = {(x.get('message_reference') or {}).get('message_id') for x in msgs if x['author']['id'] == me}
+    n = 0
+    now = datetime.now(timezone.utc)
+    for m in sorted(msgs, key=lambda x: int(x['id'])):
+        if m['author'].get('bot') or not (m.get('content') or '').startswith('!') or m['id'] in done_refs: continue
+        when = datetime.fromisoformat(m['timestamp'].replace('Z', '+00:00'))
+        if (now - when).total_seconds() > 3 * 3600: continue           # old commands from before the bot ran: skipped
+        try: answer_command(t['id'], m); n += 1
+        except Exception as e: print('cmd', t['id'], e)
+    _seen[t['id']] = t.get('last_message_id')
+    return n
 
 
 BASIC = 11   # the first 11 FAQ topics are the general ones
@@ -340,6 +469,32 @@ def prune(store):
     return keep
 
 
+def pass_results(me, store, known):
+    done = 0
+    for t in threads(RESULTS):
+        if t.get('owner_id') == me or t['id'] in known or answered(t['id'], me): continue
+        try: handle_result(t, me, store); known.add(t['id']); done += 1
+        except Exception as e: print('result', t['id'], e)
+    return done
+
+
+def pass_help(me):
+    done = 0
+    for t in threads(HELP):
+        if t.get('owner_id') == me: continue
+        try:
+            if not answered(t['id'], me): handle_help(t); done += 1
+            done += commands_in(t, me)
+        except Exception as e: print('help', t['id'], e)
+    return done
+
+
+def save(store):
+    if OUT_JSON and not DRY:
+        os.makedirs(os.path.dirname(OUT_JSON), exist_ok=True)
+        json.dump(store, open(OUT_JSON, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+
+
 def main():
     if not TOKEN: sys.exit('DISCORD_TOKEN is not set')
     me = dc('GET', '/users/@me')['id']
@@ -348,20 +503,21 @@ def main():
         try: store = json.load(open(OUT_JSON, encoding='utf-8'))
         except Exception: store = []
     known = {x['thread'] for x in store}
-    done = 0
-    for t in threads(RESULTS):
-        if t.get('owner_id') == me or t['id'] in known or answered(t['id'], me): continue
-        try: handle_result(t, me, store); done += 1
-        except Exception as e: print('result', t['id'], e)
-    for t in threads(HELP):
-        if t.get('owner_id') == me or answered(t['id'], me): continue
-        try: handle_help(t); done += 1
-        except Exception as e: print('help', t['id'], e)
+    watch = int(sys.argv[sys.argv.index('--watch') + 1]) if '--watch' in sys.argv else 0
+    end = time.time() + watch
+    done = 0; last_results = 0
+    while True:
+        try: done += pass_help(me)
+        except Exception as e: print('help pass', e)
+        if time.time() - last_results >= 300:
+            try: done += pass_results(me, store, known)
+            except Exception as e: print('results pass', e)
+            last_results = time.time()
+        if time.time() + 12 >= end: break
+        time.sleep(12)
     try: store = prune(store)
     except Exception as e: print('prune', e)
-    if OUT_JSON and not DRY:
-        os.makedirs(os.path.dirname(OUT_JSON), exist_ok=True)
-        json.dump(store, open(OUT_JSON, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    save(store)
     print('handled', done)
 
 

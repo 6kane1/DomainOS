@@ -1,9 +1,10 @@
-name: Discord bot (results charts, help answers)
-# Every 15 minutes: new posts in the results forum get a chart, new help posts a first FAQ answer;
-# the numbers go to the site's results page (gh-pages: results/results.json).
+name: Discord bot (help commands, results charts)
+# Runs in 30-minute shifts (a new one starts every 30 min): help discussions are checked every ~12 s
+# (! commands, first answers, calling the author), the results forum every 5 min (charts);
+# the numbers go to the site's results page (gh-pages: results/results.json) at the end of each shift.
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
@@ -13,7 +14,7 @@ concurrency:
 jobs:
   bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,7 +28,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install --quiet pillow==11.0.0 py7zr==0.22.0
-      - run: python .github/discord-bot/bot.py
+      - run: python .github/discord-bot/bot.py --watch 1740
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           RESULTS_JSON: site/results/results.json
