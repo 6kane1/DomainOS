@@ -63,13 +63,13 @@ def answered(tid, me):
 def reply(tid, comps, files=()):
     payload = {'flags': 1 << 15, 'components': comps, 'attachments': [{'id': i, 'filename': n} for i, (n, _) in enumerate(files)]}
     if DRY:
-        print('DRY reply', tid, json.dumps(comps, ensure_ascii=False)[:600]); return
+        print('DRY reply', tid, json.dumps(comps, ensure_ascii=False)[:600]); return None
     b = uuid.uuid4().hex
     parts = [f'--{b}\r\nContent-Disposition: form-data; name="payload_json"\r\nContent-Type: application/json\r\n\r\n'.encode(), json.dumps(payload).encode(), b'\r\n']
     for i, (n, data) in enumerate(files):
         parts += [f'--{b}\r\nContent-Disposition: form-data; name="files[{i}]"; filename="{n}"\r\nContent-Type: image/png\r\n\r\n'.encode(), data, b'\r\n']
     parts.append(f'--{b}--\r\n'.encode())
-    dc('POST', f'/channels/{tid}/messages', raw=b''.join(parts), ctype=f'multipart/form-data; boundary={b}')
+    return dc('POST', f'/channels/{tid}/messages', raw=b''.join(parts), ctype=f'multipart/form-data; boundary={b}')
 
 
 T = lambda s: {'type': 10, 'content': s}
@@ -195,8 +195,10 @@ def handle_result(t, me, store):
             '🇬🇧 group · average FPS · 1% low · 0.1% low (vs the first group) · 🇷🇺 группа · средний FPS · 1% low · 0.1% low (к первой группе)\n'
             + '\n'.join(lines) + extra +
             '\n-# 🇬🇧 Differences under ~2% are usually noise. · 🇷🇺 Разница меньше ~2% — обычно разброс.')
-    reply(t['id'], [card([T(text[:3900]), {'type': 12, 'items': [{'media': {'url': 'attachment://chart.png'}}]}])], [('chart.png', png)])
-    store.append({'thread': t['id'], 'title': title, 'url': f'https://discord.com/channels/{GUILD}/{t["id"]}', 'date': runs[0]['date'][:10],
+    m = reply(t['id'], [card([T(text[:3900]), {'type': 12, 'items': [{'media': {'url': 'attachment://chart.png'}}]},
+                              T('-# 🗑️ Owner/Admin: react 🗑️ to this message to remove the result from the website. · Owner/Admin: реакция 🗑️ на это сообщение убирает замер с сайта.')])],
+              [('chart.png', png)])
+    store.append({'thread': t['id'], 'reply': (m or {}).get('id', ''), 'title': title, 'url': f'https://discord.com/channels/{GUILD}/{t["id"]}', 'date': runs[0]['date'][:10],
                   'cpu': hw['cpu'], 'windows': hw['windows'], 'game': hw['game'], 'domainos': hw['domainos'], 'runs': n,
                   'groups': [{'name': g, 'fps': round(mean(r['fps'] for r in v), 1), 'low1': round(mean(r['low1'] for r in v), 1),
                               'low01': round(mean(r['low01'] for r in v), 1)} for g, v in eq.items()]})
@@ -240,6 +242,31 @@ def handle_help(t):
                           T('-# 🇬🇧 An automatic answer from the FAQ — a person will look at your post too. · 🇷🇺 Автоматический ответ из частых вопросов — человек тоже посмотрит вашу тему.')])])
 
 
+STAFF_ROLES = ('Owner', 'Admin')
+
+
+def prune(store):
+    """Results leave the website when their forum post was deleted, or Owner/Admin reacted 🗑️ to the bot's chart."""
+    roles = {r['id'] for r in dc('GET', f'/guilds/{GUILD}/roles') if r['name'] in STAFF_ROLES}
+    keep = []
+    for x in store:
+        tid = str(x.get('thread', ''))
+        if not tid.isdigit(): keep.append(x); continue                 # entries added by hand (e.g. the lab post)
+        st, _ = http(API + f'/channels/{tid}', headers={'Authorization': 'Bot ' + TOKEN})
+        if st == 404: print('removed (post deleted)', tid); continue
+        rid = x.get('reply')
+        if rid:
+            st, body = http(API + f'/channels/{tid}/messages/{rid}/reactions/' + urllib.parse.quote('🗑️'), headers={'Authorization': 'Bot ' + TOKEN})
+            users = json.loads(body) if st == 200 and body else []
+            staff = False
+            for u in users:
+                st2, mb = http(API + f'/guilds/{GUILD}/members/{u["id"]}', headers={'Authorization': 'Bot ' + TOKEN})
+                if st2 == 200 and roles & set(json.loads(mb).get('roles', [])): staff = True; break
+            if staff: print('removed (🗑️ by staff)', tid); continue
+        keep.append(x)
+    return keep
+
+
 def main():
     if not TOKEN: sys.exit('DISCORD_TOKEN is not set')
     me = dc('GET', '/users/@me')['id']
@@ -257,6 +284,8 @@ def main():
         if t.get('owner_id') == me or answered(t['id'], me): continue
         try: handle_help(t); done += 1
         except Exception as e: print('help', t['id'], e)
+    try: store = prune(store)
+    except Exception as e: print('prune', e)
     if OUT_JSON and not DRY:
         os.makedirs(os.path.dirname(OUT_JSON), exist_ok=True)
         json.dump(store, open(OUT_JSON, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
