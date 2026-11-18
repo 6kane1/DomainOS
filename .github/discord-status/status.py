@@ -1,12 +1,12 @@
 """Domain OS — the live status card of the Discord channel "00・status".
 
 Run by .github/workflows/discord-status.yml every hour. Reads the latest GitHub release (versions, date), the
-Discord member counts and the site's availability, draws a HUD-style card (Pillow) and puts it into the channel:
+Discord member counts, the site's availability and when the Discord bot last ran (its workflow runs), draws a HUD-style card (Pillow) and puts it into the channel:
 the bot's own message there is edited, or posted the first time. Needs the secret DISCORD_TOKEN.
 """
 import io, json, os, re, sys, time, urllib.request, urllib.error, uuid
 from datetime import datetime, timezone, timedelta
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont
 
 GUILD = '1572225088340889802'
 CHANNEL = '1572635221029945365'
@@ -14,6 +14,7 @@ REPO = '6kane1/DomainOS'
 SITE = 'https://6kane1.github.io/DomainOS/'
 HERE = os.path.dirname(os.path.abspath(__file__))
 TOKEN = os.environ.get('DISCORD_TOKEN', '').strip()
+GH_TOKEN = os.environ.get('GH_TOKEN', '').strip()       # the workflow's token, read-only (actions: read)
 API = 'https://discord.com/api/v10'
 MSK = timezone(timedelta(hours=3))
 
@@ -35,7 +36,9 @@ def http(url, method='GET', data=None, headers=None, ctype=None):
         except urllib.error.HTTPError as e:
             body = e.read()
             if e.code == 429:
-                time.sleep(json.loads(body or b'{}').get('retry_after', 2) + 0.5); continue
+                try: wait = min(float(json.loads(body or b'{}').get('retry_after', 2)), 60.0)
+                except Exception: wait = 2.0
+                time.sleep(wait + 0.5); continue
             return e.code, body
         except Exception:
             time.sleep(3)
@@ -51,7 +54,7 @@ def discord(method, path, payload=None, raw=None, ctype='application/json'):
 
 
 def facts():
-    f = {'playbook': '?', 'toolbox': '?', 'released': None, 'members': None, 'online': None, 'site': False}
+    f = {'playbook': '?', 'toolbox': '?', 'released': None, 'members': None, 'online': None, 'site': False, 'bot': None}
     st, body = http(f'https://api.github.com/repos/{REPO}/releases/latest', headers={'Accept': 'application/vnd.github+json'})
     if st == 200:
         rel = json.loads(body)
@@ -63,7 +66,21 @@ def facts():
     f['members'], f['online'] = g.get('approximate_member_count'), g.get('approximate_presence_count')
     st, _ = http(SITE)
     f['site'] = st == 200
+    f['bot'] = bot_seen()
     return f
+
+
+def bot_seen():
+    """'now' while a bot shift runs, else the time its last shift ended; None when unknown."""
+    h = {'Accept': 'application/vnd.github+json'}
+    if GH_TOKEN: h['Authorization'] = 'Bearer ' + GH_TOKEN
+    st, body = http(f'https://api.github.com/repos/{REPO}/actions/workflows/discord-bot.yml/runs?per_page=10', headers=h)
+    if st != 200: return None
+    try: runs = json.loads(body).get('workflow_runs') or []
+    except Exception: return None
+    if any(r.get('status') == 'in_progress' for r in runs): return 'now'
+    done = [r['updated_at'] for r in runs if r.get('status') == 'completed' and r.get('updated_at')]
+    return datetime.fromisoformat(max(done).replace('Z', '+00:00')) if done else None
 
 
 def font(name, size):
@@ -127,6 +144,14 @@ def card(f):
     d.ellipse([816 * S, 372 * S, 836 * S, 392 * S], fill=dot)
     d.text((852 * S, 362 * S), ('online' if ok else 'not responding') + ' · ' + ('работает' if ok else 'не отвечает'), font=mid, fill=FG if ok else WARN)
     d.text((816 * S, 414 * S), '6kane1.github.io/DomainOS', font=small, fill=DIM)
+    b = f.get('bot')
+    if b == 'now': bt, bc = 'bot · online · бот в сети', OK
+    elif b:
+        mins = int((datetime.now(timezone.utc) - b).total_seconds() // 60)
+        ago = f'{mins} min' if mins < 120 else f'{mins // 60} h'
+        bt, bc = f'bot · seen {ago} ago · бот был {ago.replace("min", "мин").replace("h", "ч")} назад', (OK if mins < 45 else WARN)
+    else: bt, bc = 'bot · unknown · бот: нет данных', DIM
+    d.text((84 * S, 418 * S), bt, font=small, fill=bc)
 
     im = im.resize((W, H), Image.LANCZOS)
     b = io.BytesIO(); im.save(b, 'PNG', optimize=True)

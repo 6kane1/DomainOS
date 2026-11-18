@@ -1,45 +1,88 @@
-"""Domain OS Discord helper, run by .github/workflows/discord-bot.yml every 15 minutes (no server of our own).
+"""Domain OS Discord helper, run by .github/workflows/discord-bot.yml in shifts of ~29 minutes, one after another
+(each shift starts the next one; no server of our own).
 
 results forum: a new post with DomainSchedTest results (zip / 7z / summary.txt) gets a reply with a chart: the runs
 are grouped by their label (base-1, base-2, S2-1 … → base, S2), every group uses the same number of runs (the first N
-by time, N = the smallest group), bar = average, dot = one run. The numbers go to the site's results page (results.json).
+by time, N = the smallest group), bar = average, dot = one run. The numbers go to the site's results page (results.json),
+pushed right after every change.
 help forum: a new post gets a first answer from the FAQ matched by keywords (EN + RU), then a person takes over.
 A post is handled once: the bot looks for its own reply in the thread.
-Needs the secret DISCORD_TOKEN and the bot's "Message Content" intent (to read attachments).
+
+Attachments come from anyone, so they are unpacked and read in a separate process (--parse-worker) with hard limits:
+at most 200 summary.txt files, 2 MB each, 20 MB together (checked from the archive's own list before anything is
+unpacked), 1 GB of memory and 60 s; on GitHub that process runs as the user "nobody" with no tokens in its environment.
+A results post that could not be read is tried at most twice (results/bot-state.json next to results.json), then the
+author gets one "could not read" answer.
+Needs the secret DISCORD_TOKEN and the bot's "Message Content" intent (to read attachments); GH_PUSH_TOKEN (the
+workflow's token) is used only by the git fetch / push of results.json.
 """
-import io, json, os, re, sys, time, uuid, zipfile, urllib.request, urllib.error, urllib.parse
+import base64, io, json, math, os, re, shutil, subprocess, sys, tempfile, time, uuid, zipfile, urllib.request, urllib.error, urllib.parse
 from datetime import datetime, timedelta, timezone
 from statistics import mean
-from PIL import Image, ImageDraw, ImageFont
 
 GUILD = '1572225088340889802'
 RESULTS = '1572682487543365843'
 HELP = '1572233501518991500'
-TOKEN = os.environ.get('DISCORD_TOKEN', '').strip()
+# the secrets are taken out of the environment at once: no child process (git, the parser) inherits them
+TOKEN = os.environ.pop('DISCORD_TOKEN', '').strip()
+PUSH_TOKEN = os.environ.pop('GH_PUSH_TOKEN', '').strip()
 OUT_JSON = os.environ.get('RESULTS_JSON', '')            # the site's results/results.json (checked out by the workflow)
+STATE_JSON = os.path.join(os.path.dirname(OUT_JSON), 'bot-state.json') if OUT_JSON else ''
+SITE_BRANCH = os.environ.get('SITE_BRANCH', 'gh-pages')
 HERE = os.path.dirname(os.path.abspath(__file__))
 FONTS = os.path.join(HERE, '..', 'discord-status', 'fonts')
 API = 'https://discord.com/api/v10'
 PINK = 0xF4B6CB
 DRY = '--dry' in sys.argv
 
+# limits for attachments (anyone can post them)
+MAX_ATTACH = 25_000_000         # one attachment (Discord's own limit for normal servers)
+MAX_TXT = 2_000_000             # a single summary.txt attachment
+MAX_FILE = 2_000_000            # one summary.txt inside an archive (uncompressed)
+MAX_SUMMARIES = 200             # summary.txt files per post
+MAX_TOTAL = 20_000_000          # all summary.txt files of a post together (uncompressed)
+MAX_LISTED = 20_000             # entries of any kind in one archive's list
+MAX_7Z_ALL = 512_000_000        # everything in a 7z (a solid 7z unpacks the files before a summary.txt too)
+WORKER_MEM = 1 << 30            # address space of the parser process
+WORKER_TIMEOUT = 60             # seconds per post
+MAX_TRIES = 2                   # a results post whose reading failed this often is not tried again
+PING_EVERY = 600                # the owner is called at most once per discussion in 10 minutes
+CMD_EVERY = 30                  # one command answer per person in 30 seconds
 
-def http(url, method='GET', data=None, headers=None, ctype=None):
+
+def retry_after(headers, body):
+    """Seconds to wait after a 429: the JSON body's retry_after, else the Retry-After header, else 2 (never trusts either blindly)."""
+    for get in (lambda: json.loads(body or b'{}').get('retry_after'), lambda: (headers or {}).get('Retry-After')):
+        try:
+            v = float(get())
+            if math.isfinite(v) and v >= 0: return min(v, 60.0)
+        except Exception:
+            pass
+    return 2.0
+
+
+def http(url, method='GET', data=None, headers=None, ctype=None, limit=None):
+    """GET/POST with retries: 429 waits as Discord asks, 5xx and network errors back off 1, 2, 4 … 30 s.
+    limit: read at most limit + 1 bytes of the body (the caller checks the length)."""
     h = {'User-Agent': 'DomainOS-bot (github actions)'}
     h.update(headers or {})
     if ctype: h['Content-Type'] = ctype
-    for _ in range(6):
+    delay = 1.0
+    for attempt in range(6):
         req = urllib.request.Request(url, data=data, method=method, headers=h)
         try:
             with urllib.request.urlopen(req, timeout=60) as r:
-                return r.status, r.read()
+                return r.status, (r.read(limit + 1) if limit else r.read())
         except urllib.error.HTTPError as e:
-            body = e.read()
-            if e.code == 429:
-                time.sleep(json.loads(body or b'{}').get('retry_after', 2) + .5); continue
+            try: body = e.read(1_000_000)
+            except Exception: body = b''
+            if e.code == 429 and attempt < 5:
+                time.sleep(retry_after(e.headers, body) + .5); continue
+            if 500 <= e.code < 600 and attempt < 5:
+                time.sleep(delay); delay = min(delay * 2, 30); continue
             return e.code, body
         except Exception:
-            time.sleep(3)
+            time.sleep(delay); delay = min(delay * 2, 30)
     return 0, b''
 
 
@@ -56,12 +99,19 @@ def threads(forum):
     return out
 
 
+_answered = set()   # threads where the bot has a message: once true, it stays true (no second request)
+
+
 def answered(tid, me):
-    return any(m['author']['id'] == me for m in dc('GET', f'/channels/{tid}/messages?limit=50'))
+    if tid in _answered: return True
+    if any(m['author']['id'] == me for m in dc('GET', f'/channels/{tid}/messages?limit=50')):
+        _answered.add(tid); return True
+    return False
 
 
 def reply(tid, comps, files=()):
-    payload = {'flags': 1 << 15, 'components': comps, 'attachments': [{'id': i, 'filename': n} for i, (n, _) in enumerate(files)]}
+    payload = {'flags': 1 << 15, 'components': comps, 'attachments': [{'id': i, 'filename': n} for i, (n, _) in enumerate(files)],
+               'allowed_mentions': {'parse': []}}
     if DRY:
         print('DRY reply', tid, json.dumps(comps, ensure_ascii=False)[:600]); return None
     b = uuid.uuid4().hex
@@ -69,7 +119,22 @@ def reply(tid, comps, files=()):
     for i, (n, data) in enumerate(files):
         parts += [f'--{b}\r\nContent-Disposition: form-data; name="files[{i}]"; filename="{n}"\r\nContent-Type: image/png\r\n\r\n'.encode(), data, b'\r\n']
     parts.append(f'--{b}--\r\n'.encode())
-    return dc('POST', f'/channels/{tid}/messages', raw=b''.join(parts), ctype=f'multipart/form-data; boundary={b}')
+    m = dc('POST', f'/channels/{tid}/messages', raw=b''.join(parts), ctype=f'multipart/form-data; boundary={b}')
+    _answered.add(tid)
+    return m
+
+
+def clean(s, limit=None):
+    """User text that goes into a bot message or the website: no mentions (@everyone, @here, users, roles, channels),
+    no custom emoji, masked links [text](url) become their text. The patterns are bounded (no slow regex)."""
+    s = str(s or '')
+    if limit: s = s[:limit * 2]
+    s = re.sub(r'<(?:@[!&]?|#)\d{1,25}>', '', s)
+    s = re.sub(r'<a?:\w{1,64}:\d{1,25}>', '', s)
+    s = re.sub(r'@(everyone|here)', r'\1', s, flags=re.I)
+    s = re.sub(r'\[([^\[\]\n]{0,300})\]\([^()\s]{0,2000}\)', r'\1', s)
+    s = s.strip()
+    return s[:limit] if limit else s
 
 
 T = lambda s: {'type': 10, 'content': s}
@@ -81,27 +146,204 @@ card = lambda comps: {'type': 17, 'accent_color': PINK, 'components': comps}
 # ===================================================================================================================
 
 
-def summaries_from(name, data):
-    """All DomainSchedTest summary.txt texts inside an attachment (zip, 7z or a single txt)."""
-    out = []
+class Refused(Exception):
+    """An attachment that is not read on purpose (too many / too big files, broken archive); the text says why."""
+
+
+SIGN = b'Domain SchedTest'
+KINDS = ('.zip', '.7z', '.txt')
+
+
+def _looks_like_summary(head):
+    return SIGN in head[:200]
+
+
+def summaries_from(name, data, budget=None):
+    """All DomainSchedTest summary.txt texts inside an attachment (zip, 7z or a single txt).
+    Every limit is checked from the archive's own list BEFORE anything is unpacked; a file whose first bytes are not a
+    DomainSchedTest summary is not read further. budget = {'n', 'bytes'} shared by all attachments of one post.
+    Raises Refused when the attachment breaks a limit or cannot be read."""
+    budget = budget if budget is not None else {'n': 0, 'bytes': 0}
     low = name.lower()
+    out = []
+
+    def take(sizes):
+        """sizes: the uncompressed sizes of the summary.txt candidates, from the archive's list."""
+        if any(s is None or s < 0 for s in sizes): raise Refused('a file without a size in the archive list')
+        if any(s > MAX_FILE for s in sizes): raise Refused(f'a summary.txt larger than {MAX_FILE // 1_000_000} MB')
+        if budget['n'] + len(sizes) > MAX_SUMMARIES: raise Refused(f'more than {MAX_SUMMARIES} summary.txt files')
+        if budget['bytes'] + sum(sizes) > MAX_TOTAL: raise Refused(f'summary.txt files over {MAX_TOTAL // 1_000_000} MB in total')
+        budget['n'] += len(sizes); budget['bytes'] += sum(sizes)
+
+    def keep(body):
+        if len(body) > MAX_FILE: raise Refused('a summary.txt is larger than the archive says')
+        if _looks_like_summary(body):
+            out.append(body.decode('utf-8-sig', 'replace'))
+
     try:
         if low.endswith('.zip'):
             with zipfile.ZipFile(io.BytesIO(data)) as z:
-                for n in z.namelist():
-                    if n.lower().endswith('summary.txt') and z.getinfo(n).file_size < 2_000_000:
-                        out.append(z.read(n).decode('utf-8-sig', 'replace'))
+                infos = z.infolist()
+                if len(infos) > MAX_LISTED: raise Refused(f'more than {MAX_LISTED} files in the archive')
+                cand = [i for i in infos if not i.is_dir() and i.filename.lower().endswith('summary.txt')]
+                take([i.file_size for i in cand])
+                for i in cand:
+                    with z.open(i) as f:
+                        head = f.read(256)
+                        if not _looks_like_summary(head): continue
+                        keep(head + f.read(MAX_FILE + 1 - len(head)))
         elif low.endswith('.7z'):
             import py7zr
             with py7zr.SevenZipFile(io.BytesIO(data), 'r') as z:
-                names = [n for n in z.getnames() if n.lower().endswith('summary.txt')]
-                for n, bio in (z.read(names) or {}).items():
-                    out.append(bio.read().decode('utf-8-sig', 'replace'))
+                if z.needs_password(): raise Refused('the archive has a password')
+                infos = z.list()
+                if len(infos) > MAX_LISTED: raise Refused(f'more than {MAX_LISTED} files in the archive')
+                if sum(i.uncompressed or 0 for i in infos) > MAX_7Z_ALL: raise Refused(f'the 7z unpacks to over {MAX_7Z_ALL // 1_000_000} MB')
+                cand = [i for i in infos if not i.is_directory and i.filename.lower().endswith('summary.txt')]
+                take([i.uncompressed for i in cand])
+                if cand:
+                    for n, bio in (z.read([i.filename for i in cand]) or {}).items():
+                        keep(bio.read(MAX_FILE + 1))
         elif low.endswith('.txt'):
-            out.append(data.decode('utf-8-sig', 'replace'))
+            if len(data) > MAX_TXT: raise Refused(f'the txt file is larger than {MAX_TXT // 1_000_000} MB')
+            if _looks_like_summary(data[:256]):
+                take([len(data)]); keep(data)
+    except Refused:
+        raise
+    except MemoryError:
+        raise Refused('the archive needs too much memory')
     except Exception as e:
-        print('archive', name, e)
-    return [s for s in out if 'Domain SchedTest' in s[:200]]
+        raise Refused(f'the archive could not be read ({type(e).__name__})')
+    return out
+
+
+def _finite(v):
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+
+TEXT_KEYS = ('label', 'date', 'cpu', 'windows', 'game', 'domainos', 'mode')
+
+
+def worker_main(wd):
+    """--parse-worker DIR: reads every attachment in DIR (000.zip, 001.txt …) and prints {"runs", "refused"} as JSON.
+    Runs in its own process with limits on memory, CPU time and file writes, so a hostile archive can only kill this
+    process, never the bot."""
+    import resource
+    resource.setrlimit(resource.RLIMIT_AS, (WORKER_MEM, WORKER_MEM))
+    resource.setrlimit(resource.RLIMIT_CPU, (WORKER_TIMEOUT, WORKER_TIMEOUT + 5))
+    resource.setrlimit(resource.RLIMIT_FSIZE, (0, 0))
+    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+    runs, refused, budget = [], [], {'n': 0, 'bytes': 0}
+    for f in sorted(os.listdir(wd)):
+        stem, ext = os.path.splitext(f)
+        if not stem.isdigit() or ext not in KINDS: continue
+        with open(os.path.join(wd, f), 'rb') as fh:
+            data = fh.read(MAX_ATTACH + 1)
+        try:
+            texts = summaries_from(f, data, budget)
+        except Refused as e:
+            refused.append({'i': int(stem), 'why': str(e)}); continue
+        for s in texts:
+            try:
+                r = parse(s)
+            except Exception:
+                r = None
+            if r: runs.append(r)
+    secret = sorted(k for k in os.environ if any(w in k.upper() for w in ('TOKEN', 'SECRET', 'PASSWORD', 'KEY')))
+    sys.stdout.buffer.write(json.dumps({'runs': runs, 'refused': refused, 'uid': os.getuid(), 'secret_env': secret}).encode())
+
+
+class WorkerFailed(Exception):
+    """The parser process crashed, ran out of memory or time: counts as a failed attempt for the post.
+    .public is the short reason shown to the author (the full one, with the process's last words, goes to the log)."""
+    def __init__(self, msg, public='the archive could not be read'):
+        super().__init__(msg); self.public = public
+
+
+_prefix = None
+
+
+def _worker_env():
+    env = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'HOME': '/tmp'}
+    if os.environ.get('LD_LIBRARY_PATH'): env['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']   # setup-python's libpython
+    return env
+
+
+def _run_worker(files, prefix):
+    """files: [(name, bytes)]. A fresh directory readable by everyone, the bot's own code copied there, the parser
+    started with an environment built from scratch (no tokens) and isolated mode (-I: no PYTHON* variables, the
+    attachments' folder is not on the import path)."""
+    wd = tempfile.mkdtemp(prefix='domainos-parse-')
+    try:
+        os.chmod(wd, 0o755)
+        src = os.path.join(wd, 'worker.py')
+        shutil.copyfile(os.path.abspath(__file__), src); os.chmod(src, 0o644)
+        for i, (name, data) in enumerate(files):
+            ext = next(k for k in KINDS if name.lower().endswith(k))
+            p = os.path.join(wd, f'{i:03d}{ext}')
+            with open(p, 'wb') as fh: fh.write(data)
+            os.chmod(p, 0o644)
+        env = _worker_env()
+        cmd = prefix + ['/usr/bin/env', '-i', *(f'{k}={v}' for k, v in env.items()), sys.executable, '-I', src, '--parse-worker', wd]
+        p = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd, env=env)
+        try:
+            out, err = p.communicate(timeout=WORKER_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            p.terminate()                                # sudo passes SIGTERM on to the parser
+            try: p.communicate(timeout=5)
+            except subprocess.TimeoutExpired: p.kill(); p.communicate()
+            raise WorkerFailed(f'no answer in {WORKER_TIMEOUT} s', f'reading took longer than {WORKER_TIMEOUT} s')
+        if p.returncode != 0:
+            raise WorkerFailed(f'exit code {p.returncode}: {err.decode("utf-8", "replace")[-300:]}', 'reading stopped (too much memory or a broken archive)')
+        try:
+            res = json.loads(out)
+        except Exception:
+            raise WorkerFailed('no JSON from the parser')
+        if not isinstance(res, dict): raise WorkerFailed('wrong answer from the parser')
+        return res
+    finally:
+        shutil.rmtree(wd, ignore_errors=True)
+
+
+def worker_prefix():
+    """On GitHub Actions the parser runs as the user "nobody" (sudo -n): it cannot read the bot's memory or environment
+    (/proc), the workspace's git files or anything the runner user owns. Checked once with an empty run; when that
+    does not work (or locally), a plain process with the same limits and the same clean environment."""
+    global _prefix
+    if _prefix is not None: return _prefix
+    _prefix = []
+    if os.environ.get('GITHUB_ACTIONS') == 'true' and shutil.which('sudo'):
+        pre = ['sudo', '-n', '-u', 'nobody', '--']
+        try:
+            res = _run_worker([], pre)
+            if res.get('uid') not in (None, os.getuid()) and not res.get('secret_env'):
+                _prefix = pre; print('parser: runs as nobody, uid', res.get('uid'))
+            else:
+                print('!!! parser: the nobody check gave', res, '- using a plain process')
+        except Exception as e:
+            print('!!! parser: cannot run as nobody (', e, ') - using a plain process')
+    return _prefix
+
+
+def read_attachments(files):
+    """[(name, bytes)] → (runs, refused) read in the parser process. Raises WorkerFailed when that process fails."""
+    if not files: return [], []
+    res = _run_worker(files, worker_prefix())
+    if res.get('secret_env'): print('!!! parser environment has', res['secret_env'])
+    runs = []
+    for r in res.get('runs') or []:                       # only plain strings and finite numbers come back
+        if not isinstance(r, dict): continue
+        x = {k: str(r.get(k) or '')[:200] for k in TEXT_KEYS}
+        if x['mode'] not in ('game', 'idle'): continue
+        x['label'] = x['label'] or 'run'
+        for m in METRICS:
+            if _finite(r.get(m[0])): x[m[0]] = float(r[m[0]])
+        runs.append(x)
+    refused = []
+    for f in res.get('refused') or []:
+        try: refused.append((files[int(f['i'])][0], str(f.get('why', ''))[:200]))
+        except Exception: pass
+    return runs, refused
 
 
 NUM = lambda x: float(x.replace(',', '').replace(' ', ''))
@@ -133,8 +375,15 @@ ORDER = {
 }
 
 
+MAX_LINE = 400   # real summary lines are under 250 characters
+
+
 def parse(s):
-    """All numbers of one DomainSchedTest summary.txt (versions 1.4–1.6); missing ones stay absent."""
+    """All numbers of one DomainSchedTest summary.txt (versions 1.4–1.6); missing ones stay absent.
+    The text comes from anyone: it is cut to MAX_FILE, every line to MAX_LINE characters, and no pattern spans more
+    than one line or block, so every search is linear (a crafted 2 MB text takes milliseconds, not minutes)."""
+    s = s[:MAX_FILE].replace('\r\n', '\n')
+    s = '\n'.join(l[:MAX_LINE] for l in s.split('\n'))
     r = {}
     m = re.search(r'Подпись: ([^\r\n]+)', s); r['label'] = m.group(1).strip() if m else 'run'
     m = re.search(r'Дата: ([\d\- :]+)', s); r['date'] = m.group(1).strip() if m else ''
@@ -146,7 +395,7 @@ def parse(s):
     if fr: r['fps'], r['low1'], r['low01'] = (NUM(x) for x in fr.groups())
     m = re.search(r'время кадра: медиана ([\d.,]+) мс, p99 ([\d.,]+) мс, самый долгий ([\d.,]+) мс', s)
     if m: r['ft_p99'], r['ft_max'] = NUM(m.group(2)), NUM(m.group(3))
-    m = re.search(r'рывков \([^)]*\): ([\d,]+)', s)
+    m = re.search(r'рывков \([^)\n]*\): ([\d,]+)', s)
     if m: r['hitch'] = NUM(m.group(1))
     m = re.search(r'Ожидание готового потока[^\n]*\n\s+среднее ([\d.,]+)\s+p50 ([\d.,]+)\s+p90 ([\d.,]+)\s+p99 ([\d.,]+)\s+p99\.9 ([\d.,]+)', s)
     if m: r['p50'], r['p99'], r['p999'] = NUM(m.group(2)), NUM(m.group(4)), NUM(m.group(5))
@@ -157,11 +406,14 @@ def parse(s):
     if m: r['o100'] = NUM(m.group(1))
     gb = re.search(r'Только потоки [^\n]*\n\s+среднее [\d.,]+\s+p50 [\d.,]+\s+p90 [\d.,]+\s+p99 ([\d.,]+)[^\n]*\n\s+дольше\s+50 мкс:\s+([\d,]+)', s)
     if gb: r['gw_p99'], r['gw_o50'] = NUM(gb.group(1)), NUM(gb.group(2))
-    m = re.search(r'Все процессы: ожиданий дольше 50 мкс.*?на ядре во время ожидания был DPC/ISR:\s+[\d,]+\s+\(\s*([\d.,]+)%\)', s, re.S)
-    if m: r['dpc'] = NUM(m.group(1))
+    i = s.find('Все процессы: ожиданий дольше 50 мкс')       # the block of all processes, up to its blank line
+    if i >= 0:
+        cause = s[i:i + 8000]; cause = cause[:cause.find('\n\n')] if '\n\n' in cause else cause
+        m = re.search(r'на ядре во время ожидания был DPC/ISR:[ \t]+[\d,]+[ \t]+\([ \t]*([\d.,]+)%\)', cause)
+        if m: r['dpc'] = NUM(m.group(1))
     m = re.search(r'Нагрузка Domain OS Toolbox за замер: ([\d.,]+)%', s)
     if m: r['tb'] = NUM(m.group(1))
-    bg = re.findall(r'^\s+(steam|steamwebhelper|gameoverlayui|steamservice|discord)\s+\d+\s+([\d.,]+)\s+[\d.,]+\s+[\d.,]+\s+\S+\s+\S+\s+([\d.,]+|—)', s, re.M)
+    bg = re.findall(r'^[ \t]+(steam|steamwebhelper|gameoverlayui|steamservice|discord)[ \t]+\d+[ \t]+([\d.,]+)[ \t]+[\d.,]+[ \t]+[\d.,]+[ \t]+\S+[ \t]+\S+[ \t]+([\d.,]+|—)', s, re.M)
     if bg:
         r['bg'] = sum(NUM(c) for _, c, _ in bg)
         r['steal'] = sum(NUM(x) for _, _, x in bg if x != '—')
@@ -183,6 +435,7 @@ def fmt(v):
 def chart(title, groups, n, metrics):
     """One panel per measurement (up to 8, 4 per row). 2+ groups: bar = average, dot = one run, pink = best.
     One group: a tile with the average, the min–max range and every run (nothing to compare against)."""
+    from PIL import Image, ImageDraw, ImageFont          # here, so the parser process never loads Pillow
     fd = lambda f, z: ImageFont.truetype(os.path.join(FONTS, f), z)
     BG, PANEL, FG, DIM, PINKc, SIL, LINE = (11, 12, 16), (16, 17, 22), (236, 237, 240), (150, 154, 164), (244, 182, 203), (170, 174, 186), (46, 48, 56)
     names = list(groups); single = len(names) == 1
@@ -241,20 +494,40 @@ def chart(title, groups, n, metrics):
     b = io.BytesIO(); im.save(b, 'PNG', optimize=True); return b.getvalue()
 
 
+def could_not_read(reasons=()):
+    why = '; '.join(dict.fromkeys(clean(r, 120) for r in reasons if r))[:600]
+    return [card([T('🇬🇧 **Could not read this archive.** Please check: a normal zip or 7z of the `results` folder (no password), '
+                    f'at most {MAX_SUMMARIES} runs, every `summary.txt` under {MAX_FILE // 1_000_000} MB and {MAX_TOTAL // 1_000_000} MB of `summary.txt` files in total '
+                    '(the other files of the folder do not count). Then make a new post with the fixed archive.\n'
+                    '🇷🇺 **Не удалось прочитать этот архив.** Проверьте: обычный zip или 7z папки `results` (без пароля), '
+                    f'не больше {MAX_SUMMARIES} прогонов, каждый `summary.txt` меньше {MAX_FILE // 1_000_000} МБ, все `summary.txt` вместе — не больше {MAX_TOTAL // 1_000_000} МБ '
+                    '(остальные файлы папки не считаются). Затем создайте новый пост с исправленным архивом.'
+                    + (f'\n-# {why}' if why else ''))])]
+
+
 def handle_result(t, me, store):
     starter = dc('GET', f'/channels/{t["id"]}/messages/{t["id"]}')
-    runs = []
+    files = []
     for a in starter.get('attachments', []):
-        if a.get('size', 0) > 25_000_000: continue
-        st, data = http(a['url'])
-        if st == 200:
-            for s in summaries_from(a['filename'], data):
-                r = parse(s)
-                if r: runs.append(r)
+        name = str(a.get('filename') or '')
+        if not name.lower().endswith(KINDS): continue
+        cap = MAX_TXT if name.lower().endswith('.txt') else MAX_ATTACH
+        if int(a.get('size') or 0) > cap: continue
+        st, data = http(a['url'], limit=cap)               # the CDN link needs no token
+        if st != 200: raise RuntimeError(f'download {name}: {st}')
+        if len(data) > cap: continue
+        files.append((name, data))
+    runs, refused = read_attachments(files)              # WorkerFailed counts as a failed attempt (pass_results)
+    if not runs and refused:
+        reply(t['id'], could_not_read(f'{n}: {w}' for n, w in refused))
+        return
     if not runs:
         reply(t['id'], [card([T('🇬🇧 No DomainSchedTest runs found in this post. Attach the **zipped `results` folder** (zip or 7z) with all runs — every run folder has a `summary.txt`.\n'
                                 '🇷🇺 В посте не нашлось прогонов DomainSchedTest. Приложите **архив папки `results`** (zip или 7z) со всеми прогонами — в каждой папке прогона есть `summary.txt`.')])])
         return
+    for r in runs:                                        # text from the post goes into messages: no pings, no links
+        for k in ('cpu', 'windows', 'game', 'domainos'): r[k] = clean(r[k], 120)
+        r['label'] = clean(r['label'], 60).replace('`', "'") or 'run'
     game = [r for r in runs if r['mode'] == 'game']
     runs = game or runs                                  # game runs win when a post mixes game and idle runs
     mode = 'game' if game else 'idle'
@@ -279,9 +552,11 @@ def handle_result(t, me, store):
             lines.append(f'`{g:<12}` {cells}   ({dif})')
     extra = '' if all(len(v) == n for v in groups.values()) else \
         f'\n-# 🇬🇧 Groups had different numbers of runs: the first {n} of each (by time) are compared. · 🇷🇺 В группах разное число прогонов: сравниваются первые {n} в каждой (по времени).'
+    if refused:
+        extra += '\n-# 🇬🇧 Not read · 🇷🇺 Не прочитано: ' + '; '.join(f'{clean(n_, 60)} ({clean(w, 80)})' for n_, w in refused)[:400]
     hw = runs[0]
     info = ' · '.join(x for x in (hw['cpu'], hw['windows'], hw['game'], ('Domain OS ' + hw['domainos']) if hw['domainos'] else '', 'idle · простой' if mode == 'idle' else '') if x)
-    title = (t.get('name') or 'Results')[:80]
+    title = clean(t.get('name'), 80) or 'Results'
     png = chart(title + (' · idle' if mode == 'idle' else ''), eq, n, mets)
     single = len(eq) == 1
     head = ('🇬🇧 group · ' + ' · '.join(m[1] for m in main3) + ('' if single else ' (vs the first group)') + ' · 🇷🇺 группа · ' + ' · '.join(m[2] for m in main3) + ('' if single else ' (к первой группе)') + '\n'
@@ -292,7 +567,7 @@ def handle_result(t, me, store):
     m = reply(t['id'], [card([T(text[:3900]), {'type': 12, 'items': [{'media': {'url': 'attachment://chart.png'}}]},
                               T('-# 🗑️ Owner/Admin: react 🗑️ to this message to remove the result from the website. · Owner/Admin: реакция 🗑️ на это сообщение убирает замер с сайта.')])],
               [('chart.png', png)])
-    store.append({'thread': t['id'], 'reply': (m or {}).get('id', ''), 'title': title, 'note': note_of(starter), 'week': week_of(posted_of(t['id'])), 'url': f'https://discord.com/channels/{GUILD}/{t["id"]}', 'date': runs[0]['date'][:10],
+    store.append({'thread': t['id'], 'reply': (m or {}).get('id', ''), 'title': title, 'note': note_of(starter), 'week': week_for_new(t['id']), 'url': f'https://discord.com/channels/{GUILD}/{t["id"]}', 'date': runs[0]['date'][:10],
                   'cpu': hw['cpu'], 'windows': hw['windows'], 'game': hw['game'], 'domainos': hw['domainos'], 'runs': n, 'mode': mode,
                   'metrics': [{'key': k, 'en': en, 'ru': ru, 'hi': hi} for k, en, ru, hi, _ in mets],
                   'groups': [{'name': g, **{k: round(av(g, k), 3) for k, *_ in mets}} for g in eq]})
@@ -410,7 +685,9 @@ def say(tid, text, ref=None, ping_owner=False):
     body = {'content': text[:1990], 'allowed_mentions': {'roles': [OWNER_ROLE] if ping_owner else [], 'parse': []}}
     if ref: body['message_reference'] = {'message_id': ref, 'fail_if_not_exists': False}
     if DRY: print('DRY say', tid, text[:200]); return None
-    return dc('POST', f'/channels/{tid}/messages', body)
+    m = dc('POST', f'/channels/{tid}/messages', body)
+    _answered.add(tid)
+    return m
 
 
 def handle_help(t):
@@ -486,7 +763,8 @@ def faq_by_title(start):
     return next(((h, a) for k, h, a in FAQ if h.strip('*').startswith(start)), None)
 
 
-def answer_command(tid, m):
+def answer_command(tid, m, may_ping=True):
+    """may_ping: False when the bot already called the owner in this discussion in the last 10 minutes."""
     raw = (m.get('content') or '').strip()
     word, _, rest = raw[1:].partition(' ')
     cmd = word.lower().strip('.,!?')
@@ -496,47 +774,87 @@ def answer_command(tid, m):
         reply_ref(tid, [card([T(HELP_TEXT)])], ref); return
     if cmd == 'logs':
         reply_ref(tid, [card([T(LOGS)])], ref); return
+    who = clean(m['author'].get('global_name') or m['author'].get('username'), 40) or '?'
+    called = '-# 🇬🇧 The author was already called a few minutes ago and will answer here. · 🇷🇺 Автора уже позвали несколько минут назад, он ответит здесь.'
     if cmd in ('human', 'person'):
-        say(tid, f'<@&{OWNER_ROLE}> 🙋 {m["author"].get("global_name") or m["author"]["username"]} asks for the author · просит автора.', ref, ping_owner=True); return
+        if may_ping:
+            say(tid, f'<@&{OWNER_ROLE}> 🙋 {who} asks for the author · просит автора.', ref, ping_owner=True)
+        else:
+            say(tid, f'🙋 {who} asks for the author · просит автора.\n' + called, ref)
+        return
     if cmd == 'ask':
         if faq_hits(rest):
             reply_ref(tid, faq_reply(rest) + [card([T(COMMANDS_HINT)])], ref)
         else:
-            say(tid, f'<@&{OWNER_ROLE}> 🙋 no basic answer for this question · на этот вопрос нет готового ответа: «{rest[:300]}»\n'
-                     '-# 🇬🇧 The author will answer here. · 🇷🇺 Автор ответит здесь.', ref, ping_owner=True)
+            q = clean(rest, 300)
+            if may_ping:
+                say(tid, f'<@&{OWNER_ROLE}> 🙋 no basic answer for this question · на этот вопрос нет готового ответа: «{q}»\n'
+                         '-# 🇬🇧 The author will answer here. · 🇷🇺 Автор ответит здесь.', ref, ping_owner=True)
+            else:
+                say(tid, f'🙋 no basic answer for this question · на этот вопрос нет готового ответа: «{q}»\n' + called, ref)
         return
     if cmd in CMD:
         hit = faq_by_title(CMD[cmd])
         if hit:
             reply_ref(tid, [card([T(f'### {hit[0]}\n{hit[1]}'), T(COMMANDS_HINT)])], ref); return
-    reply_ref(tid, [card([T(f'🇬🇧 Unknown command `!{word[:30]}`. · 🇷🇺 Нет такой команды `!{word[:30]}`.\n' + HELP_TEXT)])], ref)
+    w = clean(word, 30).replace('`', "'")
+    reply_ref(tid, [card([T(f'🇬🇧 Unknown command `!{w}`. · 🇷🇺 Нет такой команды `!{w}`.\n' + HELP_TEXT)])], ref)
 
 
 def reply_ref(tid, comps, ref):
     payload = {'flags': 1 << 15, 'components': comps, 'message_reference': {'message_id': ref, 'fail_if_not_exists': False},
                'allowed_mentions': {'parse': []}}
     if DRY: print('DRY reply_ref', tid, json.dumps(comps, ensure_ascii=False)[:300]); return None
-    return dc('POST', f'/channels/{tid}/messages', payload)
+    m = dc('POST', f'/channels/{tid}/messages', payload)
+    _answered.add(tid)
+    return m
 
 
 _seen = {}
+_last_cmd = {}      # person → time of the bot's last command answer to them (this shift)
+
+
+def _when(m):
+    return datetime.fromisoformat(m['timestamp'].replace('Z', '+00:00'))
 
 
 def commands_in(t, me):
-    """Answers every '!' message in a help discussion that the bot has not answered yet (replies point to it)."""
+    """Answers the '!' messages in a help discussion that the bot has not answered yet (replies point to it).
+    Against spam: per person only their newest command counts and gets at most one answer in CMD_EVERY seconds
+    (a command that has to wait is answered on a later pass); the owner is called at most once in PING_EVERY seconds
+    per discussion (the bot's own recent messages with the role mention are the memory, so it holds across shifts)."""
     if _seen.get(t['id']) == t.get('last_message_id'): return 0
     msgs = dc('GET', f'/channels/{t["id"]}/messages?limit=50')
-    done_refs = {(x.get('message_reference') or {}).get('message_id') for x in msgs if x['author']['id'] == me}
+    mine = [x for x in msgs if x['author']['id'] == me]
+    done_refs = {(x.get('message_reference') or {}).get('message_id') for x in mine}
+    pings = [_when(x) for x in mine if f'<@&{OWNER_ROLE}>' in (x.get('content') or '')]
+    last_ping = max(pings) if pings else None
     n = 0
     now = datetime.now(timezone.utc)
-    for m in sorted(msgs, key=lambda x: int(x['id'])):
-        if m['author'].get('bot') or not (m.get('content') or '').startswith('!') or m['id'] in done_refs: continue
-        when = datetime.fromisoformat(m['timestamp'].replace('Z', '+00:00'))
-        if (now - when).total_seconds() > 3 * 3600: continue           # old commands from before the bot ran: skipped
-        try: answer_command(t['id'], m); n += 1
+    cmds = [m for m in sorted(msgs, key=lambda x: int(x['id']))
+            if not m['author'].get('bot') and (m.get('content') or '').startswith('!')
+            and (now - _when(m)).total_seconds() <= 3 * 3600]                 # old commands from before the bot ran: skipped
+    newest = {m['author']['id']: m['id'] for m in cmds}
+    waiting = False
+    for m in cmds:
+        uid = m['author']['id']
+        if m['id'] in done_refs or newest[uid] != m['id']: continue
+        if time.time() - _last_cmd.get(uid, 0) < CMD_EVERY: waiting = True; continue
+        may_ping = last_ping is None or (now - last_ping).total_seconds() >= PING_EVERY
+        try:
+            answer_command(t['id'], m, may_ping); n += 1; _last_cmd[uid] = time.time()
+            if may_ping and answer_pings(m): last_ping = now
         except Exception as e: print('cmd', t['id'], e)
-    _seen[t['id']] = t.get('last_message_id')
+    if not waiting: _seen[t['id']] = t.get('last_message_id')
     return n
+
+
+def answer_pings(m):
+    """Whether the answer to this command called the owner (!human, or !ask without a FAQ answer)."""
+    raw = (m.get('content') or '').strip()
+    word, _, rest = raw[1:].partition(' ')
+    cmd = ALIAS.get(word.lower().strip('.,!?'), word.lower().strip('.,!?'))
+    return cmd in ('human', 'person') or (cmd == 'ask' and not faq_hits(rest))
 
 
 BASIC = 11   # the first 11 FAQ topics are the general ones
@@ -573,10 +891,18 @@ def prune(store):
 #   * times 1 + 0.1 per run (up to 5 runs): more runs, more trust;
 #   * +5 for a real comparison (2 or more variants), +1 per variant (up to 6);
 #   * when two results are close, a processor that is not in the week's top yet goes first (-3 for a repeat).
+# A finished week is never scored again (bot-state.json: finished_weeks): a result posted late for it counts for the
+# current week, so there is never a second top for the same week.
 MSK = timezone(timedelta(hours=3))
 TOP_N = 5
 MAIN_KEYS = {'game': ['low1', 'low01', 'ft_p99', 'hitch', 'fps', 'gw_p99'], 'idle': ['p99', 'p999', 'o50', 'p50']}
 OLD_METS = [{'key': 'fps', 'hi': True}, {'key': 'low1', 'hi': True}, {'key': 'low01', 'hi': True}]
+
+# The bot's own small memory, kept next to results.json on gh-pages (results/bot-state.json):
+#   failed:         {thread: {'n': attempts, 'at': time, 'done': gave up}} — results posts whose reading failed
+#   finished_weeks: weeks whose top 5 is chosen (never scored again)
+#   announce:       {week: [thread, …]} — finished weeks whose top post is not in Discord yet
+STATE = {'failed': {}, 'finished_weeks': [], 'announce': {}}
 
 
 def posted_of(tid):
@@ -588,60 +914,101 @@ def week_of(dt):
     return f'{y}-W{w:02d}'
 
 
+def week_for_new(tid):
+    """The week a new result counts for: the week of its post, or the current week when that one is finished already."""
+    wk = week_of(posted_of(tid))
+    return week_of(datetime.now(MSK)) if wk in STATE['finished_weeks'] else wk
+
+
+def _num(v):
+    return v if _finite(v) else None
+
+
 def score_of(x):
-    """(score, why): why = {'key', 'group', 'diff'} — the difference that made the result interesting, or None."""
-    groups = x.get('groups') or []
-    mets = {m['key']: m for m in (x.get('metrics') or OLD_METS)}
+    """(score, why): why = {'key', 'group', 'diff'} — the difference that made the result interesting, or None.
+    Tolerates entries without groups / names / metrics (added by hand or by an older bot)."""
+    groups = [g for g in (x.get('groups') if isinstance(x.get('groups'), list) else []) if isinstance(g, dict)]
+    mlist = x.get('metrics') if isinstance(x.get('metrics'), list) else OLD_METS
+    mets = {m.get('key'): m for m in mlist if isinstance(m, dict)}
     best = None
     if len(groups) >= 2:
         base = groups[0]
         for k in MAIN_KEYS.get(x.get('mode') or 'game', MAIN_KEYS['game']):
-            if k not in mets or not base.get(k): continue
+            b = _num(base.get(k))
+            if k not in mets or not b: continue
             for g in groups[1:]:
-                v = g.get(k)
+                v = _num(g.get(k))
                 if v is None: continue
-                diff = (v / base[k] - 1) * 100            # as measured (+ = the number went up)
+                diff = (v / b - 1) * 100                  # as measured (+ = the number went up)
                 d = min(abs(diff), 30.0)
-                if d >= 2 and (best is None or d > best[0]): best = (d, {'key': k, 'group': g['name'], 'diff': round(diff, 1)})
+                if d >= 2 and (best is None or d > best[0]): best = (d, {'key': k, 'group': str(g.get('name', '?')), 'diff': round(diff, 1)})
     eff = best[0] if best else 0.0
-    s = eff * (1 + 0.1 * min(int(x.get('runs') or 1), 5)) + (5 if len(groups) >= 2 else 0) + min(len(groups), 6)
+    try: runs = int(x.get('runs') or 1)
+    except (TypeError, ValueError): runs = 1
+    s = eff * (1 + 0.1 * max(0, min(runs, 5))) + (5 if len(groups) >= 2 else 0) + min(len(groups), 6)
     return round(s, 1), (best[1] if best else None)
 
 
+def entry_key(x):
+    t = str(x.get('thread', '') or '')
+    return 'thread:' + t if t else 'json:' + json.dumps(x, sort_keys=True, ensure_ascii=False)
+
+
 def finish_weeks(store):
-    """Every week that is over keeps only its top 5 on the website. Returns {week: [picked entries]} for the post."""
+    """Every week that is over keeps only its top 5 on the website. The picked entries wait in STATE['announce'] for
+    their post (sent after the website has them). Returns the weeks finished now."""
     now = week_of(datetime.now(MSK))
+    fin = set(STATE['finished_weeks'])
+    fin |= {x['week'] for x in store if isinstance(x.get('week'), str) and 'top' in x}      # older files without the list
     for x in store:
-        if 'week' not in x and str(x.get('thread', '')).isdigit(): x['week'] = week_of(posted_of(x['thread']))
-    done = {}
-    for wk in sorted({x.get('week') for x in store if x.get('week') and x['week'] < now}):
+        if not x.get('week') and str(x.get('thread', '')).isdigit():
+            wk = week_of(posted_of(x['thread']))
+            x['week'] = now if wk in fin else wk
+    done = []
+    for wk in sorted({x['week'] for x in store if isinstance(x.get('week'), str) and x['week'] < now} - fin):
         items = [x for x in store if x.get('week') == wk]
-        if all('top' in x for x in items): continue                      # already finished
-        for x in items: x['score'], x['why'] = score_of(x)
+        for x in items:
+            try: x['score'], x['why'] = score_of(x)
+            except Exception as e: x['score'], x['why'] = 0.0, None; print('score', x.get('thread'), e)
         left, picked, cpus = list(items), [], set()
         while left and len(picked) < TOP_N:
             x = max(left, key=lambda y: y['score'] - (3 if y.get('cpu') in cpus else 0))
             left.remove(x); picked.append(x); cpus.add(x.get('cpu'))
         for i, x in enumerate(picked, 1): x['top'] = i
         for x in left: store.remove(x); print('week', wk, 'not in top 5, left on Discord only:', x.get('thread'))
-        done[wk] = picked
+        fin.add(wk); done.append(wk)
+        STATE['announce'][wk] = [entry_key(x) for x in picked]
+    STATE['finished_weeks'] = sorted(fin)
     return done
 
 
 WEEKLY_TITLE = '🏆 Weekly top 5 · Топ-5 недели'
 
 
-def announce_weeks(done, me):
-    """One post per finished week in the results forum thread "Weekly top 5" (created by the bot on first use)."""
-    if not done or DRY: return
+def announce_weeks(store, me):
+    """One post per finished week in the results forum thread "Weekly top 5" (created by the bot on first use).
+    Only weeks in STATE['announce']; a week leaves the list once its post is sent, so it is never posted twice."""
+    if not STATE['announce'] or DRY: return False
+    by = {entry_key(x): x for x in store}
     th = next((t for t in threads(RESULTS) if t.get('owner_id') == me and t.get('name') == WEEKLY_TITLE), None)
-    for wk, picked in done.items():
+    sent = False
+    for wk in sorted(STATE['announce']):
+        picked = [by[k] for k in STATE['announce'][wk] if k in by]
+        if not picked:
+            del STATE['announce'][wk]; sent = True; continue
         mon = datetime.strptime(wk + '-1', '%G-W%V-%u'); sun = mon + timedelta(days=6)
         span = f'{mon:%d.%m}–{sun:%d.%m.%Y}'
+
         def line(x, ru):
-            w = x.get('why'); m = next((m for m in (x.get('metrics') or []) if m['key'] == (w or {}).get('key')), None)
-            why = (f" · `{w['group']}` {w['diff']:+.1f}% {m['ru' if ru else 'en'] if m else w['key']}" if w else '')
-            return f"**{x['top']}.** [{x['title']}]({x['url']}){why}"
+            w = x.get('why') if isinstance(x.get('why'), dict) else None
+            m = next((m for m in (x.get('metrics') or []) if isinstance(m, dict) and m.get('key') == (w or {}).get('key')), None)
+            why = ''
+            if w and _finite(w.get('diff')):
+                why = f" · `{clean(w.get('group'), 30).replace('`', '')}` {w['diff']:+.1f}% {(m or {}).get('ru' if ru else 'en') or w.get('key', '')}"
+            title = clean(x.get('title'), 80).replace('[', '(').replace(']', ')') or 'Results'
+            url = str(x.get('url') or '')
+            link = f'[{title}]({url})' if url.startswith('https://discord.com/') else title
+            return f"**{x.get('top', '?')}.** {link}{why}"
         en = (f'## 🇬🇧 🏆 Top {len(picked)} of the week {span}\n' + '\n'.join(line(x, False) for x in picked)
               + '\n-# Chosen by the bot: the biggest clear difference between variants (over 2 % noise), more runs, different processors. These stay on the website; the other results of the week stay here on Discord.')
         ru = (f'## 🇷🇺 🏆 Топ-{len(picked)} недели {span}\n' + '\n'.join(line(x, True) for x in picked)
@@ -651,28 +1018,49 @@ def announce_weeks(done, me):
             th = dc('POST', f'/channels/{RESULTS}/threads', {'name': WEEKLY_TITLE, 'message': {'flags': 1 << 15, 'components': comps, 'allowed_mentions': {'parse': []}}})
         else:
             reply(th['id'], comps)
+        del STATE['announce'][wk]; sent = True
+    return sent
 
 
 def note_of(starter):
     """The author's own words from the forum post (what was tested and how), shown on the website with the numbers.
     Mentions are dropped; at most 1500 characters."""
-    t = re.sub(r'<(@[!&]?|#)\d+>', '', starter.get('content') or '')
-    t = re.sub(r'<a?:\w+:\d+>', '', t)
+    t = clean(starter.get('content') or '')
     t = '\n'.join(l.rstrip() for l in t.strip().splitlines())
     return t[:1500] + ('…' if len(t) > 1500 else '')
 
 
-def pass_results(me, store, known):
+def pass_results(me, store):
     done = 0
     # entries saved before 2026-11-18 have no author text yet: fetch it once
     for x in store:
         if 'note' not in x and str(x.get('thread', '')).isdigit():
             try: x['note'] = note_of(dc('GET', f'/channels/{x["thread"]}/messages/{x["thread"]}'))
             except Exception as e: print('note', x.get('thread'), e)
+    known = {str(x.get('thread', '')) for x in store}
+    failed = STATE['failed']
     for t in threads(RESULTS):
-        if t.get('owner_id') == me or t['id'] in known or answered(t['id'], me): continue
-        try: handle_result(t, me, store); known.add(t['id']); done += 1
-        except Exception as e: print('result', t['id'], e)
+        tid = t['id']
+        try:
+            if t.get('owner_id') == me or tid in known or (failed.get(tid) or {}).get('done') or answered(tid, me): continue
+        except Exception as e:
+            print('result', tid, e); continue
+        # the attempt is written down BEFORE the risky part: a post that kills the bot is not tried forever
+        n = int((failed.get(tid) or {}).get('n') or 0) + 1
+        failed[tid] = {'n': n, 'at': datetime.now(timezone.utc).isoformat(timespec='seconds')}
+        save_local(store)
+        try:
+            handle_result(t, me, store); done += 1
+            failed.pop(tid, None)
+        except Exception as e:
+            print('result', tid, 'attempt', n, 'of', MAX_TRIES, type(e).__name__, e)
+            if n >= MAX_TRIES:
+                failed[tid]['done'] = True
+                try: reply(tid, could_not_read([e.public] if isinstance(e, WorkerFailed) else ()))
+                except Exception as e2: print('could-not-read reply', tid, e2)
+    # forget old failures (the bot only sees active threads anyway)
+    cut = (datetime.now(timezone.utc) - timedelta(days=60)).isoformat()
+    for tid in [k for k, v in failed.items() if str((v or {}).get('at', '')) < cut]: failed.pop(tid)
     return done
 
 
@@ -688,35 +1076,164 @@ def pass_help(me):
     return done
 
 
-def save(store):
-    if OUT_JSON and not DRY:
-        os.makedirs(os.path.dirname(OUT_JSON), exist_ok=True)
-        json.dump(store, open(OUT_JSON, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+# ---- results.json / bot-state.json on gh-pages ------------------------------------------------------------------
+# The files are only ever replaced whole (temp file + rename). publish() never loses a hand edit: it fetches the
+# site, takes what the bot changed since its last sync (the commit the worktree stands on) and applies just that to the
+# current remote file, entry by entry (thread id), then pushes; when someone pushed in between it starts over.
+
+
+def valid_store(d):
+    return isinstance(d, list) and all(isinstance(x, dict) for x in d)
+
+
+def load_store():
+    """results.json → list of dicts; [] when there is none yet; None when it is broken (then the bot does NOT touch
+    the results this shift, so a broken file can never turn into an empty website)."""
+    if not OUT_JSON or not os.path.exists(OUT_JSON): return []
+    try:
+        with open(OUT_JSON, encoding='utf-8') as f: d = json.load(f)
+    except Exception as e:
+        print(f'!!! {OUT_JSON} cannot be read ({e}): results are NOT handled or published in this shift — fix the file on gh-pages'); return None
+    if not valid_store(d):
+        print(f'!!! {OUT_JSON} is not a list of entries: results are NOT handled or published in this shift — fix the file on gh-pages'); return None
+    return d
+
+
+def load_state():
+    if not STATE_JSON or not os.path.exists(STATE_JSON): return
+    try:
+        with open(STATE_JSON, encoding='utf-8') as f: d = json.load(f)
+        if not isinstance(d, dict): raise ValueError('not an object')
+    except Exception as e:
+        print(f'!!! {STATE_JSON} cannot be read ({e}): starting with an empty one (finished weeks come from results.json)'); return
+    STATE['failed'] = {str(k): v for k, v in (d.get('failed') or {}).items() if isinstance(v, dict)} if isinstance(d.get('failed'), dict) else {}
+    STATE['finished_weeks'] = sorted({w for w in (d.get('finished_weeks') or []) if isinstance(w, str)}) if isinstance(d.get('finished_weeks'), list) else []
+    STATE['announce'] = {k: [str(i) for i in v] for k, v in (d.get('announce') or {}).items() if isinstance(v, list)} if isinstance(d.get('announce'), dict) else {}
+
+
+def write_atomic(path, obj):
+    os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
+    tmp = path + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump(obj, f, ensure_ascii=False, indent=1)
+        f.flush(); os.fsync(f.fileno())
+    os.replace(tmp, path)
+
+
+def save_local(store):
+    """The bot's current view on disk (so that the workflow's last step can still publish it if the bot dies)."""
+    if not OUT_JSON or DRY: return
+    write_atomic(OUT_JSON, store)
+    write_atomic(STATE_JSON, STATE)
+
+
+def _git(repo, *a, auth=False):
+    env = dict(os.environ, GIT_TERMINAL_PROMPT='0')
+    if auth and PUSH_TOKEN:
+        # the token goes to this one git process only, in its environment (not on the command line, not in .git/config)
+        env.update(GIT_CONFIG_COUNT='1', GIT_CONFIG_KEY_0='http.https://github.com/.extraheader',
+                   GIT_CONFIG_VALUE_0='AUTHORIZATION: basic ' + base64.b64encode(f'x-access-token:{PUSH_TOKEN}'.encode()).decode())
+    return subprocess.run(['git', '-C', repo, *a], capture_output=True, text=True, env=env)
+
+
+def _git_json(repo, rev, rel):
+    """The file at a commit: list, [] when the commit has no such file, None when it cannot be read or is broken."""
+    r = _git(repo, 'show', f'{rev}:{rel}')
+    if r.returncode != 0:
+        return [] if ('does not exist' in r.stderr or 'exists on disk, but not in' in r.stderr) else None
+    try: d = json.loads(r.stdout)
+    except Exception: return None
+    return d if valid_store(d) else None
+
+
+def merge(base, ours, theirs):
+    """Three-way merge by entry: what the bot changed since base (added, edited, removed) is applied to theirs;
+    everything else in theirs (hand edits, hand-added entries, hand deletions) stays."""
+    canon = lambda x: json.dumps(x, sort_keys=True, ensure_ascii=False)
+    b = {entry_key(x): canon(x) for x in base}
+    o = {entry_key(x): x for x in ours}
+    out, seen = [], set()
+    for x in theirs:
+        k = entry_key(x)
+        if k in b and (k not in o or canon(o[k]) != b[k]):
+            if k in o and k not in seen: out.append(o[k]); seen.add(k)          # changed by the bot: the bot's version
+            continue                                                              # removed by the bot
+        if k in o and k not in b:                                                 # added on both sides: the bot's
+            if k not in seen: out.append(o[k]); seen.add(k)
+            continue
+        out.append(x); seen.add(k)
+    for x in ours:                                                                # new from the bot
+        k = entry_key(x)
+        if k not in b and k not in seen: out.append(x); seen.add(k)
+    return out
 
 
 def publish(store):
-    """Writes results.json and pushes it to the site at once (the workflow checked out gh-pages next to it)."""
-    if not OUT_JSON or DRY: return
-    save(store)
-    import subprocess
+    """Pushes results.json and bot-state.json to the site at once (the workflow checked out gh-pages next to it).
+    Returns True when the site has the bot's view (or there was nothing to push)."""
+    if not OUT_JSON or DRY: return True
     repo = os.path.dirname(os.path.dirname(os.path.abspath(OUT_JSON)))
-    g = lambda *a: subprocess.run(['git', '-C', repo, *a], capture_output=True, text=True)
-    if not g('status', '--porcelain', 'results').stdout.strip(): return
-    g('-c', 'user.name=Domain OS bot', '-c', 'user.email=41898282+github-actions[bot]@users.noreply.github.com', 'commit', '-qam', 'results: community benchmarks')
-    for _ in range(3):
-        if g('push', '-q').returncode == 0: print('published'); return
-        g('pull', '-q', '--rebase')
-    print('publish failed')
+    rel = os.path.relpath(os.path.abspath(OUT_JSON), repo)
+    rel_state = os.path.relpath(os.path.abspath(STATE_JSON), repo)
+    remote = f'refs/remotes/origin/{SITE_BRANCH}'
+    for attempt in range(3):
+        base = _git_json(repo, 'HEAD', rel)
+        f = _git(repo, 'fetch', '-q', '--depth=1', 'origin', f'+refs/heads/{SITE_BRANCH}:{remote}', auth=True)
+        if f.returncode != 0:
+            print('publish: fetch failed', f.stderr.strip()[:300]); time.sleep(5 * (attempt + 1)); continue
+        theirs = _git_json(repo, remote, rel)
+        if base is None or theirs is None:
+            print(f'!!! publish: {rel} on {SITE_BRANCH} is broken or unreadable — NOT publishing; fix the file by hand'); return False
+        merged = merge(base, store, theirs)
+        _git(repo, 'reset', '-q', '--hard', remote)                             # the worktree = the site right now
+        store[:] = merged
+        save_local(store)
+        if not _git(repo, 'status', '--porcelain', '--', rel, rel_state).stdout.strip(): return True
+        _git(repo, 'add', '--', rel, rel_state)
+        _git(repo, '-c', 'user.name=Domain OS bot', '-c', 'user.email=41898282+github-actions[bot]@users.noreply.github.com', 'commit', '-qm', 'results: community benchmarks')
+        p = _git(repo, 'push', '-q', 'origin', f'HEAD:refs/heads/{SITE_BRANCH}', auth=True)
+        if p.returncode == 0:
+            print('published'); return True
+        print('publish: push refused, merging again', p.stderr.strip()[:300])
+        _git(repo, 'reset', '-q', '--hard', remote)                             # back to the base of `merged` …
+        save_local(store)                                                         # … with the bot's view on disk
+    print('!!! publish failed (will try again)')
+    return False
+
+
+def results_cycle(me, store):
+    """One results pass: new posts, removed posts, finished weeks, then the site, then the weekly post."""
+    done = 0
+    before = json.dumps([store, STATE], sort_keys=True)
+    try: done += pass_results(me, store)
+    except Exception as e: print('results pass', e)
+    try: store[:] = prune(store)
+    except Exception as e: print('prune', e)
+    try: finish_weeks(store)
+    except Exception as e: print('weekly top', e)
+    ok = True
+    if json.dumps([store, STATE], sort_keys=True) != before:
+        save_local(store); ok = publish(store)                                  # the site gets it right away
+    if ok and STATE['announce']:                                                  # the weekly post only after the site has the top
+        try:
+            if announce_weeks(store, me): save_local(store); publish(store)
+        except Exception as e: print('weekly post', e)
+    return done
 
 
 def main():
+    if '--parse-worker' in sys.argv:
+        worker_main(sys.argv[sys.argv.index('--parse-worker') + 1]); return
+    if '--publish-only' in sys.argv:                  # the workflow's last step: whatever a dead shift left on disk
+        store = load_store()
+        if store is None: sys.exit(1)
+        load_state()
+        sys.exit(0 if publish(store) else 1)
     if not TOKEN: sys.exit('DISCORD_TOKEN is not set')
     me = dc('GET', '/users/@me')['id']
-    store = []
-    if OUT_JSON and os.path.exists(OUT_JSON):
-        try: store = json.load(open(OUT_JSON, encoding='utf-8'))
-        except Exception: store = []
-    known = {x['thread'] for x in store}
+    store = load_store()
+    results_ok = store is not None
+    load_state()
     watch = int(sys.argv[sys.argv.index('--watch') + 1]) if '--watch' in sys.argv else 0
     end = time.time() + watch
     done = 0; last_results = 0
@@ -724,18 +1241,12 @@ def main():
         try: done += pass_help(me)
         except Exception as e: print('help pass', e)
         if time.time() - last_results >= 300:
-            before = json.dumps(store, sort_keys=True)
-            try: done += pass_results(me, store, known)
-            except Exception as e: print('results pass', e)
-            try: store[:] = prune(store)
-            except Exception as e: print('prune', e)
-            try: announce_weeks(finish_weeks(store), me)
-            except Exception as e: print('weekly top', e)
-            if json.dumps(store, sort_keys=True) != before: publish(store)   # the site gets it right away
+            if results_ok: done += results_cycle(me, store)
+            else: print('!!! results.json is broken: the results forum is NOT handled in this shift')
             last_results = time.time()
         if time.time() + 12 >= end: break
         time.sleep(12)
-    publish(store)
+    if results_ok: publish(store)
     print('handled', done)
 
 

@@ -1,46 +1,73 @@
 name: Discord bot (help commands, results charts)
-# Runs in 30-minute shifts (a new one starts every 30 min): help discussions are checked every ~12 s
-# (! commands, first answers, calling the author), the results forum every 5 min (charts);
-# the numbers go to the site's results page (gh-pages: results/results.json) at the end of each shift.
+# Runs in shifts of ~29 minutes: help discussions are checked every ~12 s (! commands, first answers, calling the
+# author), the results forum every 5 min (charts); the numbers go to the site's results page (gh-pages:
+# results/results.json) right after every change.
+# Each shift starts the next one at its end (workflow_dispatch, last step), so the bot runs around the clock even
+# when GitHub skips the cron below (it has never fired so far); the cron stays as a second way in. The concurrency
+# group makes shifts wait for each other, so two never overlap and at most one waits.
+# To stop the bot: cancel the running shift (a cancelled shift does not start the next one) or disable the workflow.
 on:
   schedule:
     - cron: '*/30 * * * *'
   workflow_dispatch:
-permissions:
-  contents: write
+permissions: {}
 concurrency:
   group: discord-bot
   cancel-in-progress: false
 jobs:
   bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
+    permissions:
+      contents: write   # push results/ to gh-pages (only the git commands get the token, see bot.py)
+      actions: write    # start the next shift
     steps:
-      - uses: actions/checkout@v4
+      - name: Shift start
+        run: echo "SHIFT_START=$(date +%s)" >> "$GITHUB_ENV"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           sparse-checkout: .github
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: gh-pages
           path: site
           sparse-checkout: results
+          persist-credentials: false
       - name: Git identity for the bot's pushes
         run: |
           git -C site config user.name "Domain OS bot"
           git -C site config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.12'
-      - run: pip install --quiet pillow==11.0.0 py7zr==0.22.0
-      - run: python .github/discord-bot/bot.py --watch 1740
+      - run: pip install --quiet --require-hashes --only-binary=":all:" -r .github/discord-bot/requirements.txt
+      - name: Bot shift
+        timeout-minutes: 35
+        # attachments are read by a separate process as the user "nobody" with no tokens (bot.py --parse-worker)
+        run: python .github/discord-bot/bot.py --watch 1740
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          GH_PUSH_TOKEN: ${{ github.token }}
           RESULTS_JSON: site/results/results.json
       - name: Publish what is left (the bot already pushes every change right away)
+        if: ${{ !cancelled() }}
+        timeout-minutes: 5
+        run: python .github/discord-bot/bot.py --publish-only
+        env:
+          GH_PUSH_TOKEN: ${{ github.token }}
+          RESULTS_JSON: site/results/results.json
+      - name: Start the next shift
+        # also after a failed shift; a shift that ended early (a crash) first waits, so shifts never start more
+        # often than every 20 minutes
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
+        timeout-minutes: 25
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          cd site
-          if [ -n "$(git status --porcelain results)" ]; then
-            git config user.name "Domain OS bot"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add results/results.json && git commit -m "results: community benchmarks" && git push
+          ran=$(( $(date +%s) - SHIFT_START ))
+          if [ "$ran" -lt 1200 ]; then
+            echo "The shift ran only ${ran} s: waiting $(( 1200 - ran )) s before the next one."
+            sleep $(( 1200 - ran ))
           fi
+          gh workflow run discord-bot.yml --ref main -R "$GITHUB_REPOSITORY"

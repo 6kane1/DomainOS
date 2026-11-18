@@ -1,0 +1,51 @@
+# Domain OS Discord bot — every package pinned with its hash (installed with pip --require-hashes --only-binary=:all:).
+# Wheels for CPython 3.11/3.12 on Linux x86_64 (GitHub's ubuntu-latest). Update: change a version and take its
+# sha256 from https://pypi.org/pypi/<name>/<version>/json. py7zr's dependencies are pinned too.
+backports.zstd==1.8.0 \
+    --hash=sha256:9c7fe40a58dbe1fd358e0ceb5b6b3f50a9b328f8fff42dcb3bdaeb9a022c2506 \
+    --hash=sha256:0f722107de223fe68efa83b1cc3a11d67d1888441073732f0d350ff8111d23df \
+    --hash=sha256:f9e9aa28a44db1897fb637f037175566f3b75890d4bae6cae7ba34f1df1e0804 \
+    --hash=sha256:ab77a2e6e21c57e8341bb7656c71d1a1653151ebe787b3f092ce86a02543eb52
+brotli==1.2.1 \
+    --hash=sha256:6b3c3d5794212a54434b4856f808f7bdf7ad48eacadaadb5b2346fc9a639365a \
+    --hash=sha256:4d47a9f0ba5ee608f3f3a9c942dcd244443068ae5b0d90183dd396dea02236e4 \
+    --hash=sha256:4b9dd0173ca5e01d1eb307d3c184fe8c09bdc168ede560889b1018d216d38c61 \
+    --hash=sha256:338856ae9ff63af4fc3dbbd6184a7276a6ae83df2243562e86e5ee5cf980cce7
+inflate64==1.0.4 \
+    --hash=sha256:ec40c0383cbd84d845dcb785a48ae76eef43246c923f84fda380fdd5ea653d3c \
+    --hash=sha256:bf4e34e32a37a42e9cf8bd9681f89e3e37b218f97d8b8cc95bd065419bc8db13 \
+    --hash=sha256:62d1aac3aba094ae42e27ce7581b414c90f218248be0953b6aeb11a127225e5d \
+    --hash=sha256:94a95f32087d223d2e119ff5c7c264109e8d4cb7e421e7a688a899a6fe021b38
+multivolumefile==0.2.3 \
+    --hash=sha256:237f4353b60af1703087cf7725755a1f6fcaeeea48421e1896940cd1c920d678
+pillow==11.0.0 \
+    --hash=sha256:6f4dba50cfa56f910241eb7f883c20f1e7b1d8f7d91c750cd0b318bad443f4d5 \
+    --hash=sha256:45c566eb10b8967d71bf1ab8e4a525e5a93519e29ea071459ce517f6b903d7fa \
+    --hash=sha256:cb929ca942d0ec4fac404cbf520ee6cac37bf35be479b970c4ffadf2b6a1cad9 \
+    --hash=sha256:f02541ef64077f22bf4924f225c0fd1248c168f86e4b7abdedd87d6ebaceab0f \
+    --hash=sha256:00177a63030d612148e659b55ba99527803288cea7c75fb05766ab7981a8c1b7 \
+    --hash=sha256:3107c66e43bda25359d5ef446f59c497de2b5ed4c7fdba0894f8d6cf3822dafc
+psutil==7.2.2 \
+    --hash=sha256:076a2d2f923fd4821644f5ba89f059523da90dc9014e85f8e45a5774ca5bc6f9 \
+    --hash=sha256:b58fabe35e80b264a4e3bb23e6b96f9e45a3df7fb7eed419ac0e5947c61e47cc
+py7zr==0.22.0 \
+    --hash=sha256:993b951b313500697d71113da2681386589b7b74f12e48ba13cc12beca79d078
+pybcj==1.0.8 \
+    --hash=sha256:0de1f6c90178f5947e4b578821aa2f1f87a78a761ae603aa33a8ad3d8b9b9cac \
+    --hash=sha256:cbca168d4d0aa75cca780b95f530f842b81ebc8d72f36d7865287b59364593a1 \
+    --hash=sha256:a50b58f9b9d9978c55e3219b6816a1021a778b028a810b36aa754407591cb5ae \
+    --hash=sha256:4f0818cf48fbfddbae487536f3fcd69cfadfb7293630ab8658b66e89a0836d6a
+pycryptodomex==3.24.2 \
+    --hash=sha256:e340408a601003f235b50117cd16f87b2a5b4760765aafe93340eeaadeb0414d \
+    --hash=sha256:b6b327cb30a96c13965892be0a06717bb2cbdbf5e9b26fc4e9389a040b4b0047
+pyppmd==1.1.1 \
+    --hash=sha256:b67f0a228f8c58750a21ba667c170ae957283e08fd580857f13cb686334e5b3e \
+    --hash=sha256:fe057d254528b4eeebe2800baefde47d6af679bae184d3793c13a06f794df442 \
+    --hash=sha256:38b645347b6ea217b0c58e8edac27473802868f152db520344ac8c7490981849 \
+    --hash=sha256:a4ba510457a56535522a660098399e3fa8722e4de55808d089c9d13435d87069
+pyzstd==0.20.0 \
+    --hash=sha256:9c6aff5aa9b12bb14d51f724915f176db9b187214d66d93d990c75ff054483c6
+texttable==1.7.3 \
+    --hash=sha256:b8eaebd6d32565ce85b79b17e2aa52815889249b37bb6dd0894d3eca67c329f8
+typing_extensions==4.16.0 \
+    --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8
