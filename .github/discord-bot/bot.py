@@ -209,64 +209,98 @@ def handle_result(t, me, store):
 
 
 FAQ = [
-    (r'what is|что такое|зачем|для чего|what does|что делает|о сборке', '**What Domain OS is** · **Что такое Domain OS**',
+    (['что такое', 'что это', 'зачем', 'для чего', 'что делает', 'что даст', 'what is', 'what does', 'смысл', 'о сборке', 'что за сборк', 'что за плейбук'], '**What Domain OS is** · **Что такое Domain OS**',
      '🇬🇧 A playbook (installer) that cleans up a fresh Windows 11 Pro for games in ~10 min: removes ads, bloat and telemetry, sets up power and Game Mode. Windows protection stays, everything can be undone. Plus **Toolbox** — an app that helps the game while you play. https://6kane1.github.io/DomainOS/\n'
      '🇷🇺 Плейбук (установщик), который за ~10 минут приводит свежую Windows 11 Pro в порядок для игр: убирает рекламу, лишние программы и телеметрию, настраивает питание и игровой режим. Защита Windows остаётся, всё откатывается. Плюс **Toolbox** — программа, которая помогает игре, пока вы играете. https://6kane1.github.io/DomainOS/ru/'),
-    (r'download|скача|где взять|ссылк|link|apbx', '**Where to download** · **Где скачать**',
+    (['скача', 'качат', 'качну', 'загруз', 'где взять', 'где найти', 'ссылк', 'линк', 'link', 'download', 'apbx', 'откуда'], '**Where to download** · **Где скачать**',
      '🇬🇧 Everything is in <#1572231027588333700> and on the website: No-WU-Drivers.reg, AME Wizard, Domain-OS.apbx. Toolbox comes with the build.\n'
      '🇷🇺 Всё в <#1572231027588333700> и на сайте: No-WU-Drivers.reg, AME Wizard, Domain-OS.apbx. Toolbox ставится вместе со сборкой.'),
-    (r'install|установ|как постав|ame wizard|wizard', '**How to install** · **Как установить**',
+    (['установ', 'устанав', 'постав', 'накат', 'install', 'ame', 'визард', 'wizard', 'инструкц', 'гайд', 'guide', 'как начать', 'с чего начать'], '**How to install** · **Как установить**',
      '🇬🇧 Step-by-step guide from a clean Windows: https://6kane1.github.io/DomainOS/install.html — short version in <#1572228626425057305>. AME Wizard needs the internet and, on a laptop, the charger plugged in.\n'
      '🇷🇺 Пошаговая инструкция с чистой Windows: https://6kane1.github.io/DomainOS/ru/install.html — коротко в <#1572228626425057305>. AME Wizard нужен интернет, а на ноутбуке — зарядка.'),
-    (r'25h2|26h2|24h2|win ?10|windows 10|какая windows|which windows|версия windows|winver', '**Which Windows** · **Какая Windows нужна**',
+    (['25h2', '26h2', '24h2', 'винд', 'windows', 'win10', 'win 10', 'десятк', 'winver', 'какая версия', 'какая систем', 'редакц'], '**Which Windows** · **Какая Windows нужна**',
      '🇬🇧 Windows 11 **Pro**, version **25H2 or 26H2** (Win+R → `winver`). Windows 10 and 24H2 are not supported.\n'
      '🇷🇺 Windows 11 **Pro**, версия **25H2 или 26H2** (Win+R → `winver`). Windows 10 и 24H2 не поддерживаются.'),
-    (r'\bban|бан|safe|безопасн|вирус|virus|defender|защитник|антивирус', '**Is it safe? Can I get banned?** · **Это безопасно? Не забанят?**',
+    (['бан', 'забан', 'банят', 'ban', 'безопас', 'safe', 'вирус', 'virus', 'троян', 'defender', 'защитник', 'антивирус', 'опасн', 'vac'], '**Is it safe? Can I get banned?** · **Это безопасно? Не забанят?**',
      '🇬🇧 Domain OS does not touch Defender, Memory Integrity, Secure Boot or TPM and does not inject into games. Anti-cheat developers have not officially confirmed compatibility, so use it at your own risk — but nothing here works like a cheat.\n'
      '🇷🇺 Domain OS не трогает Defender, защиту памяти, Secure Boot и TPM и ничего не внедряет в игры. Разработчики античитов совместимость официально не подтверждали, поэтому — на свой риск, но ничего похожего на читы здесь нет.'),
-    (r'toolbox|тулбокс|\bauto\b|авто|оптимизация устройств|optimize devices', '**How to use Toolbox** · **Как пользоваться Toolbox**',
+    (['toolbox', 'тулбокс', 'тулбох', 'auto', 'авто', 'оптимизация устройств', 'optimize', 'как пользов', 'настро'], '**How to use Toolbox** · **Как пользоваться Toolbox**',
      '🇬🇧 Open Toolbox → **Turn on Auto** → start the game. Once, with the game closed: **Optimize devices** → restart. Details in <#1572338781812559903>.\n'
      '🇷🇺 Откройте Toolbox → **Включить Auto** → запустите игру. Один раз при закрытой игре: **Оптимизация устройств** → перезагрузка. Подробно в <#1572338781812559903>.'),
-    (r'не видит игр|doesn.?t see|game not found|не находит|не подхват', '**Toolbox does not pick up the game** · **Toolbox не видит игру**',
+    (['не видит', 'не находит', 'не подхват', 'не реагир', 'не работает с игр', 'игру не', 'not found', 'не ловит', 'не цепляет'], '**Toolbox does not pick up the game** · **Toolbox не видит игру**',
      '🇬🇧 Auto must be on and the game in front (not minimised). Some games are protected by their anti-cheat — then Toolbox leaves the game alone but still quiets background programs.\n'
      '🇷🇺 Auto должен быть включён, игра — на переднем плане (не свёрнута). Некоторые игры защищены своим античитом — тогда Toolbox не трогает саму игру, но фоновые программы всё равно приглушает.'),
-    (r'laptop|ноут|notebook|батаре|battery', '**Laptops** · **Ноутбуки**',
+    (['ноут', 'laptop', 'notebook', 'батаре', 'аккумул', 'battery'], '**Laptops** · **Ноутбуки**',
      '🇬🇧 Laptop support is not confirmed yet — at your own risk. Keep the charger plugged in during the install.\n'
      '🇷🇺 Поддержка ноутбуков пока не подтверждена — на свой риск. Во время установки держите ноутбук на зарядке.'),
-    (r'update|обновлен|windows update|новая версия|new version|поверх', '**Updates** · **Обновления**',
+    (['обнов', 'апдейт', 'update', 'новая версия', 'new version', 'поверх', 'переустан'], '**Updates** · **Обновления**',
      '🇬🇧 Security updates keep coming; big feature updates are held on 26H2 (option). A new Domain OS version installs right over the old one in AME Wizard.\n'
      '🇷🇺 Обновления безопасности приходят как обычно; крупные обновления удерживаются на 26H2 (опция). Новая версия Domain OS ставится прямо поверх старой в AME Wizard.'),
-    (r'обои|wallpaper|экран блокировки|lock screen|слайд', '**Wallpapers** · **Обои**',
+    (['обои', 'обоев', 'wallpaper', 'фон', 'экран блокир', 'lock screen', 'слайд', 'картинк', 'заставк'], '**Wallpapers** · **Обои**',
      '🇬🇧 Change them as usual: Settings → Personalization. Lock screen slideshow: Personalization → Lock screen → Slideshow → `C:\\Windows\\Web\\Wallpaper\\Domain OS`.\n'
      '🇷🇺 Меняются как обычно: «Параметры → Персонализация». Слайд-шоу на экране блокировки: Персонализация → Экран блокировки → Слайд-шоу → `C:\\Windows\\Web\\Wallpaper\\Domain OS`.'),
-    (r'schedtest|замер|benchmark|results', '**Benchmarks** · **Замеры**',
+    (['schedtest', 'замер', 'бенчмарк', 'benchmark', 'results', 'график', 'сравни'], '**Benchmarks** · **Замеры**',
      '🇬🇧 The benchmark tool and a beginner guide are in <#1572685486311342081>; post results in <#1572682487543365843> — the bot answers with a chart.\n'
      '🇷🇺 Программа замеров и инструкция для новичков — в <#1572685486311342081>; результаты выкладывайте в <#1572682487543365843> — бот ответит графиком.'),
-    (r'as-?3|offline|офлайн|epic', '**Epic Games Launcher offline / AS-3 / failed captcha** · **Epic офлайн / AS-3 / капча**',
+    (['as-3', 'as3', 'epic', 'эпик', 'офлайн', 'оффлайн', 'offline', 'капч', 'captcha'], '**Epic Games Launcher offline / AS-3 / failed captcha** · **Epic офлайн / AS-3 / капча**',
      '🇬🇧 This is the internet provider blocking Epic servers, not Windows or Domain OS (check: does it work through a phone hotspot or a VPN?). Sign in once through a VPN with "Remember me".\n'
      '🇷🇺 Это провайдер блокирует серверы Epic, а не Windows или Domain OS (проверка: работает ли через раздачу с телефона или VPN?). Войдите один раз через VPN с «Запомнить меня».'),
-    (r'\bhome\b|домашн|edition|редакц|pro only|только pro|halt|останов', '**The install stops at the first step** · **Установка остановилась на первом шаге**',
+    (['home', 'хоум', 'домашн', 'только pro', 'pro only', 'останов', 'halt', 'не ставится', 'не устанавлив', 'первом шаге'], '**The install stops at the first step** · **Установка остановилась на первом шаге**',
      '🇬🇧 Domain OS installs on **Windows 11 Pro** only. Check Settings → System → About. On Home: switch to Pro with a Pro key (Settings → System → Activation).\n'
      '🇷🇺 Domain OS ставится только на **Windows 11 Pro**. Проверьте «Параметры → Система → О системе». На Home — перейдите на Pro своим ключом («Параметры → Система → Активация»).'),
-    (r'undo|откат|верну|restore|вернуть', '**How to undo** · **Как откатить**',
+    (['откат', 'вернуть', 'верни', 'undo', 'restore', 'удалить сборк', 'снести', 'снест', 'убрать сборк', 'как было'], '**How to undo** · **Как откатить**',
      '🇬🇧 Start → Domain OS → **Undo Domain OS**, then restart. Toolbox changes: "Undo everything" in Toolbox.\n'
      '🇷🇺 «Пуск» → Domain OS → **Undo Domain OS** и перезагрузка. Изменения Toolbox: «Вернуть всё как было» в Toolbox.'),
-    (r'driver|драйвер', '**Drivers** · **Драйверы**',
+    (['драйв', 'дрова', 'дров', 'driver', 'видюх', 'видеокарт', 'nvidia', 'нвидиа', 'радеон', 'чипсет'], '**Drivers** · **Драйверы**',
      '🇬🇧 Graphics and chipset drivers only from the official NVIDIA / AMD / Intel sites, no driver packs. The driver page opens after the first restart.\n'
      '🇷🇺 Драйверы видеокарты и чипсета — только с официальных сайтов NVIDIA / AMD / Intel, без сборников. Страница драйверов открывается после первой перезагрузки.'),
-    (r'fps|фпс|lag|лаг|stutter|фриз|рывк', '**FPS / stutter** · **FPS / рывки**',
+    (['fps', 'фпс', 'лаг', 'тормоз', 'фриз', 'рывк', 'дерга', 'статтер', 'stutter', 'просед', 'просадк', 'микрофриз', 'плавн', 'кадр'], '**FPS / stutter** · **FPS / рывки**',
      '🇬🇧 Toolbox: Auto on, then once "Optimize devices" with the game closed and restart. Steam: Settings → Interface → GPU acceleration in web views off. If the GPU is at 95–100%, average FPS will barely move — that is the card, not Windows.\n'
      '🇷🇺 Toolbox: Auto вкл., затем один раз «Оптимизация устройств» при закрытой игре и перезагрузка. Steam: Настройки → Интерфейс → GPU-ускорение веб-окон выкл. Если видеокарта загружена на 95–100%, средний FPS почти не изменится — это предел карты, а не Windows.'),
-    (r'faceit|vanguard|valorant|античит|anti-?cheat|eac|battleye', '**Anti-cheat** · **Античит**',
+    (['faceit', 'фейсит', 'фейсет', 'vanguard', 'вангард', 'valorant', 'валорант', 'античит', 'anti-cheat', 'anticheat', 'eac', 'battleye'], '**Anti-cheat** · **Античит**',
      '🇬🇧 Domain OS keeps Defender, VBS/Memory Integrity, Secure Boot and TPM as Windows has them. If an anti-cheat refuses: check that TPM and Secure Boot are on in the BIOS and close third-party tools that load drivers.\n'
      '🇷🇺 Domain OS оставляет Defender, VBS/защиту памяти, Secure Boot и TPM как в Windows. Если античит не пускает: проверьте, что TPM и Secure Boot включены в BIOS, и закройте сторонние программы с драйверами.'),
+    (['вылет', 'краш', 'crash', 'синий экран', 'бсод', 'bsod', 'не загруж', 'не грузит', 'черный экран', 'black screen', 'перезагруж', 'ребут', 'завис', 'freeze'], '**Crashes, blue screen, does not start** · **Вылеты, синий экран, не загружается**',
+     '🇬🇧 If Windows did not start after "Optimize devices" in Toolbox, the changes are undone by themselves at the next start. Otherwise: Start → Domain OS → **Undo Domain OS** (in Safe Mode: `DomainScheduler.exe --revert-devices`). Please attach `%ProgramData%\\Domain OS\\Logs\\install.log` and the blue-screen code if there was one.\n'
+     '🇷🇺 Если Windows не загрузилась после «Оптимизации устройств» в Toolbox, изменения откатятся сами при следующем запуске. Иначе: «Пуск» → Domain OS → **Undo Domain OS** (в безопасном режиме: `DomainScheduler.exe --revert-devices`). Приложите `%ProgramData%\\Domain OS\\Logs\\install.log` и код синего экрана, если он был.'),
 ]
+
+
+def _norm(text):
+    t = text.lower().replace('ё', 'е')
+    t = re.sub(r'[^\w\s\-]', ' ', t)
+    return ' ' + re.sub(r'\s+', ' ', t).strip() + ' '
+
+
+def _close(a, b):
+    """b is a with at most one letter wrong, missing or extra (typos)."""
+    if abs(len(a) - len(b)) > 1: return False
+    i = 0
+    while i < min(len(a), len(b)) and a[i] == b[i]: i += 1
+    return a[i + 1:] == b[i + 1:] or a[i + 1:] == b[i:] or a[i:] == b[i + 1:]
+
+
+def faq_score(keys, norm, words):
+    """Points for a topic: a phrase found = 2, a word that starts with a stem (or with one typo in a long stem) = 1."""
+    score = 0; used = set()
+    for k in keys:
+        k = k.replace('ё', 'е')
+        if ' ' in k or '-' in k:
+            if k in norm: score += 2
+            continue
+        for n, w in enumerate(words):
+            if n in used: continue
+            if w.startswith(k) or (len(k) >= 5 and w[:2] == k[:2] and (_close(w[:len(k)], k) or _close(w[:len(k) + 1], k) or _close(w, k))):
+                score += 1; used.add(n); break
+    return score
 
 
 def faq_reply(text):
     """The first answer for a help post: up to 4 FAQ topics matched by keywords, else what to add to the post."""
-    text = text.lower()
-    hits = [f for f in FAQ if re.search(f[0], text)]
+    norm = _norm(text); words = norm.split()
+    # equal points: problem topics (FPS, crashes, undo, Epic, anti-cheat, drivers …) before the general ones
+    ranked = sorted(((faq_score(k, norm, words), n, h, a) for n, (k, h, a) in enumerate(FAQ)), key=lambda x: (-x[0], x[1] < BASIC, x[1]))
+    hits = [(None, h, a) for sc, _, h, a in ranked if sc > 0]
     body = '\n\n'.join(f'### {h}\n{a}' for _, h, a in hits[:4])
     if not body:
         body = ('🇬🇧 Thanks! While you wait for a reply, please add: playbook and Toolbox versions, `winver`, CPU and GPU, what you did and what happened, and attach `%ProgramData%\\Domain OS\\Logs\\install.log` and `%LOCALAPPDATA%\\DomainScheduler\\log.txt`.\n'
@@ -280,6 +314,7 @@ def handle_help(t):
     reply(t['id'], faq_reply((t.get('name') or '') + ' ' + (starter.get('content') or '')))
 
 
+BASIC = 11   # the first 11 FAQ topics are the general ones
 STAFF_ROLES = ('Owner', 'Admin')
 
 
