@@ -3,6 +3,16 @@ title: Domain OS
 description: Applies the documented Domain OS changes. Security components are never touched.
 privilege: TrustedInstaller
 actions:
+  # First: Domain OS installs only on Windows 11 Pro. On any other edition the install stops here, before any change.
+  - !writeStatus: {status: 'Checking the Windows edition (Pro only)'}
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Test-Edition.ps1"'
+    exeDir: true
+    wait: true
+    weight: 1
+    handleExitCodes: {'2': Halt}
+
   # Before anything else: the current state of everything the playbook may touch is written down for "Undo Domain OS".
   - !writeStatus: {status: 'Saving the current state for Undo'}
   - !run:

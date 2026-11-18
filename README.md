@@ -2,7 +2,7 @@
 
 **English** | [Русский](README.ru.md)
 
-A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 25H2 and 26H2 (builds 26200, 26300), Home and Pro**, for games.
+A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 25H2 and 26H2 (builds 26200, 26300), Pro only**, for games. On Home and other editions the install stops at the first step, before any change.
 
 > **25H2 and 26H2 since 2.1.0.** 24H2 is no longer supported: its security updates have ended. "No feature updates" holds the system on 26H2 (supported until October 2028).
 
@@ -26,7 +26,7 @@ A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 2
 
 ## Supported versions of Windows
 
-| Version | Build | Security updates from Microsoft (Home and Pro) |
+| Version | Build | Security updates from Microsoft (Pro) |
 |---|---|---|
 | 26H2 | 26300 | until October 2028 |
 | 25H2 | 26200 | until October 2027 |
@@ -51,7 +51,7 @@ Removes apps that advertise or start in the background: Clipchamp, News, Weather
 - Scheduled data collection is disabled, including the compatibility appraiser, known for long disk and CPU bursts, and its second job `MareBackup`.
 - The telemetry trace sessions (`Diagtrack-Listener`, `SQMLogger`) no longer start at boot: with the service disabled nobody read their events.
 - The policies "Turn off Application Telemetry" and "Turn off Inventory Collector" are set. The compatibility engine that old games rely on is not touched.
-- All other documented diagnostic-data policies that work on Home and Pro: no feedback prompts, no device name in diagnostic data, no extra diagnostic logs or crash dumps collected, no OneSettings download, no change notification; CEIP, Steps Recorder, Windows Error Reporting and MRT infection reports off; no learning from typing and inking, no online speech recognition, no handwriting data sharing; Edge optional diagnostic data off (Edge then shows "managed by your organization", as with any policy).
+- All other documented diagnostic-data policies that work on Pro: no feedback prompts, no device name in diagnostic data, no extra diagnostic logs or crash dumps collected, no OneSettings download, no change notification; CEIP, Steps Recorder, Windows Error Reporting and MRT infection reports off; no learning from typing and inking, no online speech recognition, no handwriting data sharing; Edge optional diagnostic data off (Edge then shows "managed by your organization", as with any policy).
 - Advertising ID, tailored experiences, feedback prompts, activity history and Recall are off.
 - Suggestions and advertising in Start, Settings, the lock screen and notifications are off.
 - Start menu search no longer sends what you type to Bing. The Widgets board is off.
@@ -59,7 +59,7 @@ Removes apps that advertise or start in the background: Clipchamp, News, Weather
 ### Services and background work
 - **Basic set (option, on):** eight scheduled jobs of removed apps and of data collection (maps, family safety, disk check proxy, SQM). Edge stays, but no longer keeps processes running after its window is closed. Services themselves are left as Windows sets them: printing, Bluetooth, maps, fax, diagnostics, sync and the small system drivers are not touched.
 - **Your choice (options, off):** file indexing, hibernation with Fast Startup, background activity of Store apps. Each of these removes a function, so each is a separate tick.
-- **Telemetry services and jobs (always applied):** error reporting (WerSvc), compatibility assistant (PcaSvc), telemetry (DiagTrack), Windows AI components host (WSAIFabricSvc), the inventory collector (InventorySvc); the Distributed Link Tracking Client (TrkWks) is switched off (versions 1.6.7–2.1.0 deleted it; on such PCs its saved registration is put back first); plus 14 scheduled telemetry jobs: device census, usage-data reporting, sustainability telemetry, startup-app scan, troubleshooting scans, disk and power diagnostics, WinSAT, error-report upload. Defragmentation/TRIM, registry backup, restore points, SysMain, time sync and Defender stay. Versions 1.5.0–1.6.0 switched off more (diagnostics, sync, small drivers, printing, Bluetooth, the basic services, the restart policy); installing 1.6.0 puts all of those back to what they were before the first install.
+- **Telemetry services and jobs (always applied):** error reporting (WerSvc), compatibility assistant (PcaSvc), telemetry (DiagTrack), Windows AI components host (WSAIFabricSvc), the inventory collector (InventorySvc); the Distributed Link Tracking Client (TrkWks) stays as Windows has it, Automatic (versions 1.6.7–2.1.0 deleted it; on such PCs its saved registration is put back and the service started again); plus 14 scheduled telemetry jobs: device census, usage-data reporting, sustainability telemetry, startup-app scan, troubleshooting scans, disk and power diagnostics, WinSAT, error-report upload. Defragmentation/TRIM, registry backup, restore points, SysMain, time sync and Defender stay. Versions 1.5.0–1.6.0 switched off more (diagnostics, sync, small drivers, printing, Bluetooth, the basic services, the restart policy); installing 1.6.0 puts all of those back to what they were before the first install.
 - **Hypervisor launch type:** versions 1.5.7–1.6.0 switched the hypervisor start off when virtualization was off in the BIOS. That step is gone (if virtualization is switched on later, memory integrity and VBS would silently not start); installing 1.6.2 or later puts the previous value back.
 - What this gives: fewer processes and less memory in use after start-up — you can see it in Task Manager. It does not raise FPS by itself.
 - Never switched off: Defender, Windows Update, audio, network, input, Task Scheduler, WMI, the Xbox services, TPM and Secure Boot services, anti-cheat services.
@@ -68,7 +68,7 @@ Removes apps that advertise or start in the background: Clipchamp, News, Weather
 - **No feature updates**: holds the system on 26H2 (TargetReleaseVersion). On 25H2 that means one update to 26H2, then no further feature updates.
 - **No drivers from Windows Update:** you install the makers' drivers; the driver guide shows which.
 
-Security updates keep coming. On Windows Home some of these policies may be ignored by Windows. The Start menu folder "Domain OS" has a shortcut that puts everything back.
+Security updates keep coming. The Start menu folder "Domain OS" has a shortcut that puts everything back.
 
 ### Gaming settings
 - **Game capture fully off:** background recording (Game DVR), recording by hand, recorded sound, cursor and microphone, plus the policy that forbids recording and broadcasting. Background recording costs GPU and disk time in every game.
@@ -144,7 +144,7 @@ You can also apply a newer version **over** an older one without undoing: the or
 If you can show a measured, repeatable improvement for something on this list, open an issue with the numbers.
 
 ## How to use
-1. Install a clean Windows 11 (Home or Pro), 25H2 or 26H2. **Before the first connection to the internet** run `extras/No-WU-Drivers.reg`: otherwise Windows Update installs its own drivers before the playbook can forbid it. Then finish Windows Update and restart.
+1. Install a clean Windows 11 Pro, 25H2 or 26H2. **Before the first connection to the internet** run `extras/No-WU-Drivers.reg`: otherwise Windows Update installs its own drivers before the playbook can forbid it. Then finish Windows Update and restart.
 2. Download AME Wizard and `Domain-OS-2.1.1.apbx`.
 3. Drag the `.apbx` into AME Wizard, choose the options, start.
 4. Restart. The driver guide opens: follow it from top to bottom.

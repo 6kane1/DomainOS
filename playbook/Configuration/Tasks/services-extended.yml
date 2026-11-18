@@ -20,10 +20,8 @@ actions:
   - !service: {name: 'InventorySvc', operation: change, startup: 4, errorAction: Ignore}
 
   # Distributed Link Tracking Client (TrkWks): keeps shortcuts working when a file moves between computers in a
-  # network. Switched off (Disabled) since 2.1.1; versions 1.6.7–2.1.0 deleted it, on such PCs its saved registration
-  # is put back first. The start type is recorded for "Undo Domain OS". Stops working: shortcuts that follow a file
-  # moved to another PC.
-  - !service: {name: 'TrkWks', operation: change, startup: 4, errorAction: Ignore}
+  # network. Left as Windows has it (Automatic) since 2.1.1. Versions 1.6.7–2.1.0 deleted it: on such PCs its saved
+  # registration is put back first, then it is set to Automatic again and started.
   - !run:
     exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
     args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Set-TrkWks.ps1"'
