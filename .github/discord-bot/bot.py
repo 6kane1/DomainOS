@@ -324,6 +324,8 @@ def say(tid, text, ref=None, ping_owner=False):
 def handle_help(t):
     """A new help post: a FAQ answer when it is a basic question, otherwise the author is called."""
     starter = dc('GET', f'/channels/{t["id"]}/messages/{t["id"]}')
+    if (starter.get('content') or '').lstrip().startswith('!'):
+        return False                                   # the post starts with a command: only the command is answered
     text = (t.get('name') or '') + ' ' + (starter.get('content') or '')
     if faq_hits(text):
         reply(t['id'], faq_reply(text) + [card([T(COMMANDS_HINT)])])
@@ -483,8 +485,9 @@ def pass_help(me):
     for t in threads(HELP):
         if t.get('owner_id') == me: continue
         try:
-            if not answered(t['id'], me): handle_help(t); done += 1
+            # commands first: a reply to the starter command then counts as "answered", so no second "first answer"
             done += commands_in(t, me)
+            if not answered(t['id'], me) and handle_help(t) is not False: done += 1
         except Exception as e: print('help', t['id'], e)
     return done
 
