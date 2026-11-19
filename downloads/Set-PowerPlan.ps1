@@ -1,16 +1,17 @@
-<#
+﻿<#
   Domain OS — the "Domain OS" power plan.
 
   What it is: a copy of Windows' own Balanced plan with four plugged-in (AC) settings changed and nothing else:
     - USB selective suspend off: USB hubs, mouse, keyboard, headset and USB audio never go to sleep;
     - PCI Express link state power management (ASPM) off: the graphics card, NVMe drive and network card stay
       fully awake on their PCIe link;
-    - the display is never turned off;
+    - the display is never turned off (a convenience, not a performance setting: no screen saver timeout in long
+      loading screens or while watching; on an OLED monitor set a timeout in Settings > System > Power if you want);
     - the disk is never turned off.
   Processor settings, core parking, boost and every other value stay exactly as in Balanced, which is what AMD and
   Intel tune their processors for. On battery a laptop behaves as with Balanced.
 
-  Usage (PowerShell as administrator):
+  Usage (asks for administrator rights when needed):
     .\Set-PowerPlan.ps1            create or refresh the plan and make it active
     .\Set-PowerPlan.ps1 -Restore   make the previously active plan active again and delete this one
   Log: %ProgramData%\Domain OS\Logs\power.log
@@ -24,16 +25,25 @@ $Balanced = '381b4222-f694-41f0-9685-ff5bb260df2e'
 $Name = 'Domain OS'
 $About = 'Balanced with USB selective suspend and PCIe link power saving off, display and disk never turned off. Plugged-in values only.'
 
-$data = Join-Path $env:ProgramData 'Domain OS'
-New-Item -ItemType Directory -Force -Path (Join-Path $data 'Logs'), (Join-Path $data 'Undo') | Out-Null
+. (Join-Path $PSScriptRoot 'DomainOS-Common.ps1')
+if (Start-DomainOSElevated $MyInvocation.MyCommand.Path $PSBoundParameters) { exit 0 }
+$data = $DomainOSData
 $log = Join-Path $data 'Logs\power.log'
 $prevFile = Join-Path $data 'Undo\power-plan-before.txt'
-function Write-Log([string]$text) { Add-Content -Path $log -Value ('{0:yyyy-MM-dd HH:mm:ss}  {1}' -f (Get-Date), $text) -Encoding UTF8; Write-Host $text }
+function Write-Log([string]$text) { try { Add-Content -Path $log -Value ('{0:yyyy-MM-dd HH:mm:ss}  {1}' -f (Get-Date), $text) -Encoding UTF8 } catch { }; Write-Host $text }
+try { Protect-DomainOSData; New-Item -ItemType Directory -Force -Path (Join-Path $data 'Logs'), (Join-Path $data 'Undo') | Out-Null }
+catch { Write-Host "FAILED: the Domain OS data folder could not be prepared ($($_.Exception.Message))"; exit 1 }
 function Active { if ((& powercfg.exe /getactivescheme) -match '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})') { $Matches[1] } }
 function Exists([string]$guid) { [bool]((& powercfg.exe /list) -match $guid) }
 
 if ($Restore) {
-    $back = if (Test-Path $prevFile) { (Get-Content $prevFile -Raw).Trim() } else { $Balanced }
+    # The saved plan only when Domain OS wrote the file and it holds a plan GUID; Balanced otherwise.
+    $back = $Balanced
+    if ((Test-Path $prevFile) -and (Test-DomainOSFile $prevFile)) {
+        $saved = ([string](Get-Content $prevFile -Raw)).Trim()
+        if ($saved -match '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$') { $back = $saved }
+        else { Write-Log "power-plan-before.txt holds no plan GUID: Balanced is made active" }
+    }
     if (-not (Exists $back)) { $back = $Balanced }
     & powercfg.exe /setactive $back
     if (Exists $Plan) { & powercfg.exe /delete $Plan | Out-Null }

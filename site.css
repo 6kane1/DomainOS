@@ -406,3 +406,10 @@ footer .wrap a{color:var(--silver)}
 .faq-a code{font-size:.92em}
 /* five page links (FAQ added): on narrow screens the link row scrolls inside the header instead of pushing it wider */
 @media (max-width:720px){.nav{min-width:0;flex:1 1 auto;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.nav::-webkit-scrollbar{display:none}.nav a{white-space:nowrap;flex:0 0 auto}}
+/* 2.2.0: one "All changes" button under both panels opens both full lists */
+.allmore{margin-top:14px;border-top:0}
+.allmore summary{margin-top:0}
+.morecols{margin-top:14px}
+.morecol{border:1px solid var(--line);border-radius:3px;padding:16px 18px}
+.morecol .plain{margin-top:12px}
+.morecol .plain li{font-size:15px;line-height:1.55}

@@ -9,29 +9,29 @@
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="preload" href="fonts/Inter-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="site.css?v=211r">
+<link rel="stylesheet" href="site.css?v=220a">
 </head><body>
 <header class="top">
   <div class="wrap bar">
     <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>DOMAIN OS</a>
-    <span class="status"><span class="blip" aria-hidden="true"></span>TOOLBOX <b>1.14.1</b></span>
+    <span class="status"><span class="blip" aria-hidden="true"></span>TOOLBOX <b>1.15.0</b></span>
     <nav class="nav" aria-label="Pages"><a href="index.html">Playbook</a><a href="install.html">Install</a><a href="scheduler.html" aria-current="page">Toolbox</a><a href="results.html">Results</a><a href="faq.html">FAQ</a></nav>
     <a class="dc" href="https://discord.gg/wBGsV7WEpm" rel="noopener" aria-label="Our Discord server"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.8 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 10.8 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.5-4.3-.8-8.1-3.2-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg><span>Discord</span></a>
     <a class="lang" href="ru/scheduler.html" hreflang="ru" lang="ru">RU</a>
     <a class="btn main small" href="#download">Download</a>
   </div>
-  <div class="subnav"><div class="wrap"><span>ON THIS PAGE</span><a href="#new">What's new in 1.14.1</a><a href="#expect">What to expect</a><a href="#how">How to use</a><a href="#features">What it does</a><a href="#overclock">GPU overclocking</a><a href="#advanced">Advanced users</a><a href="#safety">Safety</a><a href="#download">Download</a></div></div>
+  <div class="subnav"><div class="wrap"><span>ON THIS PAGE</span><a href="#new">What's new in 1.15.0</a><a href="#expect">What to expect</a><a href="#how">How to use</a><a href="#features">What it does</a><a href="#overclock">GPU overclocking</a><a href="#advanced">Advanced users</a><a href="#safety">Safety</a><a href="#download">Download</a></div></div>
   <i class="progress" aria-hidden="true"></i>
 </header>
 <main>
 
 <div class="hero"><div class="wrap">
   <div>
-    <p class="kicker"><span class="acc">▍</span> Domain OS Toolbox 1.14.1</p>
+    <p class="kicker"><span class="acc">▍</span> Domain OS Toolbox 1.15.0</p>
     <h1>Your game gets <em>the best cores</em></h1>
     <p class="lead">Toolbox is the gaming app Domain OS installs. Turn on Auto, start a game, and it gives the game the best CPU cores and quiets everything else in the background. Close the game and everything goes back to how it was.</p>
     <div class="actions">
-      <a class="btn main" href="#download">Download 1.14.1</a>
+      <a class="btn main" href="#download">Download 1.15.0</a>
       <a class="btn" href="#how">How to use it</a>
     </div>
     <p class="meta">free<i>/</i>nothing injected into the game<i>/</i>everything goes back by itself</p>
@@ -45,8 +45,8 @@
 </div></div>
 
 <section id="new"><div class="wrap">
-  <div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>What's new</div><h2>What's new in Toolbox 1.14.1</h2><p>The main points in short, the full list under the button. The Windows changes of playbook 2.1.1 are <a href="index.html#new">on the main page</a>.</p></div>
-  <div class="newgrid one"><div class="p newp"><div class="cap"><span class="acc">▍</span>Toolbox 1.14.1</div><ul class="keyl"><li>A <strong>new interface</strong> with a live frame chart, and a new icon</li><li>An <strong>"Optimize devices"</strong> button: press once, restart the PC</li><li>A <strong>safe device layout</strong> with automatic undo; OBS and Discord are not quieted</li><li><strong>GPU overclocking</strong> behind its own flag; Windows protection stays on</li></ul><details class="more"><summary><span>All changes (15)</span><i aria-hidden="true"></i></summary><ul class="plain"><li><strong>New interface:</strong> its own title bar, a live frame-time chart, a core load map. The home screen charts can be turned off in settings ("Live charts on the home screen").</li><li><strong>New icon</strong>: the same mark as in the title bar, in the window, the taskbar, the tray and the shortcuts.</li><li><strong>"Optimize devices" button on the home screen:</strong> press it once (with the game closed) and restart the PC. It shows the state: "restart needed" or "active". "Put back" undoes everything.</li><li>The Devices page shows the layout as a clear table: role, device, now → after restart.</li><li><strong>The device layout is safe now:</strong> storage is not touched, MSI only where the device supports it, laptops are not touched. If Windows did not start or crashed after the change, everything is reverted by itself. The old layout of earlier versions is replaced automatically at the first start.</li><li><strong>OBS, Discord, audio and VR software are no longer quieted</strong> in Auto mode. Game launchers are left alone too.</li><li>Background processes get low I/O priority, so the game reads from disk first.</li><li><strong>GPU overclocking (NVIDIA):</strong> core, memory and voltage sliders, saved profiles, "Apply at start", "Reset to stock". <strong>Guard:</strong> if a blue screen or sudden power-off happened after an overclock, the profile is not applied at the next start. An ordinary restart does not reset the overclock.</li><li>Overclocking stays hidden behind a feature flag. <a href="#overclock">How to turn it on</a>. Use it at your own risk.</li><li><strong>Toolbox has no switches that turn off Windows protection.</strong> "Protection for speed" was removed: the earlier values come back by themselves at the first start. An extra mouse setting with no effect was removed (RawMouseThrottleDuration).</li><li>The language changes immediately, without leaving settings. Only Russian and English are in the program.</li><li>Fixed: long captions on the home screen and long profile names are no longer cut with "…".</li><li><strong>No journal on screen any more.</strong> If something goes wrong, a Windows error window opens at once. During a game the tray shows a notice right away and the window opens once the game is closed. The details go to the log file <code>%LOCALAPPDATA%\DomainScheduler\log.txt</code>. The "Copy report" button is gone; where the journal was, a "This system" panel shows Windows, processor, graphics card and driver, memory, display and Game Mode.</li><li>The Devices page lists <strong>every USB controller</strong> (e.g. USB 3.10 and USB 3.0). The one with the mouse, keyboard or game controller gets a core of its own.</li><li>The font card was removed from the About page.</li></ul></details></div></div>
+  <div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>What's new</div><h2>What's new in Toolbox 1.15.0</h2><p>The main points in short, the full list under the button. The Windows changes of playbook 2.1.1 are <a href="index.html#new">on the main page</a>.</p></div>
+  <div class="newgrid one"><div class="p newp"><div class="cap"><span class="acc">▍</span>Toolbox 1.15.0</div><ul class="keyl"><li><strong>Signed updates</strong> arrive by themselves, with a backup key</li><li><strong>AMD Radeon overclocking</strong> next to NVIDIA, behind its own flag</li><li>A notice when a <strong>new playbook</strong> is out</li><li><strong>Built on GitHub</strong> with a build attestation</li></ul></div></div><details class="more allmore"><summary><span>All changes (8)</span><i aria-hidden="true"></i></summary><div class="newgrid morecols one"><div class="morecol"><div class="cap"><span class="acc">▍</span>Toolbox 1.15.0</div><ul class="plain"><li><strong>Signed updates.</strong> Toolbox checks for updates once a day and installs only an update with a valid signature and checksum. If the new version does not start, the previous one comes back by itself.</li><li><strong>A backup update key</strong> is kept offline: if the main key is lost or leaked, updates keep working and the old key is revoked.</li><li><strong>It tells you when a new playbook is out:</strong> one tray notice per version, never during a game, and an "Open the website" button.</li><li><strong>AMD Radeon overclocking</strong> (RX 5000–9000, RX 470–590, Vega) next to NVIDIA: inside the driver's limits, voltage only lowered, "Reset to stock", the crash guard. Behind a feature flag, off by default. <a href="#overclock">How to turn it on</a>. New: please report your card and driver.</li><li>Settings and backups live in a folder only administrators can change (<code>%ProgramData%\Domain OS Toolbox</code>); every restored value is checked against what Toolbox itself writes.</li><li>System tools are started by their full path; an old "Apply at start" GPU mark is asked about once, with the profile's values shown.</li><li>No freeze when a game starts; core assignments are put back after a crash.</li><li><strong>Built in public on GitHub</strong> with a signed build attestation: <code>gh attestation verify</code> names the workflow and the exact commit.</li></ul></div></div></details>
 </div></section>
 
 <section id="expect"><div class="wrap">
@@ -98,20 +98,20 @@
 <section id="download"><div class="wrap">
   <div class="sh"><div class="label"><span class="n">08</span><span class="acc">▍</span>Download</div><h2>Download</h2><p>If you install the Domain OS playbook, you don't need this separately: it installs Toolbox and puts a shortcut on the desktop.</p></div>
   <div class="p dl">
-    <div class="head"><span class="blip" aria-hidden="true"></span><span class="fn">DOMAINOS-TOOLBOX-1.14.1.EXE</span><span class="chip on">in playbook 2.1.1</span></div>
+    <div class="head"><span class="blip" aria-hidden="true"></span><span class="fn">DOMAINOS-TOOLBOX-1.15.0.EXE</span><span class="chip on">in playbook 2.2.0</span></div>
     <div class="body">
       <dl>
-        <dt>file</dt><dd><span class="nw">DomainOS-Toolbox-1.14.1.exe</span> · 71.1 MB</dd>
-        <dt>sha-256</dt><dd class="hash">ff1f85b3d8a28d8919206569eae80144852b45f17e704650c4b9eecbc5c7349e</dd>
-        <dt>check</dt><dd class="prompt">Get-FileHash .\DomainOS-Toolbox-1.14.1.exe</dd>
+        <dt>file</dt><dd><span class="nw">DomainOS-Toolbox-1.15.0.exe</span> · 71.1 MB</dd>
+        <dt>sha-256</dt><dd class="hash">f82487cd4d692fc0a8d63b2b510b2ad27a2b1b06ea718551de45e6634dc0a604</dd>
+        <dt>check</dt><dd class="prompt">Get-FileHash .\DomainOS-Toolbox-1.15.0.exe</dd>
         <dt>system</dt><dd>Windows 10 and 11, 64-bit</dd>
         <dt>install</dt><dd>not needed, run as administrator</dd>
       </dl>
-      <div class="actions"><a class="btn main" href="https://github.com/6kane1/DomainOS/releases/download/v2.1.1/DomainOS-Toolbox-1.14.1.exe">Download Toolbox <span class="k">1.14.1</span></a><a class="btn" href="https://github.com/6kane1/DomainScheduler">Source code</a></div>
+      <div class="actions"><a class="btn main" href="https://github.com/6kane1/DomainOS/releases/download/v2.2.0/DomainOS-Toolbox-1.15.0.exe">Download Toolbox <span class="k">1.15.0</span></a><a class="btn" href="https://github.com/6kane1/DomainOS/tree/main/toolbox">Source code</a></div>
     </div>
   </div>
 </div></section>
 </main>
-<footer><div class="wrap"><span>DOMAIN OS TOOLBOX 1.14.1</span><a href="index.html">Domain OS playbook</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="ru/scheduler.html" hreflang="ru">Русский</a><span>Anti-cheat developers have not confirmed compatibility. Use at your own risk.</span></div></footer>
-<script src="site.js?v=211r"></script>
+<footer><div class="wrap"><span>DOMAIN OS TOOLBOX 1.15.0</span><a href="index.html">Domain OS playbook</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="ru/scheduler.html" hreflang="ru">Русский</a><span>Anti-cheat developers have not confirmed compatibility. Use at your own risk.</span></div></footer>
+<script src="site.js?v=220a"></script>
 </body></html>
