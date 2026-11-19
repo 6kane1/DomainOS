@@ -47,9 +47,9 @@ h1{font-size:30px;line-height:1.2;color:var(--strong);font-weight:600;letter-spa
 </div>
 <script>
 const NOTES = [
-  { v: "2.2.3", date: "2026-11-19",
+  { v: "2.2.4", date: "2026-11-19",
     groups: [
-      { en: "Fixes", ru: "Исправления", items: [
+      { en: "Undo, checked on a real PC", ru: "Откат, проверенный на реальном ПК", items: [
         { en: "Undo now really puts back services and scheduled tasks that only SYSTEM may change: with two or more of them the one-time SYSTEM step used to fail for all.",
           ru: "Откат теперь действительно возвращает службы и задания, которые может менять только SYSTEM: при двух и больше разовый шаг от SYSTEM раньше не срабатывал ни для одного." },
         { en: "Undo also puts back registry values whose key only Windows itself (TrustedInstaller) may change, e.g. the Teams Chat auto-install setting.",

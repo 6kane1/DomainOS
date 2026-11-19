@@ -13,7 +13,7 @@ A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 2
 > **Before you start**
 > - **It can be undone without reinstalling Windows** (see [Undo](#undo)). Removed apps are not reinstalled automatically: Undo lists them for you to install from the Microsoft Store (the Store itself comes back automatically if it was removed). Still, try it in a virtual machine first.
 > - **Average FPS does not go up** because of a playbook. What you get is fewer background processes, no advertising, no forced restarts and a system that is set up the same way every time.
-> - Domain OS is young. Version 2.2.0 went through testers and an automatic check of every change, but real PCs differ: report what breaks.
+> - Domain OS is young. Version 2.2.4 went through testers and an automatic check of every change, but real PCs differ: report what breaks.
 
 ## What stays untouched — on purpose
 
@@ -195,7 +195,7 @@ Since 2.0 the rule is: Defender, SmartScreen, VBS / memory integrity, TPM and Se
 
 ## How to use
 1. Install a clean Windows 11 Pro, 25H2 or 26H2. **Before the first connection to the internet** run `extras/No-WU-Drivers.reg`: otherwise Windows Update installs its own drivers before the playbook can forbid it. Then finish Windows Update and restart.
-2. Download AME Wizard and `Domain-OS-2.2.0.apbx`.
+2. Download AME Wizard and `Domain-OS-2.2.4.apbx`.
 3. Drag the `.apbx` into AME Wizard, choose the options, start.
 4. Restart. The driver guide opens: follow it from top to bottom.
 
@@ -212,7 +212,9 @@ AME Wizard will say that the playbook is not verified: verification is issued by
 
 **Proof that a Toolbox exe is built from this source:** from 1.15.0 on, Toolbox is built on GitHub's own machines by `.github/workflows/toolbox-build.yml` (tests first), and every exe gets a signed build-provenance attestation. Check any copy with the GitHub CLI: `gh attestation verify DomainScheduler.exe -R 6kane1/DomainOS` — it names the workflow and the exact commit; a file changed by even one byte fails. (1.14.1 and the test builds before 1.15.0 were built before this existed.)
 
-Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-2.2.0.apbx` in PowerShell must match the value on the website and in the release notes.
+**Proof that the playbook archive is built from this source:** from 2.2.4 on, `Domain-OS-<version>.apbx` is built by `.github/workflows/apbx-build.yml` on GitHub's machines: it takes the attested Toolbox exe (and checks its attestation), runs the whole test suite, packs and attests the archive. Check it with `gh attestation verify Domain-OS-2.2.4.apbx -R 6kane1/DomainOS`. The archive is encrypted with a random salt, so a rebuild never has the same SHA-256: the attestation binds the published file.
+
+Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-2.2.4.apbx` in PowerShell must match the value on the website and in the release notes.
 
 ## License
 **Domain OS License** — all rights reserved (see [LICENSE](LICENSE)). You may read the code and use the official releases free of charge on your own PCs. Copying, re-uploading, publishing changed versions or builds based on this code, removing the author notices and selling are not allowed without the author's written permission. Versions published before 18 November 2026 under MIT stay MIT for the copies obtained then.

@@ -141,7 +141,7 @@ offers a small, careful overclock with named profiles, one of which can be appli
 
 ## Project status
 
-Released version: **1.15.0** (shipped with playbook 2.2.0, built and attested by GitHub, in [Releases](https://github.com/6kane1/DomainOS/releases)): signed self-update with a backup key, AMD Radeon overclocking, a notice when a new playbook is out. 227 automated tests run against a
+Released version: **1.15.0** (shipped with playbook 2.2.0 and 2.2.4, built and attested by GitHub, in [Releases](https://github.com/6kane1/DomainOS/releases)): signed self-update with a backup key, AMD Radeon overclocking, a notice when a new playbook is out. 227 automated tests run against a
 simulated Windows (`dotnet test tests/DomainScheduler.Tests`). Hardware coverage is narrow: please report
 your CPU, Windows build and before/after numbers in the issues.
 

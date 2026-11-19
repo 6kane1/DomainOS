@@ -1,0 +1,129 @@
+# Builds the playbook archive Domain-OS-<version>.apbx on GitHub's own machines and attests it (Sigstore), like
+# toolbox-build.yml does for the Toolbox exe:
+#   1. downloads the Toolbox exe from an earlier release and checks that toolbox-build.yml of this repository built
+#      it (gh attestation verify): the exe inside the archive is byte for byte the attested standalone exe;
+#   2. runs the whole test suite (build.sh refuses to pack on any failure) and packs with that exe;
+#   3. attests the .apbx and attaches it, the exe and SHA256SUMS.txt to the release.
+# Anyone can check a downloaded playbook:
+#   gh attestation verify Domain-OS-<version>.apbx -R 6kane1/DomainOS
+# The archive is encrypted with AME Wizard's fixed password and a random salt, so every build has a new SHA-256 even
+# with the same content: the attestation binds exactly the file published here. No keys come here.
+name: Playbook build (attested)
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release to attach the .apbx to (it must exist, e.g. as a draft)"
+        required: true
+      toolbox_tag:
+        description: "Release that holds the attested Toolbox exe"
+        required: true
+        default: "v2.2.0"
+      toolbox_asset:
+        description: "File name of the Toolbox exe in that release"
+        required: true
+        default: "DomainOS-Toolbox-1.15.0.exe"
+
+permissions:
+  contents: write        # attach to a release
+  id-token: write        # Sigstore signing for the attestation
+  attestations: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      POWERSHELL_TELEMETRY_OPTOUT: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: gh-pages
+          path: .ci-site
+          persist-credentials: false
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Inputs are plain names
+        env:
+          A: ${{ inputs.release_tag }}
+          B: ${{ inputs.toolbox_tag }}
+          C: ${{ inputs.toolbox_asset }}
+        run: |
+          for x in "$A" "$B" "$C"; do
+            [[ "$x" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "not allowed (letters, digits, . _ - only): $x"; exit 1; }
+          done
+
+      - name: Python packages (pinned with hashes) and 7-Zip
+        run: |
+          pip install --quiet --require-hashes --only-binary=":all:" -r tests/requirements-ci.txt
+          pip install --quiet --require-hashes --only-binary=":all:" -r .github/discord-status/requirements.txt
+          sudo apt-get install -y -qq p7zip-full >/dev/null
+          command -v 7zr >/dev/null || sudo ln -s "$(command -v 7z)" /usr/local/bin/7zr
+          7zr i | head -3
+
+      - name: The attested Toolbox exe
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TB_TAG: ${{ inputs.toolbox_tag }}
+          TB_ASSET: ${{ inputs.toolbox_asset }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/tb"
+          gh release download "$TB_TAG" -R "$GITHUB_REPOSITORY" -p "$TB_ASSET" -D "$RUNNER_TEMP/tb"
+          gh attestation verify "$RUNNER_TEMP/tb/$TB_ASSET" -R "$GITHUB_REPOSITORY" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/toolbox-build.yml" --deny-self-hosted-runners
+          cp "$RUNNER_TEMP/tb/$TB_ASSET" toolbox/DomainScheduler.exe
+          echo "Toolbox SHA-256: $(sha256sum toolbox/DomainScheduler.exe | cut -d' ' -f1)"
+
+      - name: Layout for run-all.py
+        run: |
+          mkdir -p "$RUNNER_TEMP/dos"
+          ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/dos/repo-main"
+          ln -s "$GITHUB_WORKSPACE/.ci-site" "$RUNNER_TEMP/dos/ghp"
+
+      - name: Test and pack (build.sh)
+        id: pack
+        env:
+          DOS_SCRATCH: ${{ runner.temp }}/dos
+          DOS_TOOLBOX: ${{ github.workspace }}/toolbox
+          DOS_SCHEDTEST: /nonexistent
+          TB_ASSET: ${{ inputs.toolbox_asset }}
+        run: |
+          export DOS_PWSH="$(command -v pwsh)"
+          export DOS_DOTNET_ROOT="${DOTNET_ROOT:-$(dirname "$(readlink -f "$(command -v dotnet)")")}"
+          ./build.sh toolbox/DomainScheduler.exe
+          f=$(ls Domain-OS-*.apbx | head -1)
+          [ -f "$f" ] || { echo "no .apbx was built"; exit 1; }
+          mkdir out && mv "$f" out/ && cp toolbox/DomainScheduler.exe "out/$TB_ASSET"
+          (cd out && sha256sum "$f" "$TB_ASSET" > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          echo "name=$f" >> "$GITHUB_OUTPUT"
+          { echo "### Playbook $f"; echo; echo '```'; cat out/SHA256SUMS.txt; echo '```'; echo; echo "Commit $GITHUB_SHA"; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-path: out/${{ steps.pack.outputs.name }}
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playbook-${{ inputs.release_tag }}
+          path: out/
+          retention-days: 30
+
+      - name: Attach to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: gh release upload "$RELEASE_TAG" out/* --clobber -R "$GITHUB_REPOSITORY"
