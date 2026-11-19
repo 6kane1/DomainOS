@@ -28,7 +28,7 @@ TOKEN = os.environ.pop('DISCORD_TOKEN', '').strip()
 PUSH_TOKEN = os.environ.pop('GH_PUSH_TOKEN', '').strip()
 OUT_JSON = os.environ.get('RESULTS_JSON', '')            # the site's results/results.json (checked out by the workflow)
 STATE_JSON = os.path.join(os.path.dirname(OUT_JSON), 'bot-state.json') if OUT_JSON else ''
-SITE_BRANCH = os.environ.get('SITE_BRANCH', 'gh-pages')
+SITE_BRANCH = os.environ.get('SITE_BRANCH', 'results-data')   # holds only results/*.json, one commit, no history
 HERE = os.path.dirname(os.path.abspath(__file__))
 FONTS = os.path.join(HERE, '..', 'discord-status', 'fonts')
 API = 'https://discord.com/api/v10'
@@ -1076,10 +1076,14 @@ def pass_help(me):
     return done
 
 
-# ---- results.json / bot-state.json on gh-pages ------------------------------------------------------------------
+# ---- results.json / bot-state.json on the branch results-data ----------------------------------------------------
+# The branch holds only these two files in ONE commit without parents: every publish replaces it (force push with a
+# lease), so a removed post or a changed author note is gone from GitHub's history too, not only from the page. The
+# site (gh-pages) has no results data; .github/workflows/pages.yml puts results.json next to the page when it
+# publishes the site, and the bot's workflow starts it after every publish (marker file .published next to the repo).
 # The files are only ever replaced whole (temp file + rename). publish() never loses a hand edit: it fetches the
-# site, takes what the bot changed since its last sync (the commit the worktree stands on) and applies just that to the
-# current remote file, entry by entry (thread id), then pushes; when someone pushed in between it starts over.
+# branch, takes what the bot changed since its last sync (the commit the worktree stands on) and applies just that to
+# the current remote file, entry by entry (thread id), then pushes; when someone pushed in between it starts over.
 
 
 def valid_store(d):
@@ -1093,9 +1097,9 @@ def load_store():
     try:
         with open(OUT_JSON, encoding='utf-8') as f: d = json.load(f)
     except Exception as e:
-        print(f'!!! {OUT_JSON} cannot be read ({e}): results are NOT handled or published in this shift — fix the file on gh-pages'); return None
+        print(f'!!! {OUT_JSON} cannot be read ({e}): results are NOT handled or published in this shift — fix the file on the branch results-data'); return None
     if not valid_store(d):
-        print(f'!!! {OUT_JSON} is not a list of entries: results are NOT handled or published in this shift — fix the file on gh-pages'); return None
+        print(f'!!! {OUT_JSON} is not a list of entries: results are NOT handled or published in this shift — fix the file on the branch results-data'); return None
     return d
 
 
@@ -1169,7 +1173,7 @@ def merge(base, ours, theirs):
 
 
 def publish(store):
-    """Pushes results.json and bot-state.json to the site at once (the workflow checked out gh-pages next to it).
+    """Pushes results.json and bot-state.json to the branch results-data at once (the workflow checked it out).
     Returns True when the site has the bot's view (or there was nothing to push)."""
     if not OUT_JSON or DRY: return True
     repo = os.path.dirname(os.path.dirname(os.path.abspath(OUT_JSON)))
@@ -1190,9 +1194,21 @@ def publish(store):
         save_local(store)
         if not _git(repo, 'status', '--porcelain', '--', rel, rel_state).stdout.strip(): return True
         _git(repo, 'add', '--', rel, rel_state)
-        _git(repo, '-c', 'user.name=Domain OS bot', '-c', 'user.email=41898282+github-actions[bot]@users.noreply.github.com', 'commit', '-qm', 'results: community benchmarks')
-        p = _git(repo, 'push', '-q', 'origin', f'HEAD:refs/heads/{SITE_BRANCH}', auth=True)
+        tree = _git(repo, 'write-tree').stdout.strip()
+        lease = _git(repo, 'rev-parse', remote).stdout.strip()
+        ident = dict(GIT_AUTHOR_NAME='Domain OS bot', GIT_COMMITTER_NAME='Domain OS bot',
+                     GIT_AUTHOR_EMAIL='41898282+github-actions[bot]@users.noreply.github.com',
+                     GIT_COMMITTER_EMAIL='41898282+github-actions[bot]@users.noreply.github.com')
+        c = subprocess.run(['git', '-C', repo, 'commit-tree', tree, '-m', 'results: community benchmarks (the only commit: no history)'],
+                           capture_output=True, text=True, env=dict(os.environ, **ident))
+        if c.returncode != 0 or not tree or not lease:
+            print('!!! publish: the commit could not be made', c.stderr.strip()[:300]); return False
+        sha = c.stdout.strip()
+        p = _git(repo, 'push', '-q', f'--force-with-lease=refs/heads/{SITE_BRANCH}:{lease}', 'origin', f'{sha}:refs/heads/{SITE_BRANCH}', auth=True)
         if p.returncode == 0:
+            _git(repo, 'reset', '-q', sha)                                        # the new base for the next merge
+            try: open(os.path.join(repo, '.published'), 'w').close()             # tells the workflow to publish the site
+            except OSError: pass
             print('published'); return True
         print('publish: push refused, merging again', p.stderr.strip()[:300])
         _git(repo, 'reset', '-q', '--hard', remote)                             # back to the base of `merged` …

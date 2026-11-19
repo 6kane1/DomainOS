@@ -1,0 +1,46 @@
+name: Publish the site
+# The website = the branch gh-pages (pages, styles, downloads stubs, update feeds) + results/results.json from the
+# branch results-data (the bot's results, kept as one commit without history). Published as a GitHub Pages artifact,
+# so the results are never part of the site's git history. Started by: a push to gh-pages (its small trigger
+# workflow), the Discord bot after it changed the results, or by hand. bot-state.json is not published.
+on:
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: gh-pages
+          path: site
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: results-data
+          path: data
+          persist-credentials: false
+      - name: Assemble
+        run: |
+          mkdir _site
+          tar -C site --exclude=./.git --exclude=./.github -cf - . | tar -C _site -xf -
+          mkdir -p _site/results
+          python3 -c "import json,sys; d=json.load(open('data/results/results.json')); assert isinstance(d,list)"
+          cp data/results/results.json _site/results/results.json
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

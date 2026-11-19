@@ -1,7 +1,7 @@
 name: Discord bot (help commands, results charts)
 # Short checks, not a bot that runs around the clock: every 10 minutes (cron) one run of about 2 minutes looks at the
 # help discussions (! commands, first answers, calling the author) and the results forum (charts), pushes the numbers
-# to the site's results page (gh-pages: results/results.json) and ends. Answers can therefore take up to ~10 minutes
+# to the branch results-data (one commit, no history) and, when they changed, starts pages.yml to publish them. Answers can therefore take up to ~10 minutes
 # (longer when GitHub delays the cron). The concurrency group makes runs wait for each other, so two never overlap.
 # To stop the bot: disable the workflow. A run by hand: Actions → this workflow → Run workflow.
 on:
@@ -17,7 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
-      contents: write   # push results/ to gh-pages (only the git commands get the token, see bot.py)
+      contents: write   # push results/ to results-data (only the git commands get the token, see bot.py)
+      actions: write    # start pages.yml when the results changed
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -25,9 +26,8 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          ref: gh-pages
+          ref: results-data
           path: site
-          sparse-checkout: results
           persist-credentials: false
       - name: Git identity for the bot's pushes
         run: |
@@ -52,3 +52,8 @@ jobs:
         env:
           GH_PUSH_TOKEN: ${{ github.token }}
           RESULTS_JSON: site/results/results.json
+      - name: Publish the site when the results changed
+        if: ${{ !cancelled() && hashFiles('site/.published') != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main -R "$GITHUB_REPOSITORY"
