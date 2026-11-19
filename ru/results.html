@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-Kody175EivOst+63RphUaQ6XU0l0XSMGQkhu1rmPJww='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Замеры сообщества — Domain OS</title>
+<meta name="description" content="Результаты замеров участников Domain OS: средний FPS, 1% low и 0.1% low по вариантам, одинаковое число прогонов.">
+<meta name="theme-color" content="#060608">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="../img/icon-256.png">
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="preload" href="../fonts/Inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../site.css?v=211q">
+</head><body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>DOMAIN OS</a>
+    <span class="status"><span class="blip" aria-hidden="true"></span>ЗАМЕРЫ</span>
+    <nav class="nav" aria-label="Страницы"><a href="index.html">Плейбук</a><a href="install.html">Установка</a><a href="scheduler.html">Toolbox</a><a href="results.html" aria-current="page">Замеры</a></nav>
+    <a class="dc" href="https://discord.gg/wBGsV7WEpm" rel="noopener" aria-label="Наш Discord-сервер"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.8 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 10.8 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.5-4.3-.8-8.1-3.2-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg><span>Discord</span></a>
+    <a class="lang" href="../results.html" hreflang="en" lang="en">EN</a>
+    <a class="btn main small" href="index.html#download">Скачать</a>
+  </div>
+  <div class="subnav"><div class="wrap"><span>НА СТРАНИЦЕ</span><a href="#list">Замеры</a></div></div>
+  <i class="progress" aria-hidden="true"></i>
+</header>
+<main>
+
+<style>
+.rx-more{margin-top:10px;display:inline-flex;align-items:center;gap:8px;background:none;border:1px solid var(--line);color:var(--dim);font:500 12.5px var(--mono);letter-spacing:.04em;padding:6px 10px;cursor:pointer;transition:color .2s,border-color .2s}
+.rx-more:hover,.rx-more[aria-expanded=true]{color:var(--pink);border-color:var(--pink)}
+.rx-more i{font-style:normal;transition:transform .3s}
+.rx-more[aria-expanded=true] i{transform:rotate(180deg)}
+.rx-leg{display:grid;grid-template-rows:0fr;opacity:0;transform:translateY(-8px);transition:grid-template-rows .35s ease,opacity .3s ease,transform .35s ease}
+.rx-leg.open{grid-template-rows:1fr;opacity:1;transform:none}
+.rx-leg>div{overflow:hidden}
+.rx-leg dl{margin:8px 0 0;padding:10px 12px;border:1px solid var(--line);background:rgba(255,255,255,.015);display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:6px 14px;font-size:13.5px;line-height:1.45}
+.rx-leg dt{color:var(--fg);font-weight:600;white-space:nowrap}
+.rx-leg dd{margin:0;color:var(--dim)}
+.rx-leg .k{font:500 11px var(--mono);color:var(--dim);margin-left:4px}
+@media (max-width:640px){.rx-leg dl{grid-template-columns:1fr;gap:2px}.rx-leg dd{margin-bottom:6px}}
+.rx-note{margin-top:10px;padding:10px 12px;border-left:2px solid var(--pink);background:rgba(255,255,255,.02);font-size:14.5px;line-height:1.55}
+.rx-note .h,.rx-why .h{font:500 11px var(--mono);letter-spacing:.08em;color:var(--dim);margin-bottom:4px}
+.rx-top{display:inline-block;margin-right:8px;padding:1px 7px;border:1px solid var(--pink);color:var(--pink);font:600 11.5px var(--mono)}
+.rx-why{margin-top:8px;font-size:13.5px;color:var(--dim)}
+.rx-week{margin:26px 0 10px;font:500 12px var(--mono);letter-spacing:.1em;color:var(--dim);text-transform:uppercase}
+</style>
+<section class="hero one"><div class="wrap">
+  <div class="kicker"><span class="acc">▍</span>Замеры сообщества</div>
+  <h1>Результаты замеров</h1>
+  <p class="lead">Замеры участников нашего Discord: каждый вариант — несколько прогонов DomainSchedTest, в группах одинаковое число прогонов. Описание к каждому замеру пишет его автор; под постом — расшифровка показателей.</p>
+  <p class="meta"><a href="https://discord.gg/wBGsV7WEpm">Выложить свой замер — канал results в Discord</a> · <a href="#keep">какие замеры остаются на сайте</a></p>
+</div></section>
+<section id="list"><div class="wrap">
+  <div id="res"><div class="notes"><div class="p"><span class="ix">··</span><p>Загрузка…</p></div></div></div>
+</div></section>
+<section id="keep"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">02</span><span class="acc">▍</span>Топ-5 недели</div><h2>Какие замеры остаются на сайте</h2><p>Все замеры текущей недели (понедельник–воскресенье, московское время) видны здесь сразу. Когда неделя заканчивается, бот оставляет на сайте пять самых интересных, а остальные остаются в Discord. Итоги недели бот публикует в теме «Топ-5 недели» в канале results.</p></div>
+  <div class="notes">
+    <div class="p"><span class="ix">01</span><p><strong>Заметная разница.</strong> Главное — насколько вариант отличается от первой группы (базы) в ключевых показателях: 1% и 0.1% low, время кадра, рывки, ожидания ядра. Важны и улучшения, и ухудшения. Разница меньше 2% — это разброс и не считается.</p></div>
+    <div class="p"><span class="ix">02</span><p><strong>Больше прогонов — больше доверия.</strong> Каждый прогон (до пяти) добавляет 10% к оценке; настоящее сравнение двух и более вариантов ценнее одиночного замера.</p></div>
+    <div class="p"><span class="ix">03</span><p><strong>Разное железо.</strong> Если два замера близки, первым идёт процессор, которого в топе недели ещё нет.</p></div>
+  </div>
+</div></section>
+<script>
+(function () {
+  var ru = true;
+  var GL = {"fps": "Сколько кадров в секунду в среднем за прогон. Обычно меняется мало: Domain OS помогает с плавностью, а не со средним.", "low1": "FPS самого медленного 1% кадров — просадки, которые чувствуются в игре.", "low01": "FPS самой медленной 0,1% кадров — редкие сильные подтормаживания.", "ft_p99": "99% кадров нарисованы быстрее этого времени.", "ft_max": "Худший одиночный кадр за прогон.", "hitch": "Кадры дольше 2,5× обычного (медианы) — видимые рывки.", "gw_p99": "Сколько готовый к работе поток игры ждал свободное ядро: 99% ожиданий короче.", "gw_o50": "Сколько раз потоки игры ждали ядро дольше 50 мкс.", "bg": "Процессорное время Steam и Discord во время игры (10 мс/с = 1% одного ядра).", "steal": "Сколько всего игра прождала ядро, занятое Steam или Discord.", "tb": "Сколько процессора тратит сам Domain OS Toolbox.", "p50": "Простой: обычное ожидание ядра любым готовым потоком системы.", "p99": "Простой: 99% ожиданий ядра короче этого.", "p999": "Простой: редкие долгие ожидания (99,9%).", "o50": "Доля ожиданий ядра дольше 50 мкс.", "o100": "Сколько ожиданий ядра длилось дольше 100 мкс.", "dpc": "Доля долгих ожиданий, когда на том же ядре работал драйвер (DPC/ISR)."};
+  var box = document.getElementById('res');
+  // the author's Discord text: escaped first, then **bold**, *italic*, `code` and line breaks; nothing else becomes HTML
+  function md(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>').replace(/`([^`\n]+)`/g, '<code>$1</code>').replace(/\n/g, '<br>'); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function f(v) { v = Number(v); return (v == null || !isFinite(v)) ? '—' : (Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(2)); }
+  function pc(a, b) { if (!b) return ''; var v = (a / b - 1) * 100; return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; }
+  function weekSpan(w) {
+    var m = /^(\d{4})-W(\d{2})$/.exec(w || ''); if (!m) return w || '';
+    var y = +m[1], n = +m[2], jan4 = new Date(Date.UTC(y, 0, 4)), mon = new Date(jan4);
+    mon.setUTCDate(jan4.getUTCDate() - ((jan4.getUTCDay() + 6) % 7) + (n - 1) * 7);
+    var sun = new Date(mon); sun.setUTCDate(mon.getUTCDate() + 6);
+    var d = function (x) { return String(x.getUTCDate()).padStart(2, '0') + '.' + String(x.getUTCMonth() + 1).padStart(2, '0'); };
+    return d(mon) + '–' + d(sun) + '.' + sun.getUTCFullYear();
+  }
+  function post(x, i) {
+    var mets = x.metrics || [{key:'fps',en:'Avg FPS',ru:'Средний FPS',hi:true},{key:'low1',en:'1% low',ru:'1% low',hi:true},{key:'low01',en:'0.1% low',ru:'0.1% low',hi:true}];
+    var groups = Array.isArray(x.groups) ? x.groups : []; if (!groups.length) return '';
+    var base = groups[0];
+    var head = '<tr><th>' + (ru ? 'Вариант' : 'Variant') + '</th>' + mets.map(function (m) { return '<th>' + esc(ru ? m.ru : m.en) + ' ' + (m.hi ? '↑' : '↓') + '</th>'; }).join('') + '</tr>';
+    var rows = groups.map(function (g) {
+      return '<tr><td class="mono">' + esc(g.name) + '</td>' + mets.map(function (m) {
+        var d = g === base ? '' : '<br><span class="mono" style="color:var(--dim);font-size:.85em">' + pc(g[m.key], base[m.key]) + '</span>';
+        return '<td>' + f(g[m.key]) + d + '</td>'; }).join('') + '</tr>';
+    }).join('');
+    var mode = x.mode === 'idle' ? (ru ? 'простой' : 'idle') : (ru ? 'игра' : 'game');
+    var note = x.note ? '<div class="rx-note"><div class="h">' + (ru ? 'ОПИСАНИЕ ОТ АВТОРА ЗАМЕРА' : "THE AUTHOR'S DESCRIPTION") + '</div>' + md(x.note) + '</div>' : '';
+    var why = '';
+    if (x.top && x.why && isFinite(Number(x.why.diff))) {
+      var wm = mets.filter(function (m) { return m.key === x.why.key; })[0];
+      why = '<div class="rx-why">' + (ru ? 'В топе за: ' : 'In the top for: ') + '<span class="mono">' + esc(x.why.group) + '</span> ' + (Number(x.why.diff) > 0 ? '+' : '') + Number(x.why.diff).toFixed(1) + '% ' + esc(wm ? (ru ? wm.ru : wm.en) : x.why.key) + (ru ? ' к базе' : ' vs the base') + '</div>';
+    }
+    var leg = '<dl>' + mets.map(function (m) { return GL[m.key] ? '<dt>' + esc(ru ? m.ru : m.en) + '<span class="k">' + (m.hi ? '↑' : '↓') + '</span></dt><dd>' + esc(GL[m.key]) + '</dd>' : ''; }).join('')
+      + '<dt>' + (ru ? 'Тест' : 'Test') + '</dt><dd>' + esc(x.mode === 'idle' ? (ru ? 'DomainSchedTest в простое: без игры, как быстро система отдаёт ядра потокам.' : 'DomainSchedTest at idle: no game, how fast the system gives cores to threads.') : (ru ? 'DomainSchedTest во время игры: кадры, ожидания потоков игры и фон.' : 'DomainSchedTest while playing: frames, game-thread waits and the background.')) + '</dd>'
+      + '<dt>' + (ru ? 'Проценты' : 'Percent') + '</dt><dd>' + (ru ? 'разница с первой группой (базой). ↑ — больше лучше, ↓ — меньше лучше. Меньше ~2% — обычно разброс.' : 'difference from the first group (the base). ↑ higher is better, ↓ lower is better. Under ~2% is usually noise.') + '</dd></dl>';
+    return '<div class="p"><span class="ix">' + String(i + 1).padStart(2, '0') + '</span><div style="min-width:0"><p>' + (x.top ? '<span class="rx-top">TOP ' + (parseInt(x.top, 10) || '') + '</span>' : '') + '<strong>' + esc(x.title) + '</strong><br><span class="mono" style="color:var(--dim);overflow-wrap:anywhere">' + esc([x.date, x.cpu, x.game, x.windows, x.domainos ? 'Domain OS ' + x.domainos : '', mode].filter(Boolean).join(' · ')) + '</span></p>'
+      + note + why
+      + '<div class="tbl" style="margin-top:10px;overflow-x:auto"><table><thead>' + head + '</thead><tbody>' + rows + '</tbody></table></div>'
+      + '<p style="margin-top:8px"><a href="' + esc(/^https:\/\/discord\.com\//.test(x.url || '') ? x.url : 'https://discord.gg/wBGsV7WEpm') + '">' + (ru ? 'Пост и график в Discord' : 'Post and chart on Discord') + '</a> · ' + esc(x.runs) + (ru ? ' прогон(а) на вариант' : ' run(s) per variant') + '</p>'
+      + '<button class="rx-more" type="button" aria-expanded="false">' + (ru ? 'Что значат показатели' : 'What the numbers mean') + ' <i>▾</i></button>'
+      + '<div class="rx-leg"><div>' + leg + '</div></div></div></div>';
+  }
+  fetch('../results/results.json', {cache: 'no-store'}).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }).then(function (list) {
+    if (!list || !list.length) { box.innerHTML = '<div class="notes"><div class="p"><span class="ix">00</span><p>' + (ru ? 'Пока нет замеров. Будьте первым — выложите архив DomainSchedTest в канал results.' : 'No benchmarks yet. Be the first — post a DomainSchedTest archive in the results channel.') + '</p></div></div>'; return; }
+    var weeks = {};
+    list = list.filter(function (x) { return x && typeof x === 'object'; });
+    list.forEach(function (x) { var w = x.week || ''; (weeks[w] = weeks[w] || []).push(x); });
+    var order = Object.keys(weeks).sort().reverse();
+    box.innerHTML = order.map(function (w) {
+      var xs = weeks[w], done = xs.every(function (x) { return x.top; });
+      xs.sort(function (a, b) { return done ? a.top - b.top : (b.date || '').localeCompare(a.date || ''); });
+      var title = done ? (ru ? 'Топ-5 недели ' : 'Top 5 of the week ') + weekSpan(w) : (ru ? 'Эта неделя · ' : 'This week · ') + weekSpan(w) + (ru ? ' · все замеры' : ' · every result');
+      // one broken entry must not take the whole list down
+      var html = xs.map(function (x, i) { try { return post(x, i); } catch (e) { return ''; } }).join('');
+      return html ? '<div class="rx-week">' + esc(title) + '</div><div class="notes">' + html + '</div>' : '';
+    }).join('');
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('.rx-more'); if (!b) return;
+      var open = b.getAttribute('aria-expanded') !== 'true';
+      b.setAttribute('aria-expanded', open); b.nextElementSibling.classList.toggle('open', open);
+    });
+  });
+})();
+</script>
+</main>
+<footer><div class="wrap"><span>DOMAIN OS 2.1.1 · © 2026 · ALL RIGHTS RESERVED</span><a href="scheduler.html">Domain OS Toolbox</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="../results.html" hreflang="en">English</a><span>Версия 2.1.1 новая и мало проверена. Сообщайте о том, что ломается.</span></div></footer>
+<script src="../site.js?v=211q"></script>
+</body></html>

@@ -1,0 +1,17 @@
+name: Publish on push
+# Every push to gh-pages starts "Publish the site" (pages.yml on main), which adds results.json from the branch
+# results-data and publishes both as the GitHub Pages site. The results are never part of this branch.
+on:
+  push:
+    branches: [gh-pages]
+permissions: {}
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      actions: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main -R "$GITHUB_REPOSITORY"

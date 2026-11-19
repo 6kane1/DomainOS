@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Установка Domain OS — подробная инструкция</title>
+<meta name="description" content="Подробная установка Domain OS с нуля: официальный образ Windows 11 Pro, чистая установка, обновления, плейбук, драйверы, Toolbox, проверка и частые ошибки.">
+<meta name="theme-color" content="#060608">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="../img/icon-256.png">
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="preload" href="../fonts/Inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../site.css?v=211q">
+</head><body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>DOMAIN OS</a>
+    <span class="status"><span class="blip" aria-hidden="true"></span>УСТАНОВКА <b>2.1.1</b></span>
+    <nav class="nav" aria-label="Страницы"><a href="index.html">Плейбук</a><a href="install.html" aria-current="page">Установка</a><a href="scheduler.html">Toolbox</a><a href="results.html">Замеры</a></nav>
+    <a class="dc" href="https://discord.gg/wBGsV7WEpm" rel="noopener" aria-label="Наш Discord-сервер"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.8 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 10.8 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.5-4.3-.8-8.1-3.2-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg><span>Discord</span></a>
+    <a class="lang" href="../install.html" hreflang="en" lang="en">EN</a>
+    <a class="btn main small" href="index.html#download">Скачать</a>
+  </div>
+  <div class="subnav"><div class="wrap"><span>НА СТРАНИЦЕ</span><a href="#before">Подготовка</a><a href="#usb">Флешка</a><a href="#windows">Windows</a><a href="#updates">Обновления</a><a href="#playbook">Плейбук</a><a href="#drivers">Драйверы</a><a href="#toolbox">Toolbox</a><a href="#check">Проверка</a><a href="#mistakes">Частые ошибки</a></div></div>
+  <i class="progress" aria-hidden="true"></i>
+</header>
+<main>
+
+<section class="hero one"><div class="wrap">
+  <div class="kicker"><span class="acc">▍</span>Подробная инструкция</div>
+  <h1>Установка Domain OS с нуля</h1>
+  <p class="lead">От загрузки официального образа Windows 11 Pro до первой игры. Делайте шаги по порядку и ничего не пропускайте: почти все проблемы после установки — это пропущенный шаг, изменённый образ Windows или сторонние «оптимизаторы».</p>
+  <p class="meta">Время: около часа, из него сам плейбук — минут 10<i>/</i>Нужна флешка от 8 ГБ<i>/</i>Windows 11 Pro · 25H2 / 26H2</p>
+</div></section>
+
+<section id="before"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>Подготовка</div><h2>Что подготовить заранее</h2><p>Всё это делается на любом компьютере с интернетом, до переустановки.</p></div>
+  <ol class="steps"><li><span class="p"><b>Сохраните важные файлы</b> на другой диск или в облако. Чистая установка стирает системный диск полностью.</span></li><li><span class="p"><b>Проверьте, что у вас Windows 11 Pro</b> или есть ключ Pro. Domain OS ставится <b>только на Pro</b>: на Home установка остановится на первом шаге и ничего не изменит. Посмотреть: «Параметры → Система → О системе» (строка «Выпуск»).</span></li><li><span class="p"><b>Подготовьте папку для флешки</b> (положите её на флешку рядом с установщиком Windows, см. шаг 2):<br>• <a href="../downloads/No-WU-Drivers.reg" download>No-WU-Drivers.reg</a> — запрещает Windows ставить свои драйверы;<br>• <a href="https://ameliorated.io/">AME Wizard</a> — программа, которая ставит плейбук;<br>• <a href="https://github.com/6kane1/DomainOS/releases/download/v2.1.1/Domain-OS-2.1.1.apbx">Domain-OS-2.1.1.apbx</a> — сам плейбук;<br>• <b>драйвер сетевой карты</b> с сайта производителя материнской платы или ноутбука — на случай, если после установки Windows не увидит интернет.</span></li></ol>
+  <div class="p warnbox" style="margin-top:14px"><div class="cap"><span class="acc">▍</span>Только оригинальный образ</div><p><strong>Не используйте «облегчённые», «игровые» и любые изменённые образы Windows</strong> и чужие сборки. Плейбук рассчитан на обычную Windows от Microsoft: в изменённых образах уже удалены или сломаны компоненты, и результат непредсказуем.</p></div>
+</div></section>
+
+<section id="usb"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">02</span><span class="acc">▍</span>Флешка</div><h2>Официальный образ и загрузочная флешка</h2><p>Windows 11 скачивается только с сайта Microsoft.</p></div>
+  <ol class="steps"><li><span class="p"><b>Скачайте образ</b> на <a href="https://www.microsoft.com/ru-ru/software-download/windows11">странице загрузки Windows 11 от Microsoft</a>: раздел «Загрузка образа диска (ISO)», выпуск «Windows 11 (multi-edition ISO)», ваш язык. Один образ содержит и Home, и Pro.</span></li><li><span class="p"><b>Запишите образ на флешку</b> программой <a href="https://rufus.ie/">Rufus</a> (или Media Creation Tool от Microsoft). В Rufus после нажатия «Старт» появится окно настроек Windows:<br>• <b>можно</b> отметить «Remove requirement for an online Microsoft account» и «Create a local account» — тогда Windows не потребует интернет и учётную запись Microsoft при установке;<br>• <b>не отмечайте</b> «Remove requirement for 4GB+ RAM, Secure Boot and TPM 2.0»: TPM и Secure Boot нужны Windows 11 и античитам.</span></li><li><span class="p"><b>Скопируйте на флешку папку</b> из шага 1 (No-WU-Drivers.reg, AME Wizard, плейбук, сетевой драйвер).</span></li></ol>
+</div></section>
+
+<section id="windows"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">03</span><span class="acc">▍</span>Windows</div><h2>Чистая установка Windows 11 Pro</h2><p>Самый важный этап: от него зависит, как будет работать всё остальное.</p></div>
+  <ol class="steps"><li><span class="p"><b>Отключите интернет:</b> выньте сетевой кабель, Wi-Fi не подключайте. Интернет понадобится только после шага 4.</span></li><li><span class="p"><b>Загрузитесь с флешки:</b> при включении ПК нажмите клавишу меню загрузки (обычно F8, F11, F12 или Esc — зависит от платы) и выберите флешку. В BIOS ничего отключать не нужно: <b>Secure Boot и TPM оставьте включёнными</b>.</span></li><li><span class="p"><b>Выберите Windows 11 Pro.</b> На шаге с ключом нажмите «У меня нет ключа продукта» — активировать можно позже. Если установщик не спросил выпуск и ставит Home, значит в BIOS вшит ключ Home: после установки перейдите на Pro своим ключом в «Параметры → Система → Активация → Изменить ключ продукта».</span></li><li><span class="p"><b>Удалите все разделы</b> на диске, куда ставите Windows, и выберите получившееся «Незанятое пространство». Остальные диски не трогайте. Так не останется старых драйверов, программ и твиков.</span></li><li><span class="p"><b>Пройдите первую настройку.</b> Если флешка сделана в Rufus с локальной учётной записью, Windows не попросит интернет. В вопросах о конфиденциальности можно выключить всё — плейбук всё равно выключит телеметрию.</span></li></ol>
+</div></section>
+
+<section id="updates"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">04</span><span class="acc">▍</span>Обновления</div><h2>Первый запуск и обновления</h2><p>Порядок здесь важен: сначала запрет драйверов, потом интернет.</p></div>
+  <ol class="steps"><li><span class="p"><b>Запустите No-WU-Drivers.reg</b> с флешки (двойной щелчок → «Да»), <b>пока интернет ещё не подключён</b>. Иначе Windows Update успеет поставить свои, часто старые драйверы.</span></li><li><span class="p"><b>Подключите интернет.</b> Если интернета нет — поставьте сетевой драйвер с флешки и только его.</span></li><li><span class="p"><b>Установите все обновления:</b> «Параметры → Центр обновления Windows → Проверить наличие обновлений». Перезагружайтесь и повторяйте, пока не появится «Установлены все последние обновления».</span></li><li><span class="p"><b>Проверьте версию:</b> Win+R → <code>winver</code>. Должно быть <b>Windows 11 Pro</b>, версия <b>25H2</b> (сборка 26200) или <b>26H2</b> (сборка 26300). На 24H2 сначала обновитесь через Центр обновления.</span></li></ol>
+  <div class="p warnbox" style="margin-top:14px"><div class="cap"><span class="acc">▍</span>До плейбука ничего не ставьте</div><p><strong>Не ставьте до плейбука драйверы видеокарты, игры, лаунчеры, антивирусы и «оптимизаторы».</strong> Исключение — сетевой драйвер, если без него нет интернета. Драйверы поставите после, по подсказке Domain OS.</p></div>
+</div></section>
+
+<section id="playbook"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">05</span><span class="acc">▍</span>Плейбук</div><h2>Установка Domain OS</h2><p>Около 10 минут. Компьютер в это время не трогайте.</p></div>
+  <ol class="steps"><li><span class="p"><b>Ноутбук — на зарядку.</b> От батареи AME Wizard не запустится. Интернет должен быть подключён.</span></li><li><span class="p"><b>Откройте AME Wizard</b> и перетащите в окно <code>Domain-OS-2.1.1.apbx</code>. Если Windows спросит про запуск программы — разрешите.</span></li><li><span class="p"><b>Отметьте нужные галочки.</b> Если не уверены — оставьте как есть: значения по умолчанию подходят большинству. Что делает каждая галочка, написано <a href="index.html#install">в таблице на главной</a>.</span></li><li><span class="p"><b>Запустите установку и ждите.</b> Не выключайте ПК, не закрывайте окно, не запускайте другие программы. В конце компьютер перезагрузится сам.</span></li></ol>
+  <div class="p act upg" style="margin-top:14px"><div class="cap"><span class="acc">▍</span>Если что-то пошло не так</div><p>Журнал установки лежит в <code>%ProgramData%\Domain OS\Logs\install.log</code>. Всё можно вернуть: «Пуск» → Domain OS → <b>Undo Domain OS</b> и перезагрузка.</p></div>
+</div></section>
+
+<section id="drivers"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">06</span><span class="acc">▍</span>Драйверы</div><h2>Драйверы после установки</h2><p>После перезагрузки откроется страница с драйверами именно для вашего ПК.</p></div>
+  <ol class="steps"><li><span class="p"><b>Драйвер видеокарты</b> — с официального сайта NVIDIA, AMD или Intel (ссылки на странице). Для NVIDIA можно использовать NVCleanstall, чтобы поставить только сам драйвер.</span></li><li><span class="p"><b>Драйвер чипсета</b> — с сайта AMD или Intel, по ссылке на странице.</span></li><li><span class="p"><b>Остальное</b> (звук, сеть, Wi-Fi, Bluetooth) — с сайта производителя материнской платы или ноутбука, только если что-то не работает.</span></li><li><span class="p"><b>Перезагрузитесь.</b></span></li></ol>
+  <div class="p warnbox" style="margin-top:14px"><div class="cap"><span class="acc">▍</span>Без сборников драйверов</div><p><strong>Не используйте программы-сборники драйверов и «автообновлялки».</strong> Они ставят что попало, часто старые или чужие версии. Только официальные сайты.</p></div>
+</div></section>
+
+<section id="toolbox"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">07</span><span class="acc">▍</span>Toolbox</div><h2>Первая настройка Toolbox</h2><p>Toolbox 1.14.1 уже установлен, ярлык на рабочем столе. Это делается один раз.</p></div>
+  <ol class="steps"><li><span class="p"><b>Откройте Toolbox</b> и нажмите <b>«Включить Auto»</b>. Дальше он сам находит игру при каждом запуске.</span></li><li><span class="p"><b>Когда игра закрыта</b>, один раз нажмите <b>«Оптимизация устройств»</b> и перезагрузите ПК. Если Windows после этого не загрузится, всё откатится само.</span></li><li><span class="p"><b>По желанию</b> — «Автоподбор» во время игры (около 8 минут), потом «Применить». Подробнее — <a href="scheduler.html#how">на странице Toolbox</a>.</span></li></ol>
+</div></section>
+
+<section id="check"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">08</span><span class="acc">▍</span>Проверка</div><h2>Проверьте, что всё на месте</h2><p>Две минуты, и вы уверены, что установка прошла правильно.</p></div>
+  <div class="notes"><div class="p"><span class="ix">01</span><p><code>winver</code>: Windows 11 Pro, 25H2 или 26H2.</p></div><div class="p"><span class="ix">02</span><p>«Параметры → Игры → Игровой режим»: <b>включён</b>.</p></div><div class="p"><span class="ix">03</span><p>«Безопасность Windows»: защита от вирусов работает — Domain OS её не трогает.</p></div><div class="p"><span class="ix">04</span><p>«Пуск» → папка Domain OS: есть Undo Domain OS и Domain OS Toolbox. Значок Toolbox — в трее.</p></div><div class="p"><span class="ix">05</span><p>Центр обновления Windows работает: обновления безопасности продолжают приходить.</p></div><div class="p"><span class="ix">06</span><p>В Toolbox на панели «Эта система» видны ваша Windows, видеокарта с драйвером и «Игровой режим: вкл».</p></div></div>
+</div></section>
+
+<section id="mistakes"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">09</span><span class="acc">▍</span>Частые ошибки</div><h2>Из-за чего сборка работает плохо</h2><p>Каждая из этих ошибок встречалась у пользователей. Проверьте себя.</p></div>
+  <div class="notes"><div class="p"><span class="ix">01</span><p><b>Изменённый или «облегчённый» образ Windows</b> вместо оригинального от Microsoft.</p></div><div class="p"><span class="ix">02</span><p><b>Установка поверх старой, давно используемой системы</b> со старыми драйверами и программами. Ставьте на чистую Windows.</p></div><div class="p"><span class="ix">03</span><p><b>Сторонние твики, «оптимизаторы» и чистильщики</b> до или после Domain OS. Они меняют систему без описания и без отката; после них помочь уже нельзя.</p></div><div class="p"><span class="ix">04</span><p><b>Интернет подключили до No-WU-Drivers.reg</b> — Windows успела поставить свои драйверы. Лечится: поставьте правильные драйверы с официальных сайтов поверх.</p></div><div class="p"><span class="ix">05</span><p><b>Не до конца установлены обновления</b> перед плейбуком.</p></div><div class="p"><span class="ix">06</span><p><b>Отключённые TPM или Secure Boot</b> — античиты (FACEIT, Vanguard и другие) могут не пустить в игру.</p></div><div class="p"><span class="ix">07</span><p><b>Прерванная установка</b>: выключили ПК, закрыли AME Wizard, ноутбук сел. Запустите плейбук ещё раз — он ставится поверх.</p></div><div class="p"><span class="ix">08</span><p><b>Сборники драйверов</b> вместо официальных сайтов.</p></div></div>
+  <div class="p act upg" style="margin-top:14px"><div class="cap"><span class="acc">▍</span>Нужна помощь?</div><p>Создайте тему в канале help на нашем Discord-сервере: версии сборки и Toolbox, <code>winver</code>, процессор и видеокарта, что делали, и приложите <code>%ProgramData%\Domain OS\Logs\install.log</code> и <code>%LOCALAPPDATA%\DomainScheduler\log.txt</code>.</p></div>
+</div></section>
+</main>
+<footer><div class="wrap"><span>DOMAIN OS 2.1.1 · © 2026 · ALL RIGHTS RESERVED</span><a href="scheduler.html">Domain OS Toolbox</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="../install.html" hreflang="en">English</a><span>Версия 2.1.1 новая и мало проверена. Сообщайте о том, что ломается.</span></div></footer>
+<script src="../site.js?v=211q"></script>
+</body></html>

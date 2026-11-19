@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en"><head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Domain OS Toolbox</title>
+<meta name="description" content="Domain OS Toolbox, a gaming app: gives the game the best cores, quiets the background, optimizes devices. Everything goes back by itself.">
+<meta name="theme-color" content="#060608">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="img/icon-256.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="preload" href="fonts/Inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="site.css?v=211q">
+</head><body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>DOMAIN OS</a>
+    <span class="status"><span class="blip" aria-hidden="true"></span>TOOLBOX <b>1.14.1</b></span>
+    <nav class="nav" aria-label="Pages"><a href="index.html">Playbook</a><a href="install.html">Install</a><a href="scheduler.html" aria-current="page">Toolbox</a><a href="results.html">Results</a></nav>
+    <a class="dc" href="https://discord.gg/wBGsV7WEpm" rel="noopener" aria-label="Our Discord server"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.8 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 10.8 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.5-4.3-.8-8.1-3.2-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg><span>Discord</span></a>
+    <a class="lang" href="ru/scheduler.html" hreflang="ru" lang="ru">RU</a>
+    <a class="btn main small" href="#download">Download</a>
+  </div>
+  <div class="subnav"><div class="wrap"><span>ON THIS PAGE</span><a href="#new">What's new in 1.14.1</a><a href="#expect">What to expect</a><a href="#how">How to use</a><a href="#features">What it does</a><a href="#overclock">GPU overclocking</a><a href="#advanced">Advanced users</a><a href="#safety">Safety</a><a href="#download">Download</a></div></div>
+  <i class="progress" aria-hidden="true"></i>
+</header>
+<main>
+
+<div class="hero"><div class="wrap">
+  <div>
+    <p class="kicker"><span class="acc">▍</span> Domain OS Toolbox 1.14.1</p>
+    <h1>Your game gets <em>the best cores</em></h1>
+    <p class="lead">Toolbox is the gaming app Domain OS installs. Turn on Auto, start a game, and it gives the game the best CPU cores and quiets everything else in the background. Close the game and everything goes back to how it was.</p>
+    <div class="actions">
+      <a class="btn main" href="#download">Download 1.14.1</a>
+      <a class="btn" href="#how">How to use it</a>
+    </div>
+    <p class="meta">free<i>/</i>nothing injected into the game<i>/</i>everything goes back by itself</p>
+  </div>
+  <figure class="shot"><div class="frame"><img src="img/en-home-active.webp" width="1920" height="1032" alt="Toolbox home screen: Auto is on, frame-time chart, processor map"></div><figcaption><span class="chip">interface image</span>Home screen: Auto is working. The numbers on it are an example.</figcaption></figure>
+</div></div>
+
+<div class="cpustrip"><div class="wrap">
+  <div class="cpumap"><div class="cap"><span class="acc">▍</span>Processor map · diagram<span class="r leg"><span><i style="background:var(--pink)"></i>game</span><span><i style="background:var(--silver);opacity:.6"></i>background</span><span><i style="background:var(--warn)"></i>interrupts</span></span></div><div class="cores" role="img" aria-label="Diagram: the game on cores 0–7, interrupts on cores 12 and 14"><div class="c g"><div class="b"><i style="height:78%"></i></div><span>00</span></div><div class="c g"><div class="b"><i style="height:64%"></i></div><span>01</span></div><div class="c g"><div class="b"><i style="height:82%"></i></div><span>02</span></div><div class="c g"><div class="b"><i style="height:71%"></i></div><span>03</span></div><div class="c g"><div class="b"><i style="height:88%"></i></div><span>04</span></div><div class="c g"><div class="b"><i style="height:59%"></i></div><span>05</span></div><div class="c g"><div class="b"><i style="height:74%"></i></div><span>06</span></div><div class="c g"><div class="b"><i style="height:69%"></i></div><span>07</span></div><div class="c "><div class="b"><i style="height:22%"></i></div><span>08</span></div><div class="c "><div class="b"><i style="height:8%"></i></div><span>09</span></div><div class="c "><div class="b"><i style="height:14%"></i></div><span>10</span></div><div class="c "><div class="b"><i style="height:6%"></i></div><span>11</span></div><div class="c q"><div class="b"><i style="height:46%"></i></div><span>12</span></div><div class="c "><div class="b"><i style="height:9%"></i></div><span>13</span></div><div class="c q"><div class="b"><i style="height:38%"></i></div><span>14</span></div><div class="c "><div class="b"><i style="height:5%"></i></div><span>15</span></div></div></div>
+  <div class="facts"><span>one Auto button</span><span>auto-tune</span><span>device optimization</span><span>anti-cheats keep working</span><span>everything goes back by itself</span><span>free</span></div>
+</div></div>
+
+<section id="new"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>What's new</div><h2>What's new in Toolbox 1.14.1</h2><p>The main points in short, the full list under the button. The Windows changes of playbook 2.1.1 are <a href="index.html#new">on the main page</a>.</p></div>
+  <div class="newgrid one"><div class="p newp"><div class="cap"><span class="acc">▍</span>Toolbox 1.14.1</div><ul class="keyl"><li>A <strong>new interface</strong> with a live frame chart, and a new icon</li><li>An <strong>"Optimize devices"</strong> button: press once, restart the PC</li><li>A <strong>safe device layout</strong> with automatic undo; OBS and Discord are not quieted</li><li><strong>GPU overclocking</strong> behind its own flag; Windows protection stays on</li></ul><details class="more"><summary><span>All changes (15)</span><i aria-hidden="true"></i></summary><ul class="plain"><li><strong>New interface:</strong> its own title bar, a live frame-time chart, a core load map. The home screen charts can be turned off in settings ("Live charts on the home screen").</li><li><strong>New icon</strong>: the same mark as in the title bar, in the window, the taskbar, the tray and the shortcuts.</li><li><strong>"Optimize devices" button on the home screen:</strong> press it once (with the game closed) and restart the PC. It shows the state: "restart needed" or "active". "Put back" undoes everything.</li><li>The Devices page shows the layout as a clear table: role, device, now → after restart.</li><li><strong>The device layout is safe now:</strong> storage is not touched, MSI only where the device supports it, laptops are not touched. If Windows did not start or crashed after the change, everything is reverted by itself. The old layout of earlier versions is replaced automatically at the first start.</li><li><strong>OBS, Discord, audio and VR software are no longer quieted</strong> in Auto mode. Game launchers are left alone too.</li><li>Background processes get low I/O priority, so the game reads from disk first.</li><li><strong>GPU overclocking (NVIDIA):</strong> core, memory and voltage sliders, saved profiles, "Apply at start", "Reset to stock". <strong>Guard:</strong> if a blue screen or sudden power-off happened after an overclock, the profile is not applied at the next start. An ordinary restart does not reset the overclock.</li><li>Overclocking stays hidden behind a feature flag. <a href="#overclock">How to turn it on</a>. Use it at your own risk.</li><li><strong>Toolbox has no switches that turn off Windows protection.</strong> "Protection for speed" was removed: the earlier values come back by themselves at the first start. An extra mouse setting with no effect was removed (RawMouseThrottleDuration).</li><li>The language changes immediately, without leaving settings. Only Russian and English are in the program.</li><li>Fixed: long captions on the home screen and long profile names are no longer cut with "…".</li><li><strong>No journal on screen any more.</strong> If something goes wrong, a Windows error window opens at once. During a game the tray shows a notice right away and the window opens once the game is closed. The details go to the log file <code>%LOCALAPPDATA%\DomainScheduler\log.txt</code>. The "Copy report" button is gone; where the journal was, a "This system" panel shows Windows, processor, graphics card and driver, memory, display and Game Mode.</li><li>The Devices page lists <strong>every USB controller</strong> (e.g. USB 3.10 and USB 3.0). The one with the mouse, keyboard or game controller gets a core of its own.</li><li>The font card was removed from the About page.</li></ul></details></div></div>
+</div></section>
+
+<section id="expect"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">02</span><span class="acc">▍</span>What to expect</div><h2>What to expect</h2><p>Honestly, so nobody is disappointed.</p></div>
+  <div class="notes"><div class="p"><span class="ix">01</span><p><strong>Average FPS usually barely changes.</strong> The app helps with smoothness: fewer drops and stutters. In numbers, that is your 1% low.</p></div><div class="p"><span class="ix">02</span><p><strong>It doesn't help on every PC.</strong> If the graphics card is the limit, there may be no difference. That's normal. The app hasn't been tested on laptops yet.</p></div><div class="p"><span class="ix">03</span><p><strong>It does not work with every game.</strong> Games under a kernel anti-cheat (Vanguard — Valorant; EasyAntiCheat — for example Fortnite, Apex Legends, Rust; BattlEye — for example Rainbow Six Siege, PUBG and others) are never opened by Toolbox. While an anti-cheat client that protects the game is running (for example FACEIT with CS2), the game itself is not touched either. In these cases only the background part works: programs behind the game are quieted, but the game gets no cores of its own, so the effect is smaller. In games whose threads have no names, the app recognises them only approximately.</p></div></div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">03</span><span class="acc">▍</span>How to use</div><h2>How to use it</h2><p>Four steps. The app does the rest. The Domain OS Toolbox shortcut is on your desktop, and the app starts with Windows.</p></div>
+  <ol class="steps"><li><span class="p"><b>Press "Turn on Auto".</b> The app finds the game by itself, gives it the best cores and quiets background programs. When the game closes, everything goes back.</span></li><li><span class="p"><b>Press "Auto-tune"</b> and keep playing as usual for about eight minutes. The app compares settings by frame time.</span></li><li><span class="p"><b>Press "Apply"</b> when auto-tune finishes. The new values only take effect when you press it.</span></li><li><span class="p"><b>Press "Optimize devices" once</b> with the game closed, and restart the PC. "Put back" undoes it.</span></li></ol>
+  <div class="cards two shots">
+    <figure class="shot"><div class="frame"><video controls muted playsinline loop preload="metadata" poster="img/en-home-active.webp" width="1920" height="1080" aria-label="Video: four steps in Toolbox"><source src="img/guide-en.webm" type="video/webm"></video></div><figcaption><span class="chip">video</span>The four steps. The video is made on an interface image.</figcaption></figure>
+    <div class="p act"><div class="cap"><span class="acc">▍</span>Optimize devices<span class="r">once</span></div>
+    <p style="margin-top:10px">Each key device gets a core of its own: the USB controller with the mouse, the graphics card, the network card. Storage is not touched, MSI only where the device supports it, laptops are not touched. If Windows did not start or crashed after the change, everything is reverted by itself. The button shows the state: "restart needed" or "active".</p></div>
+  </div>
+  
+</div></section>
+
+<section id="features"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">04</span><span class="acc">▍</span>What it does</div><h2>What the app does</h2><p>While you play. No input needed.</p></div>
+  <div class="cards"><div class="p card"><div class="hd"><span class="ix">01</span><h3>The best cores for the game</h3></div><p>The most important parts of the game run on the fastest CPU cores and don't get in each other's way.</p></div><div class="p card"><div class="hd"><span class="ix">02</span><h3>A quieter background</h3></div><p>Your browser and other background programs get fewer resources and low disk priority while you play, so the game reads from disk first. OBS, Discord, audio and VR software and game launchers are left alone.</p></div><div class="p card"><div class="hd"><span class="ix">03</span><h3>Cores free of extra work</h3></div><p>Your mouse, graphics card and network also keep the CPU busy. The app notices which cores they occupy and moves the game to free ones.</p></div><div class="p card"><div class="hd"><span class="ix">04</span><h3>Auto-tune</h3></div><p>Tries different settings while you play, compares smoothness and offers the best one. Nothing changes until you press "Apply".</p></div><div class="p card"><div class="hd"><span class="ix">05</span><h3>Quiet timers</h3></div><p>Some background apps, like RGB lighting and monitoring tools, wake the CPU thousands of times a second. The app calms that down while you play.</p></div><div class="p card"><div class="hd"><span class="ix">06</span><h3>Everything goes back</h3></div><p>Before any change, the app remembers how things were and restores them when the game closes. Even after a crash.</p></div></div>
+</div></section>
+
+<section id="overclock"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">05</span><span class="acc">▍</span>Overclocking</div><h2>GPU overclocking (NVIDIA)</h2><p>An advanced function. It is hidden behind a feature flag, and you use it at your own risk.</p></div>
+  <div class="split oc">
+    <div>
+      <ol class="steps"><li><span class="p">Turn on <b>"Advanced mode"</b> at the top right.</span></li><li><span class="p">Open the <b>"Settings"</b> gear → <b>"Feature flags"</b>.</span></li><li><span class="p">Turn on <b>"GPU overclocking (clock offsets and voltage boost, NVIDIA)"</b>.</span></li><li><span class="p">The sliders appear on the <b>"Graphics card"</b> page: core, memory and voltage, profiles, "Apply at start", "Reset to stock".</span></li></ol>
+      <div class="p warnbox">
+        <div class="cap">▲ At your own risk</div>
+        <p><strong>Crash guard:</strong> if a blue screen or sudden power-off happened after an overclock, the profile is not applied at the next start. An ordinary restart does not reset the overclock.</p>
+        <p>Wrong values make the card unstable, and extra voltage shortens its life.</p>
+      </div>
+    </div>
+    <figure class="shot"><div class="frame"><img src="img/en-gpu.webp" width="1920" height="1032" alt="The Graphics card page with the overclocking sliders" loading="lazy"></div><figcaption><span class="chip">interface image</span>The Graphics card page after the flag is on</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="advanced"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">06</span><span class="acc">▍</span>Advanced users</div><h2>For advanced users</h2><p>The "Advanced mode" switch at the top right.</p></div>
+  <div class="notes"><div class="p"><span class="ix">01</span><p>Everything else lives there: the processor map, core masks, threads and processes, device interrupts, power and graphics card. Regular users don't need it.</p></div><div class="p"><span class="ix">02</span><p><strong>Toolbox has no switches that turn off Windows protection.</strong> So games with anti-cheat work as usual.</p></div></div>
+</div></section>
+
+<section id="safety"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">07</span><span class="acc">▍</span>Safety</div><h2>Safety</h2><p>The app works like any normal program.</p></div>
+  <div class="cards"><div class="p card"><div class="hd"><span class="ix">01</span><h3>No drivers</h3></div><p>Only standard Windows features, no drivers of its own.</p></div><div class="p card"><div class="hd"><span class="ix">02</span><h3>Stays out of the game</h3></div><p>Injects nothing into the game and doesn't touch its memory.</p></div><div class="p card"><div class="hd"><span class="ix">03</span><h3>Open source</h3></div><p>The source of DomainScheduler, the core of the app, is on GitHub.</p></div></div>
+</div></section>
+
+<section id="download"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">08</span><span class="acc">▍</span>Download</div><h2>Download</h2><p>If you install the Domain OS playbook, you don't need this separately: it installs Toolbox and puts a shortcut on the desktop.</p></div>
+  <div class="p dl">
+    <div class="head"><span class="blip" aria-hidden="true"></span><span class="fn">DOMAINOS-TOOLBOX-1.14.1.EXE</span><span class="chip on">in playbook 2.1.1</span></div>
+    <div class="body">
+      <dl>
+        <dt>file</dt><dd><span class="nw">DomainOS-Toolbox-1.14.1.exe</span> · 71.1 MB</dd>
+        <dt>sha-256</dt><dd class="hash">ff1f85b3d8a28d8919206569eae80144852b45f17e704650c4b9eecbc5c7349e</dd>
+        <dt>check</dt><dd class="prompt">Get-FileHash .\DomainOS-Toolbox-1.14.1.exe</dd>
+        <dt>system</dt><dd>Windows 10 and 11, 64-bit</dd>
+        <dt>install</dt><dd>not needed, run as administrator</dd>
+      </dl>
+      <div class="actions"><a class="btn main" href="https://github.com/6kane1/DomainOS/releases/download/v2.1.1/DomainOS-Toolbox-1.14.1.exe">Download Toolbox <span class="k">1.14.1</span></a><a class="btn" href="https://github.com/6kane1/DomainScheduler">Source code</a></div>
+    </div>
+  </div>
+</div></section>
+</main>
+<footer><div class="wrap"><span>DOMAIN OS TOOLBOX 1.14.1</span><a href="index.html">Domain OS playbook</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="ru/scheduler.html" hreflang="ru">Русский</a><span>Anti-cheat developers have not confirmed compatibility. Use at your own risk.</span></div></footer>
+<script src="site.js?v=211q"></script>
+</body></html>

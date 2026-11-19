@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Domain OS Toolbox</title>
+<meta name="description" content="Domain OS Toolbox — программа для игр: отдаёт игре лучшие ядра, приглушает фон, оптимизирует устройства. Всё возвращается само.">
+<meta name="theme-color" content="#060608">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="../img/icon-256.png">
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="preload" href="../fonts/Inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../site.css?v=211q">
+</head><body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>DOMAIN OS</a>
+    <span class="status"><span class="blip" aria-hidden="true"></span>TOOLBOX <b>1.14.1</b></span>
+    <nav class="nav" aria-label="Страницы"><a href="index.html">Плейбук</a><a href="install.html">Установка</a><a href="scheduler.html" aria-current="page">Toolbox</a><a href="results.html">Замеры</a></nav>
+    <a class="dc" href="https://discord.gg/wBGsV7WEpm" rel="noopener" aria-label="Наш Discord-сервер"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.8 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 10.8 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.5-4.3-.8-8.1-3.2-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg><span>Discord</span></a>
+    <a class="lang" href="../scheduler.html" hreflang="en" lang="en">EN</a>
+    <a class="btn main small" href="#download">Скачать</a>
+  </div>
+  <div class="subnav"><div class="wrap"><span>НА СТРАНИЦЕ</span><a href="#new">Новое в 1.14.1</a><a href="#expect">Чего ждать</a><a href="#how">Как пользоваться</a><a href="#features">Что делает</a><a href="#overclock">Разгон видеокарты</a><a href="#advanced">Для опытных</a><a href="#safety">Безопасность</a><a href="#download">Скачать</a></div></div>
+  <i class="progress" aria-hidden="true"></i>
+</header>
+<main>
+
+<div class="hero"><div class="wrap">
+  <div>
+    <p class="kicker"><span class="acc">▍</span> Domain OS Toolbox 1.14.1</p>
+    <h1>Игра получает <em>лучшие ядра</em></h1>
+    <p class="lead">Toolbox — программа для игр, которую ставит Domain OS. Включаете Auto, запускаете игру, и программа сама отдаёт игре лучшие ядра процессора и приглушает всё лишнее в фоне. Закрыли игру — всё вернулось как было.</p>
+    <div class="actions">
+      <a class="btn main" href="#download">Скачать 1.14.1</a>
+      <a class="btn" href="#how">Как пользоваться</a>
+    </div>
+    <p class="meta">бесплатно<i>/</i>ничего не встраивает в игру<i>/</i>всё возвращается само</p>
+  </div>
+  <figure class="shot"><div class="frame"><img src="../img/ru-home-active.webp" width="1920" height="1032" alt="Главный экран Toolbox: Auto включён, график времени кадра, карта процессора"></div><figcaption><span class="chip">изображение интерфейса</span>Главный экран: Auto работает. Числа на экране — пример.</figcaption></figure>
+</div></div>
+
+<div class="cpustrip"><div class="wrap">
+  <div class="cpumap"><div class="cap"><span class="acc">▍</span>Карта процессора · схема<span class="r leg"><span><i style="background:var(--pink)"></i>игра</span><span><i style="background:var(--silver);opacity:.6"></i>фон</span><span><i style="background:var(--warn)"></i>прерывания</span></span></div><div class="cores" role="img" aria-label="Схема: игра на ядрах 0–7, прерывания на ядрах 12 и 14"><div class="c g"><div class="b"><i style="height:78%"></i></div><span>00</span></div><div class="c g"><div class="b"><i style="height:64%"></i></div><span>01</span></div><div class="c g"><div class="b"><i style="height:82%"></i></div><span>02</span></div><div class="c g"><div class="b"><i style="height:71%"></i></div><span>03</span></div><div class="c g"><div class="b"><i style="height:88%"></i></div><span>04</span></div><div class="c g"><div class="b"><i style="height:59%"></i></div><span>05</span></div><div class="c g"><div class="b"><i style="height:74%"></i></div><span>06</span></div><div class="c g"><div class="b"><i style="height:69%"></i></div><span>07</span></div><div class="c "><div class="b"><i style="height:22%"></i></div><span>08</span></div><div class="c "><div class="b"><i style="height:8%"></i></div><span>09</span></div><div class="c "><div class="b"><i style="height:14%"></i></div><span>10</span></div><div class="c "><div class="b"><i style="height:6%"></i></div><span>11</span></div><div class="c q"><div class="b"><i style="height:46%"></i></div><span>12</span></div><div class="c "><div class="b"><i style="height:9%"></i></div><span>13</span></div><div class="c q"><div class="b"><i style="height:38%"></i></div><span>14</span></div><div class="c "><div class="b"><i style="height:5%"></i></div><span>15</span></div></div></div>
+  <div class="facts"><span>одна кнопка Auto</span><span>автоподбор настроек</span><span>оптимизация устройств</span><span>античиты работают</span><span>всё возвращается само</span><span>бесплатно</span></div>
+</div></div>
+
+<section id="new"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>Новое в 1.14.1</div><h2>Что нового в Toolbox 1.14.1</h2><p>Главное — коротко, полный список под кнопкой. Изменения Windows в плейбуке 2.1.1 — <a href="index.html#new">на главной странице</a>.</p></div>
+  <div class="newgrid one"><div class="p newp"><div class="cap"><span class="acc">▍</span>Toolbox 1.14.1</div><ul class="keyl"><li><strong>Новый интерфейс</strong> с живым графиком кадров и новый значок</li><li>Кнопка <strong>«Оптимизация устройств»</strong>: нажать один раз и перезагрузить ПК</li><li><strong>Безопасная раскладка устройств</strong> с автооткатом, OBS и Discord не приглушаются</li><li><strong>Разгон видеокарты</strong> за отдельным флагом, защита Windows не отключается</li></ul><details class="more"><summary><span>Все изменения (15)</span><i aria-hidden="true"></i></summary><ul class="plain"><li><strong>Новый интерфейс:</strong> своя шапка окна, живой график времени кадра, карта загрузки ядер. Графики на главном экране можно выключить в настройках («Живые графики на главном экране»).</li><li><strong>Новый значок</strong> — тот же знак, что в шапке программы: в окне, на панели задач, в трее и на ярлыках.</li><li><strong>Кнопка «Оптимизация устройств» на главном экране:</strong> нажать один раз (игра должна быть закрыта) и перезагрузить ПК. Кнопка показывает состояние: «нужна перезагрузка» или «действует». Ссылка «Вернуть как было» отменяет всё.</li><li>Страница «Устройства» показывает раскладку понятной таблицей: роль, устройство, сейчас → после перезагрузки.</li><li><strong>Раскладка устройств стала безопасной:</strong> диски не трогаются, MSI включается только там, где устройство его поддерживает, ноутбуки не трогаются. Если Windows после изменений не загрузилась или упала, всё откатывается само. Старая раскладка прошлых версий заменяется автоматически при первом запуске.</li><li><strong>OBS, Discord, программы звука и VR больше не приглушаются</strong> в режиме Auto. Лаунчеры игр тоже не трогаются.</li><li>Фоновые процессы получают низкий приоритет ввода-вывода — игра первой читает с диска.</li><li><strong>Разгон видеокарты (NVIDIA):</strong> ползунки ядра, памяти и напряжения, сохранение профилей, «Применять при запуске», «Сбросить к стандарту». <strong>Защита:</strong> если после разгона был синий экран или внезапное выключение, профиль при следующем запуске не применяется. Обычная перезагрузка разгон не сбрасывает.</li><li>Разгон по-прежнему спрятан за флагом функции. <a href="#overclock">Как включить</a>. Им пользуются на свой риск.</li><li><strong>В Toolbox нет переключателей, которые отключают защиту Windows.</strong> «Защита ради скорости» убрана: прежние значения возвращаются сами при первом запуске. Убрана лишняя настройка мыши (RawMouseThrottleDuration — без эффекта).</li><li>Язык меняется сразу, без выхода из настроек. В программе только русский и английский.</li><li>Исправлено: длинные надписи на главном экране и имена профилей больше не обрезаются «…».</li><li><strong>Журнала на экране больше нет.</strong> Если что-то пошло не так, сразу открывается окно ошибки Windows. Во время игры в трее сразу появляется уведомление, а окно откроется, когда игра закрыта. Подробности пишутся в файл журнала <code>%LOCALAPPDATA%\DomainScheduler\log.txt</code>. Кнопки «Копировать отчёт» больше нет, на месте журнала — панель «Эта система»: Windows, процессор, видеокарта и драйвер, память, экран, игровой режим.</li><li>На странице «Устройства» показываются <strong>все USB-контроллеры</strong> (например, USB 3.10 и USB 3.0). Своё ядро получает тот, к которому подключены мышь, клавиатура или геймпад.</li><li>На странице «О программе» убрана карточка шрифта.</li></ul></details></div></div>
+</div></section>
+
+<section id="expect"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">02</span><span class="acc">▍</span>Чего ждать</div><h2>Чего ждать</h2><p>Честно, чтобы не было лишних ожиданий.</p></div>
+  <div class="notes"><div class="p"><span class="ix">01</span><p><strong>Средний FPS обычно почти не меняется.</strong> Программа помогает с плавностью: меньше просадок и рывков. В цифрах это 1% low.</p></div><div class="p"><span class="ix">02</span><p><strong>Помогает не на каждом ПК.</strong> Если всё упирается в видеокарту, разницы может не быть. Это нормально. На ноутбуках программа пока не проверена.</p></div><div class="p"><span class="ix">03</span><p><strong>Работает не со всеми играми.</strong> Игры под античитом уровня ядра (Vanguard — Valorant; EasyAntiCheat — например Fortnite, Apex Legends, Rust; BattlEye — например Rainbow Six Siege, PUBG и другие) Toolbox не открывает вовсе. Пока работает клиент античита, который защищает игру (например FACEIT с CS2), саму игру он тоже не трогает. В этих случаях действует только фон: программы на заднем плане приглушаются, а игре ядра не раздаются, поэтому эффект меньше. В играх, где потоки без имён, программа распознаёт их приблизительно.</p></div></div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">03</span><span class="acc">▍</span>Как пользоваться</div><h2>Как пользоваться</h2><p>Четыре шага. Всё остальное программа делает сама. Ярлык Domain OS Toolbox лежит на рабочем столе, программа запускается вместе с Windows.</p></div>
+  <ol class="steps"><li><span class="p"><b>Нажмите «Включить Auto».</b> Программа сама найдёт игру, отдаст ей лучшие ядра и приглушит фоновые программы. Когда игра закроется, всё вернётся.</span></li><li><span class="p"><b>Нажмите «Автоподбор»</b> и играйте как обычно, минут восемь. Программа сравнивает настройки по времени кадра.</span></li><li><span class="p"><b>Нажмите «Применить»</b>, когда автоподбор закончит. Без этой кнопки новые значения не включаются.</span></li><li><span class="p"><b>Один раз нажмите «Оптимизация устройств»</b>, когда игра закрыта, и перезагрузите компьютер. Ссылка «Вернуть как было» отменяет это.</span></li></ol>
+  <div class="cards two shots">
+    <figure class="shot"><div class="frame"><video controls muted playsinline loop preload="metadata" poster="../img/ru-home-active.webp" width="1920" height="1080" aria-label="Видео: четыре шага в Toolbox"><source src="../img/guide-ru.webm" type="video/webm"></video></div><figcaption><span class="chip">видео</span>Четыре шага. Видео собрано на изображении интерфейса.</figcaption></figure>
+    <figure class="shot"><div class="frame"><img src="../img/ru-devices.webp" width="1920" height="1032" alt="Страница «Устройства»: раскладка таблицей — роль, устройство, сейчас и после перезагрузки" loading="lazy"></div><figcaption><span class="chip">изображение интерфейса</span>Страница «Устройства» после «Оптимизации устройств»</figcaption></figure>
+  </div>
+  <div class="p act" style="margin-top:16px"><div class="cap"><span class="acc">▍</span>Оптимизация устройств<span class="r">один раз</span></div>
+    <p style="margin-top:10px">Каждое важное устройство получает своё ядро: USB-контроллер с мышью, видеокарта, сетевая карта. Диски не трогаются, MSI включается только там, где устройство его поддерживает, ноутбуки не трогаются. Если Windows после изменений не загрузилась или упала, всё откатывается само. Кнопка показывает состояние: «нужна перезагрузка» или «действует».</p></div>
+</div></section>
+
+<section id="features"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">04</span><span class="acc">▍</span>Что делает</div><h2>Что делает программа</h2><p>Пока вы играете. Без вашего участия.</p></div>
+  <div class="cards"><div class="p card"><div class="hd"><span class="ix">01</span><h3>Лучшие ядра для игры</h3></div><p>Самые важные части игры работают на самых быстрых ядрах процессора и не мешают друг другу.</p></div><div class="p card"><div class="hd"><span class="ix">02</span><h3>Тише в фоне</h3></div><p>Браузер и другие фоновые программы на время игры получают меньше ресурсов и низкий приоритет диска — игра первой читает с диска. OBS, Discord, программы звука и VR, лаунчеры игр не трогаются.</p></div><div class="p card"><div class="hd"><span class="ix">03</span><h3>Ядра без лишней работы</h3></div><p>Мышь, видеокарта и сеть тоже нагружают процессор. Программа замечает занятые ими ядра и уводит игру на свободные.</p></div><div class="p card"><div class="hd"><span class="ix">04</span><h3>Автоподбор</h3></div><p>Пробует разные настройки, пока вы играете, сравнивает плавность и предлагает лучший вариант. Без вашего «Применить» ничего не меняется.</p></div><div class="p card"><div class="hd"><span class="ix">05</span><h3>Тихие таймеры</h3></div><p>Некоторые фоновые программы, например подсветка и мониторинг, будят процессор тысячи раз в секунду. На время игры программа это успокаивает.</p></div><div class="p card"><div class="hd"><span class="ix">06</span><h3>Всё возвращается</h3></div><p>Перед любым изменением программа запоминает, как было, и возвращает всё, когда игра закрывается. Даже после сбоя.</p></div></div>
+</div></section>
+
+<section id="overclock"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">05</span><span class="acc">▍</span>Разгон</div><h2>Разгон видеокарты (NVIDIA)</h2><p>Расширенная функция. Она спрятана за флагом функции, и ею пользуются на свой риск.</p></div>
+  <div class="split oc">
+    <div>
+      <ol class="steps"><li><span class="p">Включите <b>«Расширенный режим»</b> вверху справа.</span></li><li><span class="p">Откройте шестерёнку <b>«Настройки»</b> → <b>«Флаги функций»</b>.</span></li><li><span class="p">Включите <b>«Разгон видеокарты (смещения частот и повышение напряжения, NVIDIA)»</b>.</span></li><li><span class="p">Ползунки появятся на странице <b>«Видеокарта»</b>: ядро, память и напряжение, профили, «Применять при запуске», «Сбросить к стандарту».</span></li></ol>
+      <div class="p warnbox">
+        <div class="cap">▲ На свой риск</div>
+        <p><strong>Защита от сбоев:</strong> если после разгона был синий экран или внезапное выключение, профиль при следующем запуске не применяется. Обычная перезагрузка разгон не сбрасывает.</p>
+        <p>Неверные значения делают карту нестабильной, а лишнее напряжение сокращает её срок службы.</p>
+      </div>
+    </div>
+    <figure class="shot"><div class="frame"><img src="../img/ru-gpu.webp" width="1920" height="1032" alt="Страница «Видеокарта» с ползунками разгона" loading="lazy"></div><figcaption><span class="chip">изображение интерфейса</span>Страница «Видеокарта» после включения флага</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="advanced"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">06</span><span class="acc">▍</span>Для опытных</div><h2>Для опытных</h2><p>Переключатель «Расширенный режим» вверху справа.</p></div>
+  <div class="notes"><div class="p"><span class="ix">01</span><p>Там всё остальное: карта процессора, маски ядер, потоки и процессы, прерывания устройств, питание и видеокарта. Обычному пользователю этот режим не нужен.</p></div><div class="p"><span class="ix">02</span><p><strong>В Toolbox нет переключателей, которые отключают защиту Windows.</strong> Поэтому игры с античитом работают как обычно.</p></div></div>
+</div></section>
+
+<section id="safety"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">07</span><span class="acc">▍</span>Безопасность</div><h2>Безопасность</h2><p>Программа работает как обычное приложение.</p></div>
+  <div class="cards"><div class="p card"><div class="hd"><span class="ix">01</span><h3>Без драйверов</h3></div><p>Только стандартные возможности Windows, никаких своих драйверов.</p></div><div class="p card"><div class="hd"><span class="ix">02</span><h3>Не лезет в игру</h3></div><p>Ничего не встраивает в игру и не трогает её память.</p></div><div class="p card"><div class="hd"><span class="ix">03</span><h3>Открытый код</h3></div><p>Исходники DomainScheduler, главной части программы, лежат на GitHub.</p></div></div>
+</div></section>
+
+<section id="download"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">08</span><span class="acc">▍</span>Скачать</div><h2>Скачать</h2><p>Если вы ставите плейбук Domain OS, качать отдельно не нужно: он поставит Toolbox сам и добавит ярлык на рабочий стол.</p></div>
+  <div class="p dl">
+    <div class="head"><span class="blip" aria-hidden="true"></span><span class="fn">DOMAINOS-TOOLBOX-1.14.1.EXE</span><span class="chip on">в плейбуке 2.1.1</span></div>
+    <div class="body">
+      <dl>
+        <dt>файл</dt><dd><span class="nw">DomainOS-Toolbox-1.14.1.exe</span> · 71,1 МБ</dd>
+        <dt>sha-256</dt><dd class="hash">ff1f85b3d8a28d8919206569eae80144852b45f17e704650c4b9eecbc5c7349e</dd>
+        <dt>проверка</dt><dd class="prompt">Get-FileHash .\DomainOS-Toolbox-1.14.1.exe</dd>
+        <dt>система</dt><dd>Windows 10 и 11, 64-бит</dd>
+        <dt>установка</dt><dd>не нужна, запуск от администратора</dd>
+      </dl>
+      <div class="actions"><a class="btn main" href="https://github.com/6kane1/DomainOS/releases/download/v2.1.1/DomainOS-Toolbox-1.14.1.exe">Скачать Toolbox <span class="k">1.14.1</span></a><a class="btn" href="https://github.com/6kane1/DomainScheduler">Исходный код</a></div>
+    </div>
+  </div>
+</div></section>
+</main>
+<footer><div class="wrap"><span>DOMAIN OS TOOLBOX 1.14.1</span><a href="index.html">Плейбук Domain OS</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="../scheduler.html" hreflang="en">English</a><span>Разработчики античитов совместимость не подтверждали. Используйте на свой риск.</span></div></footer>
+<script src="../site.js?v=211q"></script>
+</body></html>
