@@ -1,6 +1,7 @@
 name: Discord status card
-# The card in the Discord channel "00・status": version, members, website, when the bot last ran. Every hour, or by
-# hand (Run workflow).
+# The card in the Discord channel "00・status": version, members, website, when the bot last ran. Started by the bot's runs
+# when the card is older than 25 minutes (GitHub's hourly cron below fires rarely and stays as a second way in), or
+# by hand (Run workflow).
 on:
   schedule:
     - cron: '7 * * * *'
