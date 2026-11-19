@@ -10,4 +10,6 @@ $c.Run.PassThru = $true
 $c.Output.Verbosity = 'Normal'
 if ($Out) { $c.TestResult.Enabled = $true; $c.TestResult.OutputFormat = 'NUnitXml'; $c.TestResult.OutputPath = $Out }
 $r = Invoke-Pester -Configuration $c
+# No result object (Pester itself failed, e.g. writing the report) counts as a failure, never as a pass.
+if (-not $r) { Write-Host 'Pester returned no result: FAILED'; exit 1 }
 exit $(if ($r.FailedCount -gt 0 -or $r.FailedBlocksCount -gt 0 -or $r.FailedContainersCount -gt 0) { 1 } else { 0 })

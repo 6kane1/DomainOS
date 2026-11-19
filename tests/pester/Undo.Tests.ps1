@@ -270,7 +270,7 @@ Describe 'Undo-AsSystem.ps1' {
     It 'refuses a work file that is a symbolic link' {
         $real = Join-Path $script:sb.Root 'real.json'
         ConvertTo-Json -InputObject @([pscustomobject]@{ kind = 'S'; name = 'DiagTrack'; start = 2 }) | Set-Content -LiteralPath $real
-        [IO.File]::CreateSymbolicLink($script:work, $real) | Out-Null
+        New-DosSymlink $script:work $real
         (Invoke-DosScript $script:uas @{ Work = $script:work; Result = $script:result }).Code | Should -Be 1
         Get-DosRegValue 'HKLM\SYSTEM\CurrentControlSet\Services\DiagTrack' 'Start' | Should -Be 4
     }

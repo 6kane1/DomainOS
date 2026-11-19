@@ -16,6 +16,26 @@ $ErrorActionPreference = 'Stop'
 $global:DosRepo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $global:DosPlaybook = Join-Path $global:DosRepo 'playbook'
 # The PowerShell that runs these tests, for child processes: pwsh (Linux / Windows) or Windows PowerShell 5.1 (CI on Windows).
+# On Windows (CI) the real %SystemRoot% must stay in the environment: .NET Framework (crypto providers, Add-Type, the GAC)
+# and child powershell.exe processes fail without it. On Linux the sandbox gets its own Windows folder instead.
+$global:DosOnWindows = ($PSVersionTable.PSEdition -eq 'Desktop') -or ($IsWindows -eq $true)
+if (-not $global:DosRealSystemRoot) { $global:DosRealSystemRoot = $env:SystemRoot }
+# A symbolic link (Windows PowerShell 5.1 / .NET Framework has no [IO.File]::CreateSymbolicLink; Windows needs admin).
+function global:New-DosSymlink([string]$Link, [string]$Target, [switch]$Directory) {
+    if ([IO.File].GetMethod('CreateSymbolicLink')) {
+        if ($Directory) { [void][IO.Directory]::CreateSymbolicLink($Link, $Target) } else { [void][IO.File]::CreateSymbolicLink($Link, $Target) }
+        return
+    }
+    $a = @('/c', 'mklink'); if ($Directory) { $a += '/D' }
+    $o = & cmd.exe @($a + @($Link, $Target)) 2>&1
+    if ($LASTEXITCODE -ne 0) { throw "mklink failed: $o" }
+}
+# Runs a child PowerShell with the real %SystemRoot% (a test may have pointed it elsewhere).
+function global:Invoke-DosChildPs([string]$Command) {
+    $saved = $env:SystemRoot
+    if ($global:DosOnWindows) { $env:SystemRoot = $global:DosRealSystemRoot }
+    try { & $global:DosPsExe -NoProfile -NonInteractive -Command $Command | Out-Null } finally { $env:SystemRoot = $saved }
+}
 $global:DosPsExe = if ($PSVersionTable.PSEdition -eq 'Desktop') { Join-Path $PSHOME 'powershell.exe' } elseif ($IsWindows) { Join-Path $PSHOME 'pwsh.exe' } else { Join-Path $PSHOME 'pwsh' }
 
 # ---- fake registry -----------------------------------------------------------------------------------------------
@@ -254,7 +274,7 @@ function global:New-DosSandbox {
     New-Item -ItemType Directory -Force -Path $env:DosPublicDesktop | Out-Null
     $env:ProgramData = Join-Path $root 'ProgramData'
     $env:ProgramFiles = Join-Path $root 'ProgramFiles'
-    $env:SystemRoot = Join-Path $root 'Windows'
+    $env:SystemRoot = if ($global:DosOnWindows) { $global:DosRealSystemRoot } else { Join-Path $root 'Windows' }
     $env:LOCALAPPDATA = Join-Path $root 'LocalAppData'
     $env:APPDATA = Join-Path $root 'AppData'
     $env:USERNAME = 'tester'; $env:USERDOMAIN = 'PC'; $env:COMPUTERNAME = 'PC'
@@ -320,6 +340,6 @@ function global:Invoke-DosLogonCommand([string]$Argument, [string]$LocalAppData,
     $cmd = $Argument.Substring($i + 10, $Argument.Length - $i - 11)
     if ($cmd.Contains('"')) { throw 'the command contains a double quote: it would end the -Command argument on the Windows command line' }
     $pre = "function Start-Process([string]`$FilePath) { Add-Content -LiteralPath '$Record' -Value `$FilePath }; `$env:LOCALAPPDATA = '$LocalAppData'; "
-    & $global:DosPsExe -NoProfile -NonInteractive -Command ($pre + $cmd) | Out-Null
+    Invoke-DosChildPs ($pre + $cmd)
     if (Microsoft.PowerShell.Management\Test-Path -LiteralPath $Record) { return @(Microsoft.PowerShell.Management\Get-Content -LiteralPath $Record) } else { return @() }
 }

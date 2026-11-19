@@ -64,7 +64,7 @@ Describe 'Test-DomainOSFile' {
     It 'refuses a symbolic link even when its owner is SYSTEM' {
         Mock Get-DomainOSOwner { 'S-1-5-18' }
         $l = Join-Path $script:tmp 'link.json'
-        [IO.File]::CreateSymbolicLink($l, $script:f) | Out-Null
+        New-DosSymlink $l $script:f
         Test-DomainOSFile $l | Should -BeFalse
         ($script:logged -join ' ') | Should -Match 'link'
     }
@@ -189,12 +189,13 @@ Describe 'Repair-DomainOSTree / Protect-DomainOSData' {
         $adminFile = Join-Path $script:data 'Undo\state.json'; Set-Content -LiteralPath $adminFile -Value '{}'
         $userFile = Join-Path $script:data 'Undo\planted.json'; Set-Content -LiteralPath $userFile -Value '{}'
         # (a sub-folder with a foreign owner needs [IO.Directory]::SetAccessControl, .NET Framework only: not testable here)
-        $link = Join-Path $script:data 'Undo\link.json'; [IO.File]::CreateSymbolicLink($link, '/etc/hostname') | Out-Null
+        $outside = if ($global:DosOnWindows) { Join-Path $global:DosRealSystemRoot 'System32\drivers\etc\hosts' } else { '/etc/hostname' }
+        $link = Join-Path $script:data 'Undo\link.json'; New-DosSymlink $link $outside
         $script:owners = @{ $adminFile = 'S-1-5-21-1-2-3-1001'; $userFile = 'S-1-5-21-1-2-3-1002' }
         Mock Get-DomainOSOwner { if ($script:owners.ContainsKey($Path)) { $script:owners[$Path] } else { 'S-1-5-32-544' } }
         Repair-DomainOSTree $script:data
         Microsoft.PowerShell.Management\Test-Path -LiteralPath $link | Should -BeFalse -Because 'links inside the data folder are removed'
-        Microsoft.PowerShell.Management\Test-Path -LiteralPath '/etc/hostname' | Should -BeTrue -Because 'the link target is not touched'
+        Microsoft.PowerShell.Management\Test-Path -LiteralPath $outside | Should -BeTrue -Because 'the link target is not touched'
         Should -Invoke Set-DomainOSOwner -ParameterFilter { $Path -eq $adminFile } -Times 1 -Exactly
         Should -Invoke Set-DomainOSOwner -ParameterFilter { $Path -eq $userFile } -Times 0 -Exactly
         Microsoft.PowerShell.Management\Test-Path -LiteralPath $userFile | Should -BeTrue -Because 'a planted file is left, Test-DomainOSFile refuses it later'
@@ -203,7 +204,7 @@ Describe 'Repair-DomainOSTree / Protect-DomainOSData' {
     It 'refuses when the data folder itself is a link' {
         $target = Join-Path $script:tmp 'elsewhere'; New-Item -ItemType Directory -Path $target -Force | Out-Null
         $DomainOSData = Join-Path $script:tmp ('dlink-' + [Guid]::NewGuid().ToString('N').Substring(0, 6))
-        [IO.Directory]::CreateSymbolicLink($DomainOSData, $target) | Out-Null
+        New-DosSymlink $DomainOSData $target -Directory
         { Protect-DomainOSData } | Should -Throw '*link*'
     }
     It 'refuses without administrator rights' {
@@ -214,6 +215,7 @@ Describe 'Repair-DomainOSTree / Protect-DomainOSData' {
 
 Describe 'Register-DomainOSOpenAtLogon (open a page once per account)' {
     BeforeAll {
+        $script:savedSystemRoot = $env:SystemRoot
         $env:SystemRoot = '/win'
         function Get-Cmd([string]$arg) {
             # conhost --headless "powershell.exe" ... -Command "<cmd>": the command is everything inside the last quotes
@@ -222,10 +224,11 @@ Describe 'Register-DomainOSOpenAtLogon (open a page once per account)' {
         function Invoke-AtLogon([string]$cmd, [string]$lad) {
             $rec = Join-Path $script:tmp 'opened.txt'
             $pre = "function Start-Process([string]`$FilePath) { Add-Content -LiteralPath '$rec' -Value `$FilePath }; `$env:LOCALAPPDATA = '$lad'; "
-            & $global:DosPsExe -NoProfile -NonInteractive -Command ($pre + $cmd) | Out-Null
+            Invoke-DosChildPs ($pre + $cmd)
             if (Microsoft.PowerShell.Management\Test-Path -LiteralPath $rec) { return @(Microsoft.PowerShell.Management\Get-Content -LiteralPath $rec) } else { return @() }
         }
     }
+    AfterAll { $env:SystemRoot = $script:savedSystemRoot }
     BeforeEach {
         Remove-Item -LiteralPath (Join-Path $script:tmp 'opened.txt') -ErrorAction SilentlyContinue
         $script:page = Join-Path $script:tmp "What's new.html"; Set-Content -LiteralPath $script:page -Value '<html></html>'
@@ -233,7 +236,7 @@ Describe 'Register-DomainOSOpenAtLogon (open a page once per account)' {
     It 'the generated command: opens once, not again, again for a new marker, quotes an apostrophe in the path' {
         Mock New-ScheduledTaskAction { $global:captured = $Argument; [pscustomobject]@{} }
         try { Register-DomainOSOpenAtLogon 'T' $script:page 'whatsnew-2.1.8' } catch { }
-        $global:captured | Should -Match '^--headless "/win[\\/]System32[\\/]WindowsPowerShell[\\/]v1\.0[\\/]powershell\.exe" -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -Command "'
+        $global:captured | Should -Match '^--headless "[\\/]win[\\/]System32[\\/]WindowsPowerShell[\\/]v1\.0[\\/]powershell\.exe" -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -Command "'
         $cmd = Get-Cmd $global:captured
         $cmd | Should -Not -Match '"' -Because 'a double quote would end the -Command argument on the Windows command line'
         $lad = Join-Path $script:tmp ('lad-' + [Guid]::NewGuid().ToString('N').Substring(0, 6))

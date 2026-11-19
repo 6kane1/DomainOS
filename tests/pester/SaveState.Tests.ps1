@@ -49,7 +49,7 @@ Describe 'Save-State.ps1' {
         $svc = $s.services | Where-Object name -eq 'SysMain'
         $svc.start | Should -Be 3; $svc.running | Should -BeTrue
         ($s.tasks | Where-Object path -eq $taskGone) | Should -BeNullOrEmpty
-        ($s.tasks | Where-Object enabled -eq $false).Count | Should -Be 1
+        @($s.tasks | Where-Object enabled -eq $false).Count | Should -Be 1
         Test-Path -LiteralPath $script:orig | Should -BeTrue
         (Get-Content -Raw $script:orig) | Should -Be (Get-Content -Raw $script:state)
         Test-Path -LiteralPath "$script:state.tmp" | Should -BeFalse
@@ -90,7 +90,7 @@ Describe 'Save-State.ps1' {
         (Invoke-DosScript $script:ss).Code | Should -Be 0 -Because 'the first run moves the file into place'
         $r = Invoke-DosScript $script:ss
         $r.Code | Should -Be 1 -Because 'PowerShell passes "" for $null, which File.Replace refuses'
-        $r.Out | Should -Match 'empty'
+        $r.Out | Should -Match 'empty|not of a legal form' -Because '.NET (pwsh) and .NET Framework (powershell.exe) word it differently'
     }
 
     It 'state.json missing but state.original.json there: the original is used' {
