@@ -690,18 +690,26 @@ def say(tid, text, ref=None, ping_owner=False):
     return m
 
 
+def is_command(text):
+    """A bot command: /word (shown everywhere) or !word (the old prefix, still understood). Typed as a plain message:
+    the bot registers no Discord slash commands (those need a server that answers within 3 s), so Discord sends
+    "/install" as text when no registered command has that name."""
+    t = text.lstrip()
+    return len(t) > 1 and t[0] in '/!' and (t[1].isalpha())
+
+
 def handle_help(t):
     """A new help post: a FAQ answer when it is a basic question, otherwise the author is called."""
     starter = dc('GET', f'/channels/{t["id"]}/messages/{t["id"]}')
-    if (starter.get('content') or '').lstrip().startswith('!'):
+    if is_command(starter.get('content') or ''):
         return False                                   # the post starts with a command: only the command is answered
     text = (t.get('name') or '') + ' ' + (starter.get('content') or '')
     if faq_hits(text):
         reply(t['id'], faq_reply(text) + [card([T(COMMANDS_HINT)])])
     else:
         say(t['id'], f'<@&{OWNER_ROLE}> 🙋 a new question needs a person · новый вопрос — нужен человек.\n'
-                     '🇬🇧 Thanks! The author will answer here. Meanwhile add: versions, `winver`, CPU/GPU and the two logs (`!logs`). · '
-                     '🇷🇺 Спасибо! Автор ответит здесь. Пока добавьте: версии, `winver`, процессор/видеокарту и два журнала (`!logs`).', ping_owner=True)
+                     '🇬🇧 Thanks! The author will answer here. Meanwhile add: versions, `winver`, CPU/GPU and the two logs (`/logs`). · '
+                     '🇷🇺 Спасибо! Автор ответит здесь. Пока добавьте: версии, `winver`, процессор/видеокарту и два журнала (`/logs`).', ping_owner=True)
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -720,34 +728,34 @@ ALIAS = {
     'вылеты': 'crash', 'бсод': 'crash', 'журнал': 'logs', 'логи': 'logs', 'помощь': 'help', 'команды': 'help', 'вопрос': 'ask',
     'человек': 'human', 'автор': 'human', 'admin': 'human', 'owner': 'human',
 }
-COMMANDS_HINT = ('🙋 **Didn\'t help? Type `!human` — the author will answer. · Не помогло? Напишите `!человек` — ответит автор.**\n'
-                 '-# 🇬🇧 All commands: `!help` · ask the bot: `!ask your question`. · 🇷🇺 Все команды: `!help` · спросить бота: `!ask ваш вопрос`.')
-HUMAN_BLOCK = ('> ## 🙋 `!human` · `!человек`\n'
-               '> 🇬🇧 **Remember this one: it calls the author.** The bot did not help, the answer does not fit, something is broken — type `!human` and the author answers right here.\n'
-               '> 🇷🇺 **Запомните эту команду: она зовёт автора.** Бот не помог, ответ не подходит, что-то сломалось — напишите `!человек`, и автор ответит прямо здесь.\n')
+COMMANDS_HINT = ('🙋 **Didn\'t help? Type `/human` — the author will answer. · Не помогло? Напишите `/человек` — ответит автор.**\n'
+                 '-# 🇬🇧 All commands: `/help` · ask the bot: `/ask your question`. · 🇷🇺 Все команды: `/help` · спросить бота: `/ask ваш вопрос`.')
+HUMAN_BLOCK = ('> ## 🙋 `/human` · `/человек`\n'
+               '> 🇬🇧 **Remember this one: it calls the author.** The bot did not help, the answer does not fit, something is broken — type `/human` and the author answers right here.\n'
+               '> 🇷🇺 **Запомните эту команду: она зовёт автора.** Бот не помог, ответ не подходит, что-то сломалось — напишите `/человек`, и автор ответит прямо здесь.\n')
 HELP_TEXT = (HUMAN_BLOCK + '\n## ⌨️ All commands · Все команды\n'
              '🇬🇧 Type a command in this discussion — the bot answers within about 5 minutes (it checks the server every 5 minutes). Russian names work too.\n'
              '🇷🇺 Напишите команду в этом обсуждении — бот ответит в течение ~5 минут (он проверяет сервер раз в 5 минут). Русские названия тоже работают.\n'
              '```\n'
-             '!install   !установка   how to install · как установить\n'
-             '!download  !скачать     where to download · где скачать\n'
-             '!windows   !винда       which Windows · какая Windows\n'
-             '!pro       !home        stops at step 1 · остановилась на 1 шаге\n'
-             '!undo      !откат       undo everything · откатить всё\n'
-             '!drivers   !дрова       drivers · драйверы\n'
-             '!fps       !лаги        FPS, stutter · FPS, рывки\n'
-             '!crash     !вылеты      crashes, blue screen · вылеты, синий экран\n'
-             '!toolbox   !тулбокс     how to use Toolbox · Toolbox\n'
-             '!nogame    !игра        Toolbox does not see the game · не видит игру\n'
-             '!anticheat !античит     FACEIT, Vanguard, EAC · античиты\n'
-             '!safe      !бан         safe? bans? · безопасно? бан?\n'
-             '!laptop    !ноут        laptops · ноутбуки\n'
-             '!update    !обновления  updates · обновления\n'
-             '!wallpaper !обои        wallpapers · обои\n'
-             '!bench     !замеры      benchmarks · замеры\n'
-             '!logs      !логи        which files to attach · какие файлы приложить\n'
-             '!about     !что         what Domain OS is · что такое Domain OS\n'
-             '!ask …     !вопрос …    the bot looks for an answer · бот ищет ответ\n'
+             '/install   /установка   how to install · как установить\n'
+             '/download  /скачать     where to download · где скачать\n'
+             '/windows   /винда       which Windows · какая Windows\n'
+             '/pro       /home        stops at step 1 · остановилась на 1 шаге\n'
+             '/undo      /откат       undo everything · откатить всё\n'
+             '/drivers   /дрова       drivers · драйверы\n'
+             '/fps       /лаги        FPS, stutter · FPS, рывки\n'
+             '/crash     /вылеты      crashes, blue screen · вылеты, синий экран\n'
+             '/toolbox   /тулбокс     how to use Toolbox · Toolbox\n'
+             '/nogame    /игра        Toolbox does not see the game · не видит игру\n'
+             '/anticheat /античит     FACEIT, Vanguard, EAC · античиты\n'
+             '/safe      /бан         safe? bans? · безопасно? бан?\n'
+             '/laptop    /ноут        laptops · ноутбуки\n'
+             '/update    /обновления  updates · обновления\n'
+             '/wallpaper /обои        wallpapers · обои\n'
+             '/bench     /замеры      benchmarks · замеры\n'
+             '/logs      /логи        which files to attach · какие файлы приложить\n'
+             '/about     /что         what Domain OS is · что такое Domain OS\n'
+             '/ask …     /вопрос …    the bot looks for an answer · бот ищет ответ\n'
              '```')
 LOGS = ('### 📄 Logs to attach · Какие файлы приложить\n'
         '🇬🇧 `%ProgramData%\\Domain OS\\Logs\\install.log` (the install) and `%LOCALAPPDATA%\\DomainScheduler\\log.txt` (Toolbox). Paste the path into Win+R, the folder opens.\n'
@@ -766,7 +774,7 @@ def faq_by_title(start):
 def answer_command(tid, m, may_ping=True):
     """may_ping: False when the bot already called the owner in this discussion in the last 10 minutes."""
     raw = (m.get('content') or '').strip()
-    word, _, rest = raw[1:].partition(' ')
+    word, _, rest = raw.lstrip()[1:].partition(' ')
     cmd = word.lower().strip('.,!?')
     cmd = ALIAS.get(cmd, cmd)
     ref = m['id']
@@ -798,7 +806,7 @@ def answer_command(tid, m, may_ping=True):
         if hit:
             reply_ref(tid, [card([T(f'### {hit[0]}\n{hit[1]}'), T(COMMANDS_HINT)])], ref); return
     w = clean(word, 30).replace('`', "'")
-    reply_ref(tid, [card([T(f'🇬🇧 Unknown command `!{w}`. · 🇷🇺 Нет такой команды `!{w}`.\n' + HELP_TEXT)])], ref)
+    reply_ref(tid, [card([T(f'🇬🇧 Unknown command `/{w}`. · 🇷🇺 Нет такой команды `/{w}`.\n' + HELP_TEXT)])], ref)
 
 
 def reply_ref(tid, comps, ref):
@@ -819,7 +827,7 @@ def _when(m):
 
 
 def commands_in(t, me):
-    """Answers the '!' messages in a help discussion that the bot has not answered yet (replies point to it).
+    """Answers the command messages (/word or !word) in a help discussion that the bot has not answered yet (replies point to it).
     Against spam: per person only their newest command counts and gets at most one answer in CMD_EVERY seconds
     (a command that has to wait is answered on a later pass); the owner is called at most once in PING_EVERY seconds
     per discussion (the bot's own recent messages with the role mention are the memory, so it holds across shifts)."""
@@ -832,7 +840,7 @@ def commands_in(t, me):
     n = 0
     now = datetime.now(timezone.utc)
     cmds = [m for m in sorted(msgs, key=lambda x: int(x['id']))
-            if not m['author'].get('bot') and (m.get('content') or '').startswith('!')
+            if not m['author'].get('bot') and is_command(m.get('content') or '')
             and (now - _when(m)).total_seconds() <= 3 * 3600]                 # old commands from before the bot ran: skipped
     newest = {m['author']['id']: m['id'] for m in cmds}
     waiting = False
@@ -850,9 +858,9 @@ def commands_in(t, me):
 
 
 def answer_pings(m):
-    """Whether the answer to this command called the owner (!human, or !ask without a FAQ answer)."""
+    """Whether the answer to this command called the owner (/human, or /ask without a FAQ answer)."""
     raw = (m.get('content') or '').strip()
-    word, _, rest = raw[1:].partition(' ')
+    word, _, rest = raw.lstrip()[1:].partition(' ')
     cmd = ALIAS.get(word.lower().strip('.,!?'), word.lower().strip('.,!?'))
     return cmd in ('human', 'person') or (cmd == 'ask' and not faq_hits(rest))
 
