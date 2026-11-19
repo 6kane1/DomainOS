@@ -90,6 +90,15 @@ namespace DomainOS {
     public static IDesktopWallpaper Open() {
       return (IDesktopWallpaper)Activator.CreateInstance(Type.GetTypeFromCLSID(ClsidDesktopWallpaper));
     }
+    // PowerShell sees the returned COM object as a plain System.__ComObject and cannot call IDesktopWallpaper's
+    // methods on it (the interface has no IDispatch): every call from the script goes through these.
+    public static int GetPosition() { return Open().GetPosition(); }
+    public static uint GetBackgroundColor() { return Open().GetBackgroundColor(); }
+    public static string GetWallpaper() { return Open().GetWallpaper(null); }
+    public static void SetBackgroundColor(uint color) { Open().SetBackgroundColor(color); }
+    public static void Enable(bool on) { Open().Enable(on); }
+    public static void SetWallpaper(string path) { Open().SetWallpaper(null, path); }
+    public static void SetPosition(int position) { Open().SetPosition(position); }
     /// <summary>Slideshow of every picture in the folder; options 1 = shuffle; tick in milliseconds.</summary>
     public static void Slideshow(string folder, int options, uint tickMs) {
       Guid iItem = IidShellItem, iArray = IidShellItemArray;
@@ -147,11 +156,10 @@ if ($Restore) {
         }
     }
     try {
-        $w = [DomainOS.Wallpaper]::Open()
         if ($s.backgroundType -eq 1) {
-            $w.SetBackgroundColor([uint32]$s.color); $w.Enable($false)
+            [DomainOS.Wallpaper]::SetBackgroundColor([uint32]$s.color); [DomainOS.Wallpaper]::Enable($false)
         } elseif ($picture -and (Test-Path -LiteralPath $picture)) {
-            $w.SetWallpaper([NullString]::Value, $picture); $w.SetPosition([int]$s.position)
+            [DomainOS.Wallpaper]::SetWallpaper($picture); [DomainOS.Wallpaper]::SetPosition([int]$s.position)
         }
         if ($s.backgroundType -eq 2 -and (Test-DomainOSFile (Join-Path $undo 'slideshow.ini'))) {
             Copy-Item -LiteralPath (Join-Path $undo 'slideshow.ini') -Destination (Join-Path (Get-DomainOSUserFolder 'ApplicationData') 'Microsoft\Windows\Themes\slideshow.ini') -Force
@@ -205,9 +213,8 @@ if (-not (Test-Path $stateFile)) {
     }
     try {
         $state.backgroundType = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Wallpapers' -ErrorAction SilentlyContinue).BackgroundType
-        $w = [DomainOS.Wallpaper]::Open()
-        $state.position = $w.GetPosition(); $state.color = $w.GetBackgroundColor()
-        $current = [string]$w.GetWallpaper([NullString]::Value)
+        $state.position = [DomainOS.Wallpaper]::GetPosition(); $state.color = [DomainOS.Wallpaper]::GetBackgroundColor()
+        $current = [string][DomainOS.Wallpaper]::GetWallpaper()
         $desk = Get-ItemProperty 'HKCU:\Control Panel\Desktop' -ErrorAction SilentlyContinue
         $ourDir = $dir + '\'
         if ($current.StartsWith($ourDir, [StringComparison]::OrdinalIgnoreCase) -or ([string]$desk.Wallpaper).StartsWith($ourDir, [StringComparison]::OrdinalIgnoreCase)) {
@@ -268,7 +275,7 @@ try {
     Write-Log 'Desktop: slideshow of the Domain OS pictures, a new one every 10 minutes'
 } catch {
     Write-Log "Desktop slideshow could not be set ($($_.Exception.Message)): the first picture is set instead"
-    try { $w = [DomainOS.Wallpaper]::Open(); $w.SetWallpaper([NullString]::Value, (Join-Path $dir $pics[0].Name)); $w.SetPosition(4) } catch { $bad++; Write-Log "FAILED: desktop picture could not be set: $($_.Exception.Message)" }
+    try { [DomainOS.Wallpaper]::SetWallpaper((Join-Path $dir $pics[0].Name)); [DomainOS.Wallpaper]::SetPosition(4) } catch { $bad++; Write-Log "FAILED: desktop picture could not be set: $($_.Exception.Message)" }
 }
 try {
     New-Item -ItemType Directory -Force -Path (Split-Path $themeFile) | Out-Null

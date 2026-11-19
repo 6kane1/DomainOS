@@ -351,6 +351,8 @@ if (-not $WhatIfPreference) {
         Write-Log 'Restart the computer to finish. After the restart another version of the playbook can be applied like the first time.'
     } else {
         Write-Log "$failed item(s) could not be put back (see the FAILED lines above). The saved state is KEPT: restart the computer and run Undo Domain OS again."
+        # recorded, so Check Domain OS reports an unfinished Undo instead of comparing with the playbook's changes
+        Add-Content -Path (Join-Path $DomainOSData 'history.log') -Value ('{0:yyyy-MM-dd HH:mm:ss}  undo-incomplete  {1} failed' -f (Get-Date), $failed) -Encoding UTF8
     }
     Write-Log 'The log is in %ProgramData%\Domain OS\Logs\undo.log'
 }

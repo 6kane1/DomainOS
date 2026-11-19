@@ -121,6 +121,11 @@ jobs:
         shell: cmd
         run: powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tests\ci\Parse-PS51.ps1 -RequireDesktop
 
+      - name: Wallpaper COM wrapper callable from Windows PowerShell 5.1
+        if: always()
+        shell: cmd
+        run: powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tests\ci\Smoke-Wallpaper.ps1
+
       - name: Pester under Windows PowerShell 5.1
         if: always()
         shell: cmd

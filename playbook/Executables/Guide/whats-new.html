@@ -47,7 +47,7 @@ h1{font-size:30px;line-height:1.2;color:var(--strong);font-weight:600;letter-spa
 </div>
 <script>
 const NOTES = [
-  { v: "2.2.2", date: "2026-11-19",
+  { v: "2.2.3", date: "2026-11-19",
     groups: [
       { en: "Fixes", ru: "Исправления", items: [
         { en: "Undo now really puts back services and scheduled tasks that only SYSTEM may change: with two or more of them the one-time SYSTEM step used to fail for all.",
@@ -57,7 +57,11 @@ const NOTES = [
         { en: "Undo puts the taskbar pin order back again (it failed on the saved binary value).",
           ru: "Откат снова возвращает порядок значков на панели задач (раньше спотыкался о сохранённое двоичное значение)." },
         { en: "A click into the Undo or Check window no longer pauses it.",
-          ru: "Клик мышкой в окно отката или проверки больше не ставит его на паузу." }
+          ru: "Клик мышкой в окно отката или проверки больше не ставит его на паузу." },
+        { en: "The install no longer stops at the wallpapers when it saves your current desktop picture for the first time.",
+          ru: "Установка больше не останавливается на обоях, когда впервые сохраняет вашу текущую картинку рабочего стола." },
+        { en: "After an Undo that did not finish, Check Domain OS says so clearly instead of listing every setting as FAIL.",
+          ru: "После незавершённого отката Check Domain OS прямо об этом пишет, а не показывает каждую настройку как FAIL." }
       ]}
     ]},
   { v: "2.2.0", date: "2026-11-19",
