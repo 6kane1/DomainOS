@@ -36,6 +36,7 @@ if (-not (Test-Path -LiteralPath $common)) { Write-Host "DomainOS-Common.ps1 is 
 . $common
 # Not elevated: start again as administrator with the same switches (-WhatIf and -RemoveTools included).
 if (Start-DomainOSElevated $MyInvocation.MyCommand.Path $PSBoundParameters) { exit 0 }
+Disable-DomainOSQuickEdit
 
 $ps = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 $undoDir = Join-Path $DomainOSData 'Undo'
@@ -94,7 +95,7 @@ function Invoke-DomainOSUndoAsSystem($items) {
         $answers = @(Get-Content -LiteralPath $result -Raw -Encoding UTF8 | ConvertFrom-Json | ForEach-Object { $_ })   # 5.1 emits a JSON array as ONE object: enumerate it
         foreach ($i in $items) {
             $a = $answers | Where-Object { $_.kind -eq $i.kind -and $_.name -eq $i.name } | Select-Object -First 1
-            $what = if ($i.kind -eq 'S') { 'service' } else { 'task' }
+            $what = switch ($i.kind) { 'S' { 'service' } 'R' { 'registry' } default { 'task' } }
             if ($a -and $a.ok) { $res.Done++; Write-Log "$what $($i.name): restored as SYSTEM" }
             else {
                 $why = if ($a) { $a.error } else { (@($answers | Where-Object { $_.kind -eq 'X' }) | ForEach-Object { $_.error }) -join '; ' }
@@ -103,7 +104,7 @@ function Invoke-DomainOSUndoAsSystem($items) {
         }
     } catch {
         $res.Failed += @($items).Count
-        Write-Log "FAILED the SYSTEM step for $(@($items).Count) service(s)/task(s): $($_.Exception.Message)"
+        Write-Log "FAILED the SYSTEM step for $(@($items).Count) item(s): $($_.Exception.Message)"
     } finally { Remove-Item -LiteralPath $box -Recurse -Force -ErrorAction SilentlyContinue }
     return $res
 }
@@ -150,7 +151,15 @@ foreach ($r in $state.registry) {
                 $done++
             }
         }
-    } catch { $failed++; Write-Log "FAILED registry $($r.path)\$($r.name): $($_.Exception.Message)" }
+    } catch {
+        $denied = $_.Exception -is [System.UnauthorizedAccessException] -or $_.Exception -is [System.Security.SecurityException] -or
+                  $_.Exception.InnerException -is [System.UnauthorizedAccessException] -or $_.Exception.InnerException -is [System.Security.SecurityException]
+        if ($denied -and $r.path -like 'HKLM\*') {
+            # The key belongs to TrustedInstaller (the playbook is applied with its rights). Tried again as SYSTEM below.
+            $sysWork.Add([pscustomobject]@{ kind = 'R'; name = "$($r.path)\$($r.name)"; path = $r.path; value = $r.name; exists = [bool]$r.exists; type = [string]$r.kind; data = $r.data })
+            Write-Log "registry $($r.path)\$($r.name): not allowed for administrators ($($_.Exception.Message)); tried again as SYSTEM"
+        } else { $failed++; Write-Log "FAILED registry $($r.path)\$($r.name): $($_.Exception.Message)" }
+    }
 }
 
 # ---- the link tracking service, deleted by versions 1.6.7-2.1.0: registered again from its backup --------------

@@ -95,6 +95,25 @@ function Start-DomainOSElevated([string]$Script, $Bound) {
     return $true
 }
 
+# A click into a console window starts "Select" (QuickEdit) mode and PAUSES the script until Esc: users take that for a
+# hang. Undo and Check switch QuickEdit off for their own window (best effort, nothing else changes).
+function Disable-DomainOSQuickEdit {
+    try {
+        if (-not ('DomainOS.ConMode' -as [type])) {
+            Add-Type -ErrorAction Stop -Namespace DomainOS -Name ConMode -MemberDefinition @'
+[DllImport("kernel32.dll")] public static extern IntPtr GetStdHandle(int h);
+[DllImport("kernel32.dll")] public static extern bool GetConsoleMode(IntPtr h, out uint m);
+[DllImport("kernel32.dll")] public static extern bool SetConsoleMode(IntPtr h, uint m);
+'@
+        }
+        $h = [DomainOS.ConMode]::GetStdHandle(-10)   # STD_INPUT_HANDLE
+        [uint32]$m = 0
+        if ([DomainOS.ConMode]::GetConsoleMode($h, [ref]$m)) {
+            [void][DomainOS.ConMode]::SetConsoleMode($h, [uint32](($m -band 0xFFFFFFBF) -bor 0x80))   # -ENABLE_QUICK_EDIT_MODE, +ENABLE_EXTENDED_FLAGS
+        }
+    } catch { }
+}
+
 function Get-DomainOSOwner([string]$Path) {
     try { return (Get-Acl -LiteralPath $Path -ErrorAction Stop).GetOwner([Security.Principal.SecurityIdentifier]).Value } catch { return $null }
 }
@@ -356,9 +375,11 @@ function Import-DomainOSRegFile([string]$Path, [string]$AllowedKey, [scriptblock
         elseif ($rest -match '^hex(\(([0-9a-fA-F]+)\))?:([0-9a-fA-F,\s]*)$') {
             $t = if ($Matches[2]) { [Convert]::ToInt32($Matches[2], 16) } else { 3 }
             $hexText = ($Matches[3] -replace '\s', '').Trim(',')
-            $bytes = if ($hexText) { [byte[]]@($hexText.Split(',') | ForEach-Object { [Convert]::ToByte($_, 16) }) } else { [byte[]]@() }
+            # (assigned in two steps: an if-expression unrolls an array, and SetValue(..., Binary) refuses object[])
+            [byte[]]$bytes = New-Object byte[] 0
+            if ($hexText) { [byte[]]$bytes = @($hexText.Split(',') | ForEach-Object { [Convert]::ToByte($_, 16) }) }
             switch ($t) {
-                3 { $kind = 'Binary'; $data = $bytes }
+                3 { $kind = 'Binary'; $data = [byte[]]$bytes }
                 2 { $kind = 'ExpandString'; $data = [Text.Encoding]::Unicode.GetString($bytes).TrimEnd([char]0) }
                 7 { $kind = 'MultiString'; $data = [string[]]@([Text.Encoding]::Unicode.GetString($bytes).TrimEnd([char]0).Split([char]0)) }
                 11 { if ($bytes.Length -ne 8) { throw "$Path has a broken QWORD: refused" }; $kind = 'QWord'; $data = [BitConverter]::ToInt64($bytes, 0) }
@@ -375,7 +396,10 @@ function Import-DomainOSRegFile([string]$Path, [string]$AllowedKey, [scriptblock
     foreach ($op in $ops) {
         $k = $base.CreateSubKey($op.key)
         try {
-            if ($null -ne $op.name) { $k.SetValue($op.name, $op.data, [Microsoft.Win32.RegistryValueKind]$op.kind); $count++ }
+            if ($null -ne $op.name) {
+                $value = switch ($op.kind) { 'Binary' { ,([byte[]]$op.data) } 'MultiString' { ,([string[]]@($op.data)) } default { $op.data } }
+                $k.SetValue($op.name, $value, [Microsoft.Win32.RegistryValueKind]$op.kind); $count++
+            }
         } finally { $k.Close() }
     }
     return $count

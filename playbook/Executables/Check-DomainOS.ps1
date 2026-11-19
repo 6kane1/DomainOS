@@ -1,4 +1,4 @@
-<#
+﻿<#
   Domain OS - "Check Domain OS": compares this PC with what the playbook set, and (by hand) checks Windows' health.
   READ-ONLY: it never changes a setting, a service, a task, an app or a file of Windows or Domain OS. The only files it
   writes are its own reports (below).
@@ -44,6 +44,7 @@ if (-not (Test-Path -LiteralPath $common)) {
 if (-not $AfterInstall) {
     # Not elevated: start again as administrator with the same switches.
     if (Start-DomainOSElevated $MyInvocation.MyCommand.Path $PSBoundParameters) { exit 0 }
+    Disable-DomainOSQuickEdit
 }
 
 # ---- results -------------------------------------------------------------------------------------------------------
