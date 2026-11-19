@@ -28,3 +28,10 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(even);
   even();
 })();
+
+// Narrow screens: the page links scroll inside the header; show the link of the open page.
+(function () {
+  var cur = document.querySelector('.nav a[aria-current="page"]');
+  var nav = cur && cur.parentElement;
+  if (nav && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = cur.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2;
+})();

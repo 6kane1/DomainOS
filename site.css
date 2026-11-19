@@ -393,3 +393,16 @@ footer .wrap a{color:var(--silver)}
   .top .bar{gap:8px}
 }
 @media (max-width:340px){.nav a{padding:8px 4px;font-size:10px;letter-spacing:.02em}.top .bar{gap:6px}}
+
+/* FAQ (faq.html) */
+.faq-list{display:grid;gap:10px;margin-top:22px}
+.faq{border:1px solid var(--line,rgba(255,255,255,.1));border-radius:14px;background:rgba(255,255,255,.025);overflow:hidden}
+.faq summary{cursor:pointer;list-style:none;padding:16px 46px 16px 18px;font-weight:600;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:20px;opacity:.6;transition:transform .2s}
+.faq[open] summary::after{transform:translateY(-50%) rotate(45deg)}
+.faq-a{padding:0 18px 16px;line-height:1.6}
+.faq-a p{margin:0 0 8px}
+.faq-a code{font-size:.92em}
+/* five page links (FAQ added): on narrow screens the link row scrolls inside the header instead of pushing it wider */
+@media (max-width:720px){.nav{min-width:0;flex:1 1 auto;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.nav::-webkit-scrollbar{display:none}.nav a{white-space:nowrap;flex:0 0 auto}}
