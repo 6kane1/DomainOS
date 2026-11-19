@@ -1,0 +1,66 @@
+[
+ {
+  "thread": "1572689929530777771",
+  "reply": "1572689935641608253",
+  "title": "[DEMO] CS2 · Steam & Discord settings · 7800X3D + RTX 5060",
+  "url": "https://discord.com/channels/1572225088340889802/1572689929530777771",
+  "date": "2026-11-18",
+  "cpu": "AMD Ryzen 7 7800X3D 8-Core Processor",
+  "windows": "26H2 build 26300.9974 Professional",
+  "game": "cs2",
+  "domainos": "2.1.1",
+  "runs": 3,
+  "groups": [
+   {
+    "name": "base",
+    "fps": 689.1,
+    "low1": 349.1,
+    "low01": 321.0
+   },
+   {
+    "name": "S1",
+    "fps": 689.8,
+    "low1": 351.6,
+    "low01": 333.7
+   },
+   {
+    "name": "S2",
+    "fps": 729.1,
+    "low1": 364.4,
+    "low01": 347.3
+   },
+   {
+    "name": "S5",
+    "fps": 725.7,
+    "low1": 358.4,
+    "low01": 339.2
+   },
+   {
+    "name": "D1",
+    "fps": 725.7,
+    "low1": 359.9,
+    "low01": 340.9
+   },
+   {
+    "name": "D3",
+    "fps": 728.9,
+    "low1": 364.2,
+    "low01": 345.5
+   },
+   {
+    "name": "D4",
+    "fps": 727.1,
+    "low1": 362.6,
+    "low01": 345.2
+   },
+   {
+    "name": "D5",
+    "fps": 727.7,
+    "low1": 361.3,
+    "low01": 343.6
+   }
+  ],
+  "note": "🇬🇧 **Demo post.** CS2 on Aim Botz, Toolbox Auto, Discord in a voice call. `base` = all default, `S1` low-performance library, `S2` Steam web views without GPU acceleration, `S5` Steam overlay off, `D1` Discord without HW acceleration, `D3` no noise suppression, `D4`/`D5` reduced motion / no activity status. Ryzen 7 7800X3D · RTX 5060 · Windows 11 Pro 26H2.\n🇷🇺 **Тестовый пост.** CS2 на Aim Botz, Toolbox Auto, Discord в звонке. `base` — всё по умолчанию, `S1` — низкая производительность библиотеки, `S2` — веб-окна Steam без GPU-ускорения, `S5` — без оверлея Steam, `D1` — Discord без аппаратного ускорения, `D3` — без шумоподавления, `D4`/`D5` — уменьшение движения / без статуса активности.",
+  "week": "2026-W47"
+ }
+]
