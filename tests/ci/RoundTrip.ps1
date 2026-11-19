@@ -300,9 +300,11 @@ foreach ($it in $manifest.items) {
     $p = [string]$it.path
     while ($p.Contains('\') -and (Test-Key $p) -ne 'present') { $p = $p.Substring(0, $p.LastIndexOf('\')) }
     try {
-        $acl = Get-Acl -LiteralPath ('Registry::' + ($p -replace '^HKLM', 'HKEY_LOCAL_MACHINE' -replace '^HKCU', 'HKEY_CURRENT_USER'))
-        $rules = @($acl.Access | ForEach-Object { "$($_.IdentityReference): $($_.RegistryRights)" + $(if ($_.IsInherited) { ' (inherited)' } else { '' }) }) -join '; '
-        $aclNotes.Add("$($it.path) (ACL of $p) - owner $($acl.Owner); $rules")
+        $r = Split-Reg $p
+        $k = $r.Base.OpenSubKey($r.Sub, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadSubTree, [System.Security.AccessControl.RegistryRights]::ReadPermissions)
+        try { $acl = $k.GetAccessControl() } finally { $k.Close() }
+        $rules = @($acl.GetAccessRules($true, $true, [Security.Principal.NTAccount]) | ForEach-Object { "$($_.IdentityReference): $($_.RegistryRights)" + $(if ($_.IsInherited) { ' (inherited)' } else { '' }) }) -join '; '
+        $aclNotes.Add("$($it.path) (ACL of $p) - owner $($acl.GetOwner([Security.Principal.NTAccount])); $rules")
     } catch { $aclNotes.Add("$($it.path) (ACL of $p) - unreadable: $($_.Exception.Message)") }
 }
 foreach ($a in $aclNotes) { Write-Host "  ACL  $a" }
