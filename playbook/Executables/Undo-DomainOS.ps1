@@ -91,7 +91,7 @@ function Invoke-DomainOSUndoAsSystem($items) {
             while (-not (Test-Path -LiteralPath $result) -and (Get-Date) -lt $until) { Start-Sleep -Milliseconds 500 }
         } finally { Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue }
         if (-not (Test-DomainOSFile $result)) { throw 'the SYSTEM step gave no answer within 3 minutes' }
-        $answers = @(Get-Content -LiteralPath $result -Raw -Encoding UTF8 | ConvertFrom-Json)
+        $answers = @(Get-Content -LiteralPath $result -Raw -Encoding UTF8 | ConvertFrom-Json | ForEach-Object { $_ })   # 5.1 emits a JSON array as ONE object: enumerate it
         foreach ($i in $items) {
             $a = $answers | Where-Object { $_.kind -eq $i.kind -and $_.name -eq $i.name } | Select-Object -First 1
             $what = if ($i.kind -eq 'S') { 'service' } else { 'task' }

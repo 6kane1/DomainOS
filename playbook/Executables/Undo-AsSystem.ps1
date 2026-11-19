@@ -35,7 +35,7 @@ try {
     if (-not (Test-DomainOSFile $Work)) { throw 'the work file is not trusted' }
     $allowed = Get-DomainOSAllowList $PSScriptRoot
     if (-not $allowed) { throw 'the allow-list is missing or not trusted' }
-    $items = @(Get-Content -LiteralPath $Work -Raw -Encoding UTF8 | ConvertFrom-Json)
+    $items = @(Get-Content -LiteralPath $Work -Raw -Encoding UTF8 | ConvertFrom-Json | ForEach-Object { $_ })   # 5.1 emits a JSON array as ONE object: enumerate it
 } catch {
     Done 'X' '' $false $_.Exception.Message
     Save-Result
