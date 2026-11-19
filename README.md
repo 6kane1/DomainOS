@@ -1,5 +1,7 @@
 # Domain OS
 
+[![Tests](https://github.com/6kane1/DomainOS/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/6kane1/DomainOS/actions/workflows/tests.yml)
+
 **English** | [Русский](README.ru.md)
 
 A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 25H2 and 26H2 (builds 26200, 26300), Pro only**, for games. On Home and other editions the install stops at the first step, before any change.

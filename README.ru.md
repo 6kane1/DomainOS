@@ -1,5 +1,7 @@
 # Domain OS
 
+[![Tests](https://github.com/6kane1/DomainOS/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/6kane1/DomainOS/actions/workflows/tests.yml)
+
 [English](README.md) | **Русский**
 
 Плейбук для [AME Wizard](https://ameliorated.io), который готовит **Windows 11 25H2 и 26H2 (сборки 26200, 26300), только Pro**, к играм. На Home и других редакциях установка останавливается на первом шаге, до любых изменений.

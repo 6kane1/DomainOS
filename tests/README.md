@@ -25,8 +25,9 @@ secrets, actions pinned by commit SHA, Python wheels pinned by hash (tests/requi
 - **linux** (ubuntu-latest): `python3 tests/run-all.py`, all areas; I (no .apbx is built) and K (DomainSchedTest is
   not in this repository) SKIP.
 - **windows** (windows-latest): every playbook .ps1 parsed by real Windows PowerShell 5.1 (`tests/ci/Parse-PS51.ps1`),
-  the Pester suite under powershell.exe 5.1 and under pwsh 7, `dotnet test` of the Toolbox on Windows.
-- **roundtrip** (windows-latest, twice: default options / every option): `tests/ci/RoundTrip.ps1` changes the
+  the Pester suite under powershell.exe 5.1 (called explicitly; the default shell there is pwsh 7) and under pwsh 7, `dotnet test` of the Toolbox on Windows.
+- **roundtrip** (windows-latest, twice: default options / every option), an extra on top of the Pester sandbox (area E,
+  fake registry), which stays the main install -> check -> undo test: `tests/ci/RoundTrip.ps1` changes the
   disposable runner for real. Snapshot, then as main.yml: Save-State.ps1, Install-DomainOS.ps1 -Part Tools, the options
   record, Restore-Defaults.ps1; then the task files' actions from expected.json; Check-DomainOS.ps1 -AfterInstall (every
   FAIL/WARN must belong to an item not applied); Undo-DomainOS.ps1 from Program Files\Domain OS\Tools; the snapshot again

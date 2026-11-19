@@ -46,6 +46,7 @@ $tools = Join-Path $env:ProgramFiles 'Domain OS\Tools'
 . (Join-Path $exe 'DomainOS-Common.ps1')
 $data = $DomainOSData
 
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Out) | Out-Null
 $failures = New-Object System.Collections.Generic.List[string]
 $notes = New-Object System.Collections.Generic.List[string]
 $report = New-Object System.Collections.Generic.List[string]
@@ -53,6 +54,7 @@ function Fail([string]$t) { $failures.Add($t); Write-Host "FAIL  $t" -Foreground
 function Note([string]$t) { $notes.Add($t); Write-Host "NOTE  $t" }
 function Step([string]$t) { Write-Host ''; Write-Host "==== $t" -ForegroundColor Cyan }
 
+if ($PSVersionTable.PSEdition -ne 'Desktop') { Write-Host 'FAIL not Windows PowerShell 5.1: the playbook runs under powershell.exe'; exit 1 }
 if (-not (Test-DomainOSAdmin)) { Write-Host 'FAIL  not elevated'; exit 1 }
 if (Test-Path -LiteralPath $data) { Write-Host "FAIL  $data already exists: the runner is not fresh"; exit 1 }
 
@@ -130,7 +132,9 @@ function Get-ServiceState([string]$Name) {
 }
 function Get-TaskState([string]$Full) {
     $n = $Full.LastIndexOf('\')
-    try { return [string](Get-ScheduledTask -TaskPath ($Full.Substring(0, $n + 1)) -TaskName ($Full.Substring($n + 1)) -ErrorAction Stop).State } catch { return 'absent' }
+    # Enabled or disabled is what Domain OS changes; Ready / Running / Queued are all "enabled" (a task may start by itself).
+    try { $s = [string](Get-ScheduledTask -TaskPath ($Full.Substring(0, $n + 1)) -TaskName ($Full.Substring($n + 1)) -ErrorAction Stop).State } catch { return 'absent' }
+    if ($s -eq 'Disabled') { return 'Disabled' } return 'enabled'
 }
 function Get-ActivePlan { if ((& powercfg.exe /getactivescheme) -match '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})') { return $Matches[1] } return '' }
 function Get-Plans { return ((@(& powercfg.exe /list) | ForEach-Object { if ($_ -match '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})') { $Matches[1] } }) | Sort-Object) -join ',' }
@@ -286,6 +290,19 @@ foreach ($it in $manifest.items) {
     } catch { Set-Status $it "not applied: failed as administrator ($($_.Exception.Message))" }
 }
 Write-Host "applied: $applied, not applied: $notApplied"
+# Who may write the keys that refused administrators (AME applies with TrustedInstaller rights; Undo runs as administrator,
+# and as SYSTEM only for services and tasks): listed in the report.
+$aclNotes = New-Object System.Collections.Generic.List[string]
+foreach ($it in $manifest.items) {
+    $src = ('{0}:{1}' -f ([string]$it.file -replace '/', '\'), $it.line)
+    if ($it.kind -ne 'registryValue' -or -not $status.ContainsKey($src) -or $status[$src] -notlike '*failed as administrator*') { continue }
+    try {
+        $acl = Get-Acl -LiteralPath ('Registry::' + ([string]$it.path -replace '^HKLM', 'HKEY_LOCAL_MACHINE' -replace '^HKCU', 'HKEY_CURRENT_USER'))
+        $rules = @($acl.Access | ForEach-Object { "$($_.IdentityReference): $($_.RegistryRights)" + $(if ($_.IsInherited) { ' (inherited)' } else { '' }) }) -join '; '
+        $aclNotes.Add("$($it.path) - owner $($acl.Owner); $rules")
+    } catch { $aclNotes.Add("$($it.path) - ACL unreadable: $($_.Exception.Message)") }
+}
+foreach ($a in $aclNotes) { Write-Host "  ACL  $a" }
 
 Step '4. Check-DomainOS.ps1 -AfterInstall'
 $checkLog = Join-Path $data 'Logs\check.log'
@@ -344,6 +361,7 @@ $report.Add("- after Undo: $same of $($before.Count) snapshot entries identical"
 $report.Add("- **result: $(if ($failures.Count) { "FAILED ($($failures.Count))" } else { 'PASS' })**")
 if ($failures.Count) { $report.Add(''); $report.Add('### Failures'); foreach ($f in $failures) { $report.Add("- $f") } }
 if ($notes.Count) { $report.Add(''); $report.Add('### Notes'); foreach ($n in $notes) { $report.Add("- $n") } }
+if ($aclNotes.Count) { $report.Add(''); $report.Add('### Keys administrators may not write (Undo restores registry values as administrator only)'); foreach ($a in $aclNotes) { $report.Add("- $a") } }
 $report.Add(''); $report.Add('<details><summary>Not applied here</summary>'); $report.Add('')
 foreach ($k in ($status.Keys | Sort-Object)) { if ($status[$k] -ne 'applied') { $report.Add("- $k : $($status[$k])") } }
 $report.Add(''); $report.Add('</details>')
@@ -353,6 +371,7 @@ if ($expectedFails.Count) {
     $report.Add(''); $report.Add('</details>')
 }
 Set-Content -LiteralPath $Out -Value $report -Encoding UTF8
+try { Copy-Item -LiteralPath (Join-Path $data 'Logs') -Destination (Join-Path (Split-Path -Parent $Out) 'logs') -Recurse -Force } catch { }
 if ($env:GITHUB_STEP_SUMMARY) { Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $report -Encoding UTF8 }
 Write-Host ''
 Write-Host ($report -join "`n")

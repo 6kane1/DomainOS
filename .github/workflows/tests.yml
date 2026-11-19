@@ -115,18 +115,20 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      # powershell.exe is called explicitly (the default shell on windows-latest is pwsh 7); the scripts refuse to
+      # run under anything but Windows PowerShell 5.1 (-RequireDesktop / the edition check).
       - name: Parse every playbook script with Windows PowerShell 5.1
-        shell: powershell
-        run: |
-          & .\tests\ci\Parse-PS51.ps1
-          exit $LASTEXITCODE
+        shell: cmd
+        run: powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tests\ci\Parse-PS51.ps1 -RequireDesktop
 
       - name: Pester under Windows PowerShell 5.1
-        shell: powershell
-        run: |
-          $PSVersionTable.PSVersion.ToString()
-          & .\tests\pester\run.ps1 -Out "$env:RUNNER_TEMP\pester-ps51.xml"
-          exit $LASTEXITCODE
+        if: always()
+        shell: cmd
+        run: >
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command
+          "if ($PSVersionTable.PSEdition -ne 'Desktop') { Write-Host 'not Windows PowerShell 5.1'; exit 1 };
+          Write-Host ('Windows PowerShell ' + $PSVersionTable.PSVersion);
+          & .\tests\pester\run.ps1 -Out ($env:RUNNER_TEMP + '\pester-ps51.xml'); exit $LASTEXITCODE"
 
       - name: Pester under PowerShell 7 on Windows
         if: always()
@@ -160,20 +162,16 @@ jobs:
 
       # Changes this runner's registry, services and tasks; the runner is thrown away after the job.
       - name: Save-State, apply, Check-DomainOS -AfterInstall, Undo, compare
-        shell: powershell
+        shell: cmd
         env:
           OPTION_SET: ${{ matrix.options }}
-        run: |
-          & .\tests\ci\RoundTrip.ps1 -OptionSet $env:OPTION_SET -Out "$env:RUNNER_TEMP\roundtrip.md" -IKnowThisChangesThisPC
-          exit $LASTEXITCODE
+        run: powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tests\ci\RoundTrip.ps1 -OptionSet %OPTION_SET% -Out "%RUNNER_TEMP%\roundtrip\roundtrip.md" -IKnowThisChangesThisPC
 
       - name: Keep the Domain OS logs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: roundtrip-logs-${{ matrix.options }}
-          path: |
-            C:\ProgramData\Domain OS\Logs
-            ${{ runner.temp }}\roundtrip.md
+          path: ${{ runner.temp }}\roundtrip
           if-no-files-found: warn
           retention-days: 14

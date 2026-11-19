@@ -4,10 +4,11 @@
   AME Wizard and the playbook use; area D of run-all.py only has PowerShell 7's parser plus pattern checks.
   Exit code 1 when a script has a parse error.
 #>
-param([string]$Root = (Join-Path $PSScriptRoot '..\..\playbook'))
+param([string]$Root = (Join-Path $PSScriptRoot '..\..\playbook'), [switch]$RequireDesktop)
 $ErrorActionPreference = 'Stop'
 Write-Host "PowerShell $($PSVersionTable.PSVersion) ($($PSVersionTable.PSEdition))"
-$files = @(Get-ChildItem -LiteralPath $Root -Recurse -File -Include '*.ps1', '*.psm1', '*.psd1')
+if ($RequireDesktop -and $PSVersionTable.PSEdition -ne 'Desktop') { Write-Host 'FAIL this is not Windows PowerShell 5.1 (powershell.exe)'; exit 1 }
+$files = @(Get-ChildItem -LiteralPath $Root -Recurse -File | Where-Object { @('.ps1', '.psm1', '.psd1') -contains $_.Extension })
 if ($files.Count -lt 10) { Write-Host "FAIL only $($files.Count) scripts found under $Root"; exit 1 }
 $bad = 0
 foreach ($f in $files) {
