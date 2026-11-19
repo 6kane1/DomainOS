@@ -15,6 +15,8 @@
 $ErrorActionPreference = 'Stop'
 $global:DosRepo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $global:DosPlaybook = Join-Path $global:DosRepo 'playbook'
+# The PowerShell that runs these tests, for child processes: pwsh (Linux / Windows) or Windows PowerShell 5.1 (CI on Windows).
+$global:DosPsExe = if ($PSVersionTable.PSEdition -eq 'Desktop') { Join-Path $PSHOME 'powershell.exe' } elseif ($IsWindows) { Join-Path $PSHOME 'pwsh.exe' } else { Join-Path $PSHOME 'pwsh' }
 
 # ---- fake registry -----------------------------------------------------------------------------------------------
 class DosRegKey {
@@ -318,6 +320,6 @@ function global:Invoke-DosLogonCommand([string]$Argument, [string]$LocalAppData,
     $cmd = $Argument.Substring($i + 10, $Argument.Length - $i - 11)
     if ($cmd.Contains('"')) { throw 'the command contains a double quote: it would end the -Command argument on the Windows command line' }
     $pre = "function Start-Process([string]`$FilePath) { Add-Content -LiteralPath '$Record' -Value `$FilePath }; `$env:LOCALAPPDATA = '$LocalAppData'; "
-    & ([IO.Path]::Combine($PSHOME, 'pwsh')) -NoProfile -NonInteractive -Command ($pre + $cmd) | Out-Null
+    & $global:DosPsExe -NoProfile -NonInteractive -Command ($pre + $cmd) | Out-Null
     if (Microsoft.PowerShell.Management\Test-Path -LiteralPath $Record) { return @(Microsoft.PowerShell.Management\Get-Content -LiteralPath $Record) } else { return @() }
 }

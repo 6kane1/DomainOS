@@ -17,6 +17,32 @@ Pester 5.7.1 is kept in tests/.vendor, so nothing is downloaded. No test uses th
 Files: lib/ (runner, AME model, areas), ps/ (AST analysis, item list, guide generator), pester/ (Harness.ps1 = the
 Windows stand-ins, *.Tests.ps1), js/run-page.js (pages with a small DOM).
 
+## On GitHub (.github/workflows/tests.yml)
+
+Runs on every push to main, every pull request and by hand (Actions > Tests > Run workflow). Read-only token, no
+secrets, actions pinned by commit SHA, Python wheels pinned by hash (tests/requirements-ci.txt). Three jobs:
+
+- **linux** (ubuntu-latest): `python3 tests/run-all.py`, all areas; I (no .apbx is built) and K (DomainSchedTest is
+  not in this repository) SKIP.
+- **windows** (windows-latest): every playbook .ps1 parsed by real Windows PowerShell 5.1 (`tests/ci/Parse-PS51.ps1`),
+  the Pester suite under powershell.exe 5.1 and under pwsh 7, `dotnet test` of the Toolbox on Windows.
+- **roundtrip** (windows-latest, twice: default options / every option): `tests/ci/RoundTrip.ps1` changes the
+  disposable runner for real. Snapshot, then as main.yml: Save-State.ps1, Install-DomainOS.ps1 -Part Tools, the options
+  record, Restore-Defaults.ps1; then the task files' actions from expected.json; Check-DomainOS.ps1 -AfterInstall (every
+  FAIL/WARN must belong to an item not applied); Undo-DomainOS.ps1 from Program Files\Domain OS\Tools; the snapshot again
+  must equal the first one (allow-list values, service start types, task states, the task files' keys, the options
+  record, power plans). The report is in the job summary; the Domain OS logs are kept as an artifact.
+  - Covered: registry values (add/delete), registry keys that are added (the Deprovisioned marks), service start types
+    and stops, scheduled tasks disable/enable, Set-PowerPlan.ps1, `powercfg /hibernate off` (if the VM allows it), the
+    SYSTEM step of Undo (Undo-AsSystem.ps1) when a service/task refuses administrators.
+  - Not covered: it is Windows Server (no Windows 11 Pro), no AME Wizard (this script applies the actions, as
+    administrator, not TrustedInstaller; anything refused is listed as not applied), app removal (appx), the other !run
+    scripts (OneDrive, Toolbox install/autostart - install-scheduler is never chosen, runtimes, wallpapers, Start and
+    taskbar pins, app leftovers, TrkWks, hypervisor, guide pages), deleting keys that exist (Undo does not restore them,
+    by design), services/tasks Windows Server does not have (Check says SKIP), items for other builds (e.g.
+    TargetReleaseVersionInfo for 26200/26300), HKCU of other accounts, anything that needs a restart.
+  - It refuses to run outside GitHub Actions or without `-IKnowThisChangesThisPC`: never run it on a real PC.
+
 # Measuring Domain OS (WPR / WPA)
 
 A playbook is worth publishing only with numbers. This kit records the same data the same way on any Windows, so

@@ -1,4 +1,4 @@
-# Unit tests of DomainOS-Common.ps1 (the real file, dot-sourced), Windows primitives replaced by Pester mocks.
+﻿# Unit tests of DomainOS-Common.ps1 (the real file, dot-sourced), Windows primitives replaced by Pester mocks.
 BeforeAll {
     . (Join-Path $PSScriptRoot 'Harness.ps1')
     $script:tmp = Join-Path ([IO.Path]::GetTempPath()) ('dos-common-' + [Guid]::NewGuid().ToString('N').Substring(0, 8))
@@ -222,7 +222,7 @@ Describe 'Register-DomainOSOpenAtLogon (open a page once per account)' {
         function Invoke-AtLogon([string]$cmd, [string]$lad) {
             $rec = Join-Path $script:tmp 'opened.txt'
             $pre = "function Start-Process([string]`$FilePath) { Add-Content -LiteralPath '$rec' -Value `$FilePath }; `$env:LOCALAPPDATA = '$lad'; "
-            & ([IO.Path]::Combine($PSHOME, 'pwsh')) -NoProfile -NonInteractive -Command ($pre + $cmd) | Out-Null
+            & $global:DosPsExe -NoProfile -NonInteractive -Command ($pre + $cmd) | Out-Null
             if (Microsoft.PowerShell.Management\Test-Path -LiteralPath $rec) { return @(Microsoft.PowerShell.Management\Get-Content -LiteralPath $rec) } else { return @() }
         }
     }

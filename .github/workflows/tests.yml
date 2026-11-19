@@ -1,0 +1,179 @@
+# Domain OS tests on GitHub's machines, on every push to main, every pull request and by hand. Read-only token, no
+# secrets, every action pinned to a full commit SHA; the only downloads are those actions, the hash-pinned Python
+# wheels (tests/requirements-ci.txt, discord-status/requirements.txt) and the NuGet packages of the Toolbox tests.
+#
+# linux       python3 tests/run-all.py: every area (A-L). I (the built .apbx) and K (DomainSchedTest, another
+#             project) have nothing to test here and SKIP.
+#   A B C D F   python3 + PyYAML; C and D need PowerShell 7 (pwsh, preinstalled on ubuntu-latest); F needs node.
+#   E           pwsh + Pester 5.7.1 from tests/.vendor (vendored: nothing is downloaded).
+#   G           .NET 8 SDK: dotnet test toolbox/tests/DomainScheduler.Tests (EnableWindowsTargeting).
+#   H           the Discord bot (.github/discord-bot/bot.py), imported with the network blocked.
+#   J           the website: a checkout of branch gh-pages + cryptography (feed signatures).
+#   L           the workflows in .github/workflows + Pillow for the status card.
+# windows     real Windows PowerShell 5.1 (powershell.exe, what AME Wizard runs the playbook with): every playbook
+#             script parsed by its parser (tests/ci/Parse-PS51.ps1), the Pester suite under 5.1 and under pwsh, and
+#             dotnet test of the Toolbox on Windows.
+# roundtrip   a REAL apply + check + undo on the disposable Windows Server runner (tests/ci/RoundTrip.ps1), once with
+#             the default options and once with every option: Save-State, Install-DomainOS -Part Tools, the options
+#             record, Restore-Defaults, the task files' registry values / services / tasks (+ Set-PowerPlan), then
+#             Check-DomainOS -AfterInstall, Undo Domain OS, and a comparison with the snapshot taken before.
+#             What it does not cover (apps, most !run scripts, TrustedInstaller-only items, Windows 11 only items)
+#             is listed in the job summary and in tests/README.md.
+
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Test suite (Ubuntu, run-all.py)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: gh-pages
+          path: .ci-site
+          persist-credentials: false
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Python packages (pinned with hashes)
+        run: |
+          pip install --quiet --require-hashes --only-binary=":all:" -r tests/requirements-ci.txt
+          pip install --quiet --require-hashes --only-binary=":all:" -r .github/discord-status/requirements.txt
+
+      - name: Tools present
+        run: |
+          command -v pwsh >/dev/null || { echo "pwsh missing on this runner image"; exit 1; }
+          command -v node >/dev/null || { echo "node missing on this runner image"; exit 1; }
+          pwsh -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
+          node --version
+          dotnet --version
+          test -f tests/.vendor/Pester/5.7.1/Pester.psd1 || { echo "vendored Pester 5.7.1 missing"; exit 1; }
+
+      - name: Layout for run-all.py
+        run: |
+          mkdir -p "$RUNNER_TEMP/dos"
+          ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/dos/repo-main"
+          ln -s "$GITHUB_WORKSPACE/.ci-site" "$RUNNER_TEMP/dos/ghp"
+
+      - name: Tests (tests/run-all.py)
+        env:
+          DOS_SCRATCH: ${{ runner.temp }}/dos
+          DOS_TOOLBOX: ${{ github.workspace }}/toolbox
+          DOS_SCHEDTEST: /nonexistent
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+          POWERSHELL_TELEMETRY_OPTOUT: '1'
+        run: |
+          export DOS_PWSH="$(command -v pwsh)"
+          export DOS_DOTNET_ROOT="${DOTNET_ROOT:-$(dirname "$(readlink -f "$(command -v dotnet)")")}"
+          python3 tests/run-all.py
+
+  windows:
+    name: Windows PowerShell 5.1 + Toolbox (windows-latest)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      POWERSHELL_TELEMETRY_OPTOUT: '1'
+    steps:
+      # The files exactly as in the repository (LF): expected.json holds the SHA-256 of the task files.
+      - name: No line-ending conversion
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Parse every playbook script with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          & .\tests\ci\Parse-PS51.ps1
+          exit $LASTEXITCODE
+
+      - name: Pester under Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $PSVersionTable.PSVersion.ToString()
+          & .\tests\pester\run.ps1 -Out "$env:RUNNER_TEMP\pester-ps51.xml"
+          exit $LASTEXITCODE
+
+      - name: Pester under PowerShell 7 on Windows
+        if: always()
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion.ToString()
+          & ./tests/pester/run.ps1 -Out "$env:RUNNER_TEMP/pester-pwsh.xml"
+          exit $LASTEXITCODE
+
+      - name: Toolbox tests (dotnet test on Windows)
+        if: always()
+        run: dotnet test toolbox/tests/DomainScheduler.Tests -c Release --nologo
+
+  roundtrip:
+    name: Real apply + check + undo (${{ matrix.options }} options)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        options: [defaults, all]
+    steps:
+      - name: No line-ending conversion
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      # Changes this runner's registry, services and tasks; the runner is thrown away after the job.
+      - name: Save-State, apply, Check-DomainOS -AfterInstall, Undo, compare
+        shell: powershell
+        env:
+          OPTION_SET: ${{ matrix.options }}
+        run: |
+          & .\tests\ci\RoundTrip.ps1 -OptionSet $env:OPTION_SET -Out "$env:RUNNER_TEMP\roundtrip.md" -IKnowThisChangesThisPC
+          exit $LASTEXITCODE
+
+      - name: Keep the Domain OS logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: roundtrip-logs-${{ matrix.options }}
+          path: |
+            C:\ProgramData\Domain OS\Logs
+            ${{ runner.temp }}\roundtrip.md
+          if-no-files-found: warn
+          retention-days: 14
