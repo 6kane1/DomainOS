@@ -71,7 +71,7 @@ def facts():
 
 
 def bot_seen():
-    """'now' while a bot shift runs, else the time its last shift ended; None when unknown."""
+    """'now' while a bot check runs, else the time the last check ended; None when unknown."""
     h = {'Accept': 'application/vnd.github+json'}
     if GH_TOKEN: h['Authorization'] = 'Bearer ' + GH_TOKEN
     st, body = http(f'https://api.github.com/repos/{REPO}/actions/workflows/discord-bot.yml/runs?per_page=10', headers=h)
@@ -145,11 +145,11 @@ def card(f):
     d.text((852 * S, 362 * S), ('online' if ok else 'not responding') + ' · ' + ('работает' if ok else 'не отвечает'), font=mid, fill=FG if ok else WARN)
     d.text((816 * S, 414 * S), '6kane1.github.io/DomainOS', font=small, fill=DIM)
     b = f.get('bot')
-    if b == 'now': bt, bc = 'bot · online · бот в сети', OK
+    if b == 'now': bt, bc = 'bot · checking now · бот проверяет', OK
     elif b:
         mins = int((datetime.now(timezone.utc) - b).total_seconds() // 60)
         ago = f'{mins} min' if mins < 120 else f'{mins // 60} h'
-        bt, bc = f'bot · seen {ago} ago · бот был {ago.replace("min", "мин").replace("h", "ч")} назад', (OK if mins < 45 else WARN)
+        bt, bc = f'bot · last check {ago} ago · проверка {ago.replace("min", "мин").replace("h", "ч")} назад', (OK if mins < 30 else WARN)
     else: bt, bc = 'bot · unknown · бот: нет данных', DIM
     d.text((84 * S, 418 * S), bt, font=small, fill=bc)
 

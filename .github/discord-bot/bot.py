@@ -1,5 +1,5 @@
-"""Domain OS Discord helper, run by .github/workflows/discord-bot.yml in shifts of ~29 minutes, one after another
-(each shift starts the next one; no server of our own).
+"""Domain OS Discord helper, run by .github/workflows/discord-bot.yml as a short check (~2 minutes) every 10 minutes
+(no server of our own and no bot running around the clock; a "shift" below is one such run).
 
 results forum: a new post with DomainSchedTest results (zip / 7z / summary.txt) gets a reply with a chart: the runs
 are grouped by their label (base-1, base-2, S2-1 … → base, S2), every group uses the same number of runs (the first N
