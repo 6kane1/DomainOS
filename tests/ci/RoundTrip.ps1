@@ -296,11 +296,14 @@ $aclNotes = New-Object System.Collections.Generic.List[string]
 foreach ($it in $manifest.items) {
     $src = ('{0}:{1}' -f ([string]$it.file -replace '/', '\'), $it.line)
     if ($it.kind -ne 'registryValue' -or -not $status.ContainsKey($src) -or $status[$src] -notlike '*failed as administrator*') { continue }
+    # The key itself, or the nearest parent that exists (a missing key is created under it).
+    $p = [string]$it.path
+    while ($p.Contains('\') -and (Test-Key $p) -ne 'present') { $p = $p.Substring(0, $p.LastIndexOf('\')) }
     try {
-        $acl = Get-Acl -LiteralPath ('Registry::' + ([string]$it.path -replace '^HKLM', 'HKEY_LOCAL_MACHINE' -replace '^HKCU', 'HKEY_CURRENT_USER'))
+        $acl = Get-Acl -LiteralPath ('Registry::' + ($p -replace '^HKLM', 'HKEY_LOCAL_MACHINE' -replace '^HKCU', 'HKEY_CURRENT_USER'))
         $rules = @($acl.Access | ForEach-Object { "$($_.IdentityReference): $($_.RegistryRights)" + $(if ($_.IsInherited) { ' (inherited)' } else { '' }) }) -join '; '
-        $aclNotes.Add("$($it.path) - owner $($acl.Owner); $rules")
-    } catch { $aclNotes.Add("$($it.path) - ACL unreadable: $($_.Exception.Message)") }
+        $aclNotes.Add("$($it.path) (ACL of $p) - owner $($acl.Owner); $rules")
+    } catch { $aclNotes.Add("$($it.path) (ACL of $p) - unreadable: $($_.Exception.Message)") }
 }
 foreach ($a in $aclNotes) { Write-Host "  ACL  $a" }
 
