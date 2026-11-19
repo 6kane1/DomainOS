@@ -592,8 +592,8 @@ FAQ = [
      '🇬🇧 Windows 11 **Pro**, version **25H2 or 26H2** (Win+R → `winver`). Windows 10 and 24H2 are not supported.\n'
      '🇷🇺 Windows 11 **Pro**, версия **25H2 или 26H2** (Win+R → `winver`). Windows 10 и 24H2 не поддерживаются.'),
     (['бан', 'забан', 'банят', 'ban', 'безопас', 'safe', 'вирус', 'virus', 'троян', 'defender', 'защитник', 'антивирус', 'опасн', 'vac'], '**Is it safe? Can I get banned?** · **Это безопасно? Не забанят?**',
-     '🇬🇧 Domain OS does not touch Defender, Memory Integrity, Secure Boot or TPM and does not inject into games. Anti-cheat developers have not officially confirmed compatibility, so use it at your own risk — but nothing here works like a cheat.\n'
-     '🇷🇺 Domain OS не трогает Defender, защиту памяти, Secure Boot и TPM и ничего не внедряет в игры. Разработчики античитов совместимость официально не подтверждали, поэтому — на свой риск, но ничего похожего на читы здесь нет.'),
+     '🇬🇧 Windows protection stays as it is: Defender, memory integrity, Secure Boot and TPM are not changed. Domain OS does not touch game files and injects nothing into games: it changes only Windows settings, and every change can be undone. Anti-cheat developers have not officially confirmed compatibility, so the decision is yours.\n'
+     '🇷🇺 Защита Windows остаётся как есть: Defender, целостность памяти, Secure Boot и TPM не меняются. Domain OS не трогает файлы игр и ничего в них не внедряет: меняются только настройки Windows, и любое изменение можно откатить. Разработчики античитов официально совместимость не подтверждали, поэтому решение остаётся за вами.'),
     (['toolbox', 'тулбокс', 'тулбох', 'auto', 'авто', 'оптимизация устройств', 'optimize', 'как пользов', 'настро'], '**How to use Toolbox** · **Как пользоваться Toolbox**',
      '🇬🇧 Open Toolbox → **Turn on Auto** → start the game. Once, with the game closed: **Optimize devices** → restart. Details in <#1572338781812559903>.\n'
      '🇷🇺 Откройте Toolbox → **Включить Auto** → запустите игру. Один раз при закрытой игре: **Оптимизация устройств** → перезагрузка. Подробно в <#1572338781812559903>.'),
