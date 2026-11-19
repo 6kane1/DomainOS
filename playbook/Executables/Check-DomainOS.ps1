@@ -1,4 +1,4 @@
-<#
+﻿<#
   Domain OS - "Check Domain OS": compares this PC with what the playbook set, and (by hand) checks Windows' health.
   READ-ONLY: it never changes a setting, a service, a task, an app or a file of Windows or Domain OS. The only files it
   writes are its own reports (below).
@@ -44,6 +44,7 @@ if (-not (Test-Path -LiteralPath $common)) {
 if (-not $AfterInstall) {
     # Not elevated: start again as administrator with the same switches.
     if (Start-DomainOSElevated $MyInvocation.MyCommand.Path $PSBoundParameters) { exit 0 }
+    Disable-DomainOSQuickEdit
 }
 
 # ---- results -------------------------------------------------------------------------------------------------------
@@ -124,6 +125,7 @@ if (Test-Path -LiteralPath $historyFile) {
     foreach ($l in @(Get-Content -LiteralPath $historyFile -Encoding UTF8 -ErrorAction SilentlyContinue)) {
         $t = @($l -split '\s+' | Where-Object { $_ })
         if ($t.Count -ge 3 -and $t[2] -eq 'applied') { $history = [pscustomobject]@{ State = 'applied'; Version = $(if ($t.Count -ge 4) { $t[3] } else { '' }); When = "$($t[0]) $($t[1])" } }
+        elseif ($t.Count -ge 3 -and $t[2] -eq 'undo-incomplete') { $history = [pscustomobject]@{ State = 'undo-incomplete'; Version = (($t | Select-Object -Skip 3) -join ' '); When = "$($t[0]) $($t[1])" } }
         elseif ($t.Count -ge 3 -and $t[2] -like 'undo*') { $history = [pscustomobject]@{ State = 'undone'; Version = (($t | Select-Object -Skip 3) -join ' '); When = "$($t[0]) $($t[1])" } }
     }
 }
@@ -587,6 +589,7 @@ function Test-InstallRecord {
             elseif ($manifest) { Add-Result 'WARN' $area 'Version applied last (history.log)' ([string]$manifest.version) "$($history.Version), $($history.When)" '' 'The check and the applied playbook are different versions: apply the newest playbook again.' }
         }
         'undone' { Add-Result 'INFO' $area 'Domain OS was undone' '' "$($history.When): $($history.Version)" }
+        'undo-incomplete' { Add-Result 'WARN' $area 'Undo did not finish' 'all items put back' "$($history.When): $($history.Version)" '' 'Restart and run Undo Domain OS again (the saved state is kept); see %ProgramData%\Domain OS\Logs\undo.log. The playbook changes are not compared until Undo has finished or the playbook is applied again.' }
         default { Add-Result 'INFO' $area 'history.log' '' 'no install recorded' }
     }
     if ($script:OptionsKnown) { Add-Result 'INFO' $area 'Options chosen at the install' '' $(if ($script:Selected.Count) { (@($script:Selected) | Sort-Object) -join ', ' } else { 'none' }) }

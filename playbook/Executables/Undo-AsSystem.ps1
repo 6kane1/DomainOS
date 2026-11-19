@@ -1,6 +1,6 @@
 ﻿<#
   Domain OS — the SYSTEM part of "Undo Domain OS" (since 2.1.4).
-  Undo-DomainOS.ps1 runs as administrator. Some services and scheduled tasks the playbook changed (it is applied
+  Undo-DomainOS.ps1 runs as administrator. Some services, scheduled tasks and HKLM values (since 2.2.1) the playbook changed (it is applied
   with TrustedInstaller rights) do not let administrators change them back: their registry key or their task belongs
   to TrustedInstaller or SYSTEM. For exactly those items Undo starts this script once as SYSTEM through a one-shot
   scheduled task, waits for it and removes the task again.
@@ -35,7 +35,7 @@ try {
     if (-not (Test-DomainOSFile $Work)) { throw 'the work file is not trusted' }
     $allowed = Get-DomainOSAllowList $PSScriptRoot
     if (-not $allowed) { throw 'the allow-list is missing or not trusted' }
-    $items = @(Get-Content -LiteralPath $Work -Raw -Encoding UTF8 | ConvertFrom-Json)
+    $items = @(Get-Content -LiteralPath $Work -Raw -Encoding UTF8 | ConvertFrom-Json | ForEach-Object { $_ })   # 5.1 emits a JSON array as ONE object: enumerate it
 } catch {
     Done 'X' '' $false $_.Exception.Message
     Save-Result
@@ -55,6 +55,8 @@ public static class DosRestoreReg {
     [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
     [DllImport("advapi32.dll", CharSet = CharSet.Unicode)] static extern int RegCreateKeyEx(UIntPtr root, string sub, int res, string cls, int opt, int sam, IntPtr sa, out UIntPtr key, out int disp);
     [DllImport("advapi32.dll", CharSet = CharSet.Unicode)] static extern int RegSetValueEx(UIntPtr key, string name, int res, int type, ref int data, int size);
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, EntryPoint = "RegSetValueExW")] static extern int RegSetValueBytes(UIntPtr key, string name, int res, int type, byte[] data, int size);
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode)] static extern int RegDeleteValue(UIntPtr key, string name);
     [DllImport("advapi32.dll")] static extern int RegCloseKey(UIntPtr key);
     static readonly UIntPtr HKLM = new UIntPtr(0x80000002u);
     static void Enable(string name) {
@@ -79,6 +81,32 @@ public static class DosRestoreReg {
             if (disp == 1) throw new InvalidOperationException("the key did not exist");   // REG_CREATED_NEW_KEY: never create service keys
             r = RegSetValueEx(k, name, 0, 4 /* REG_DWORD */, ref value, 4);
             if (r != 0) throw new System.ComponentModel.Win32Exception(r);
+        } finally { RegCloseKey(k); }
+    }
+    static UIntPtr OpenExisting(string sub) {
+        Enable("SeRestorePrivilege"); Enable("SeBackupPrivilege");
+        UIntPtr k; int disp;
+        int r = RegCreateKeyEx(HKLM, sub, 0, null, 4 /* REG_OPTION_BACKUP_RESTORE */, 0x20006 /* KEY_WRITE */, IntPtr.Zero, out k, out disp);
+        if (r != 0) throw new System.ComponentModel.Win32Exception(r);
+        if (disp == 1) { RegCloseKey(k); throw new InvalidOperationException("the key did not exist"); }
+        return k;
+    }
+    // REG_SZ (1) / REG_EXPAND_SZ (2) under an EXISTING HKLM key, with the backup/restore privilege.
+    public static void SetString(string sub, string name, string value, int type) {
+        if (type != 1 && type != 2) throw new ArgumentException("type");
+        UIntPtr k = OpenExisting(sub);
+        try {
+            byte[] b = System.Text.Encoding.Unicode.GetBytes((value ?? "") + "\0");
+            int r = RegSetValueBytes(k, name, 0, type, b, b.Length);
+            if (r != 0) throw new System.ComponentModel.Win32Exception(r);
+        } finally { RegCloseKey(k); }
+    }
+    // Removes one value under an EXISTING HKLM key, with the backup/restore privilege.
+    public static void DeleteValue(string sub, string name) {
+        UIntPtr k = OpenExisting(sub);
+        try {
+            int r = RegDeleteValue(k, name);
+            if (r != 0 && r != 2 /* not there */) throw new System.ComponentModel.Win32Exception(r);
         } finally { RegCloseKey(k); }
     }
 }
@@ -113,6 +141,30 @@ foreach ($i in $items) {
             $now = (Get-ScheduledTask -TaskPath ($name.Substring(0, $at + 1)) -TaskName ($name.Substring($at + 1))).State -ne 'Disabled'
             if ($now -ne $enable) { throw 'the task did not change' }
             Done 'T' $name $true ''
+        } elseif ($kind -eq 'R') {
+            # An HKLM value whose key only TrustedInstaller may change (e.g. ...\CurrentVersion\Communications).
+            $p = [string]$i.path; $v = [string]$i.value
+            if (-not $allowed["R|$p|$v"] -or $p -notmatch '^HKLM\\') { throw 'not a value Domain OS changes' }
+            $sub = $p.Substring(5)
+            $k = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($sub, $false)
+            $has = $false; if ($k) { try { $has = $k.GetValueNames() -contains $v } finally { $k.Close() } }
+            if ([bool]$i.exists) {
+                if (-not $k) { throw 'the key is not there' }
+                switch ([string]$i.type) {
+                    'DWord'        { [DosRestoreReg]::SetDword($sub, $v, [int]$i.data) }
+                    'String'       { [DosRestoreReg]::SetString($sub, $v, [string]$i.data, 1) }
+                    'ExpandString' { [DosRestoreReg]::SetString($sub, $v, [string]$i.data, 2) }
+                    default        { throw "value type '$($i.type)' is not restored as SYSTEM" }
+                }
+                $now = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($sub, $false)
+                try { $got = $now.GetValue($v, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames) } finally { $now.Close() }
+                if ([string]$got -ne [string]$i.data) { throw 'the value did not change' }
+            } elseif ($has) {
+                [DosRestoreReg]::DeleteValue($sub, $v)
+                $now = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($sub, $false)
+                try { if ($now.GetValueNames() -contains $v) { throw 'the value is still there' } } finally { $now.Close() }
+            }
+            Done 'R' $i.name $true ''
         } else { throw "unknown item kind '$kind'" }
     } catch { Done $kind $name $false $_.Exception.Message }
 }

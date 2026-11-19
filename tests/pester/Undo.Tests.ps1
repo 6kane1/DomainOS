@@ -243,7 +243,9 @@ Describe 'Undo-AsSystem.ps1' {
         @{ why = 'a start type out of range'; item = @{ kind = 'S'; name = 'DiagTrack'; start = 7 }; msg = 'not 0-4' },
         @{ why = 'a negative start type'; item = @{ kind = 'S'; name = 'DiagTrack'; start = -1 }; msg = 'not 0-4' },
         @{ why = 'a task outside the allow-list'; item = @{ kind = 'T'; name = '\Microsoft\Windows\Windows Defender\Windows Defender Scheduled Scan'; enabled = $false }; msg = 'not a task' },
-        @{ why = 'an unknown kind'; item = @{ kind = 'R'; name = 'HKLM\SOFTWARE\X' }; msg = 'unknown item kind' }
+        @{ why = 'an unknown kind'; item = @{ kind = 'Q'; name = 'HKLM\SOFTWARE\X' }; msg = 'unknown item kind' }
+        @{ why = 'a registry value Domain OS does not change'; item = @{ kind = 'R'; name = 'HKLM\SOFTWARE\X\Y'; path = 'HKLM\SOFTWARE\X'; value = 'Y'; exists = $true; type = 'DWord'; data = 1 }; msg = 'not a value Domain OS changes' }
+        @{ why = 'an HKCU value'; item = @{ kind = 'R'; name = 'HKCU\Software\X\Y'; path = 'HKCU\Software\X'; value = 'Y'; exists = $true; type = 'DWord'; data = 1 }; msg = 'not a value Domain OS changes' }
     ) {
         $x = Run-Work @([pscustomobject]$item)
         $x.Answers[0].ok | Should -BeFalse

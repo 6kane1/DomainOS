@@ -47,6 +47,23 @@ h1{font-size:30px;line-height:1.2;color:var(--strong);font-weight:600;letter-spa
 </div>
 <script>
 const NOTES = [
+  { v: "2.2.3", date: "2026-11-19",
+    groups: [
+      { en: "Fixes", ru: "Исправления", items: [
+        { en: "Undo now really puts back services and scheduled tasks that only SYSTEM may change: with two or more of them the one-time SYSTEM step used to fail for all.",
+          ru: "Откат теперь действительно возвращает службы и задания, которые может менять только SYSTEM: при двух и больше разовый шаг от SYSTEM раньше не срабатывал ни для одного." },
+        { en: "Undo also puts back registry values whose key only Windows itself (TrustedInstaller) may change, e.g. the Teams Chat auto-install setting.",
+          ru: "Откат возвращает и значения реестра, ключ которых может менять только сама Windows (TrustedInstaller), например настройку автоустановки чата Teams." },
+        { en: "Undo puts the taskbar pin order back again (it failed on the saved binary value).",
+          ru: "Откат снова возвращает порядок значков на панели задач (раньше спотыкался о сохранённое двоичное значение)." },
+        { en: "A click into the Undo or Check window no longer pauses it.",
+          ru: "Клик мышкой в окно отката или проверки больше не ставит его на паузу." },
+        { en: "The install no longer stops at the wallpapers when it saves your current desktop picture for the first time.",
+          ru: "Установка больше не останавливается на обоях, когда впервые сохраняет вашу текущую картинку рабочего стола." },
+        { en: "After an Undo that did not finish, Check Domain OS says so clearly instead of listing every setting as FAIL.",
+          ru: "После незавершённого отката Check Domain OS прямо об этом пишет, а не показывает каждую настройку как FAIL." }
+      ]}
+    ]},
   { v: "2.2.0", date: "2026-11-19",
     groups: [
       { en: "Safer install and undo", ru: "Надёжнее установка и откат", items: [
@@ -88,9 +105,9 @@ const NOTES = [
 ];
 const T = {
   en: { h1: v => "What's new in Domain OS " + v, lead: "Everything Domain OS changes is still documented and can be undone with Start → Domain OS → Undo Domain OS.",
-        cur: "installed", since: "since 2.1.1", foot: "Full list of changes: README on GitHub (github.com/6kane1/DomainOS). This page is a local file and sends nothing." },
+        cur: "installed", since: "since 2.2.0", foot: "Full list of changes: README on GitHub (github.com/6kane1/DomainOS). This page is a local file and sends nothing." },
   ru: { h1: v => "Что нового в Domain OS " + v, lead: "Всё, что меняет Domain OS, по-прежнему описано и отменяется через «Пуск → Domain OS → Undo Domain OS».",
-        cur: "установлено", since: "после 2.1.1", foot: "Полный список изменений — в README на GitHub (github.com/6kane1/DomainOS). Эта страница — локальный файл, она ничего никуда не отправляет." }
+        cur: "установлено", since: "после 2.2.0", foot: "Полный список изменений — в README на GitHub (github.com/6kane1/DomainOS). Эта страница — локальный файл, она ничего никуда не отправляет." }
 };
 let lang = /^ru/i.test(navigator.language || "") ? "ru" : "en";
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
