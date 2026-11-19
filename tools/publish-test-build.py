@@ -23,6 +23,13 @@ KEYFILE = os.path.join(CONF, 'tester-key.txt')
 SIGN = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sign-feed.sh')
 REPO = '6kane1/DomainOS'
 MAGIC = b'DOSE1'
+# Test releases are labelled so they are never mistaken for the stable playbook (the release marked Latest, titled
+# "✅ Domain OS <ver> — playbook, stable"). When a test playbook archive is added to a release, add it to the title too
+# ("… + playbook <ver> test — testers only").
+NOTES = ('🧪 **TEST build for testers only: encrypted, opens only with the tester key.** This is **not** the stable Domain OS '
+         'playbook. Stable playbook for everyone: https://github.com/6kane1/DomainOS/releases/latest\n\n'
+         '🧪 **ТЕСТОВАЯ сборка только для тестировщиков: зашифрована, открывается только ключом тестировщика.** Это **не** '
+         'стабильный плейбук Domain OS. Стабильный плейбук для всех: https://github.com/6kane1/DomainOS/releases/latest')
 
 
 def fmt(key: bytes) -> str:
@@ -84,9 +91,8 @@ def main():
     print('exe sha256', hashlib.sha256(open(exe, 'rb').read()).hexdigest())
     if dry: print('dry run: nothing uploaded; files in', tmp); return
     subprocess.run(['gh', 'release', 'create', tag, binf, sz, '-R', REPO, '--prerelease', '--target', 'main',
-                    '--title', f'Toolbox test build {version}',
-                    '--notes', 'Encrypted test build for Domain OS testers. It cannot be opened without the tester key '
-                               'from the closed testers channel. Stable downloads: https://6kane1.github.io/DomainOS/'],
+                    '--title', f'🧪 TEST · Toolbox {version} — testers only',
+                    '--notes', NOTES],
                    check=True)
     print('released', tag, '— now commit and push', site)
 

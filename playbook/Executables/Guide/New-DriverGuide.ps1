@@ -1,14 +1,17 @@
-<#
+﻿<#
   Domain OS — builds the "First steps" page for THIS computer and opens it.
   It reads what Windows knows about the hardware (nothing is changed, nothing is sent anywhere),
   writes the facts into guide.html and shows the page in the default browser.
+  The page is written to %LOCALAPPDATA%\Domain OS\Guide of the account that opens it: the guide runs with the
+  account's normal rights (Start menu shortcut, or once after the install's restart), and %ProgramData%\Domain OS
+  is writable by administrators only.
 #>
 [CmdletBinding()]
 param([switch]$NoOpen)
 
 $ErrorActionPreference = 'SilentlyContinue'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$outDir = Join-Path $env:ProgramData 'Domain OS\Guide'
+$outDir = Join-Path $env:LOCALAPPDATA 'Domain OS\Guide'   # runs as the signed-in user (logon task, Start menu): the variable is right
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
 function Vendor([string]$text, [hashtable]$map) {

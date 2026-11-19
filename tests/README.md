@@ -1,3 +1,22 @@
+# Automatic tests (tests/run-all.py)
+
+One program checks the whole project and ends with PASS / FAIL (exit code 0 / 1). `build.sh` runs it before packing and
+refuses to build on any failure, then checks the packed archive (area I) and deletes it if it is broken.
+`./build.sh --skip-tests` packs without tests: only for an emergency re-pack of sources that already passed.
+
+    python3 tests/run-all.py              # everything, about 30-40 s (+ the first dotnet restore)
+    python3 tests/run-all.py -v           # also list every passing test
+    python3 tests/run-all.py --only A,B,D # some areas
+
+Areas: A playbook.conf, B YAML task files (AME schema + safety rules), C Undo consistency, D PowerShell static analysis
+(PS 5.1 compatibility, BOM, $null into .NET, %USERNAME%), E Pester tests that RUN Save-State / Undo / Undo-AsSystem /
+Install-DomainOS in a sandbox with a fake registry, F guide pages in node, G Toolbox `dotnet test`, H Discord bot,
+I built .apbx, J website + signed update feeds, K DomainSchedTest, L GitHub workflows + status card.
+Needs python3 (PyYAML, cryptography, Pillow), PowerShell 7 (~/sdk/pwsh or DOS_PWSH), the .NET 8 SDK, node and 7zr.
+Pester 5.7.1 is kept in tests/.vendor, so nothing is downloaded. No test uses the network or a token.
+Files: lib/ (runner, AME model, areas), ps/ (AST analysis, item list, guide generator), pester/ (Harness.ps1 = the
+Windows stand-ins, *.Tests.ps1), js/run-page.js (pages with a small DOM).
+
 # Measuring Domain OS (WPR / WPA)
 
 A playbook is worth publishing only with numbers. This kit records the same data the same way on any Windows, so
@@ -42,6 +61,30 @@ Windows ADK; with it installed the script also writes `dpcisr.txt` and `cpu-by-p
 - A difference of a few percent between single runs is noise. Call it a result only when the three runs of one setup do not overlap with the three runs of the other.
 - Process count, services and memory after start-up should clearly go down with Domain OS — that is what the playbook does.
 - Frame-time numbers and Ready time may not change at all, or only with DomainScheduler turned on. Say so if that is what you measure.
+
+
+---
+
+# Win32PrioritySeparation A/B: 0x18 vs 0x26 (DomainSchedTest)
+
+`Compare-PrioritySeparation.ps1` changes only `HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl\Win32PrioritySeparation`.
+Before the first change it writes the current value to `PrioritySeparation-original.txt` next to itself; `-Restore` writes
+exactly that value back (or deletes the value if there was none) and removes the file. It asks for administrator rights
+(UAC) only for `-Set` / `-Restore`. The value takes effect at once; the plan still restarts the PC at every switch, with
+10 minutes idle, so both variants start from the same state.
+
+```powershell
+.\Compare-PrioritySeparation.ps1                # current value, recorded original, the measuring plan
+.\Compare-PrioritySeparation.ps1 -Set 0x18      # variant A (Domain OS)
+.\Compare-PrioritySeparation.ps1 -Set 0x26      # variant B
+.\Compare-PrioritySeparation.ps1 -Restore       # back to the recorded original
+python compare_runs.py C:\PS-Test --groups ps18,ps26
+```
+
+Order of the six 60-second CS2 runs (labels ps18-1..3, ps26-1..3): A | B B | A A | B, a restart before each block.
+`compare_runs.py` reads every `summary.txt`, groups by label without the run number, takes the same number of runs per
+group (the first ones by date), and calls a difference real only when the min..max ranges do not overlap and the
+difference of the means is larger than the wider range; otherwise it prints "нет измеримой разницы".
 
 ---
 

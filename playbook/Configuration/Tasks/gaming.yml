@@ -5,58 +5,59 @@ actions:
   # ---- Captures and Game Bar off (the author's decision, 1.6.8); Game Mode stays on -----------------------------
   # Captures: background recording of the last minutes (Game DVR), recording by hand, recorded sound, cursor and
   # microphone. The policy switches recording and broadcasting off for every account.
-  - !registryValue: {path: 'HKCU\System\GameConfigStore', value: 'GameDVR_Enabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'AppCaptureEnabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'HistoricalCaptureEnabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'AudioCaptureEnabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'CursorCaptureEnabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'MicrophoneCaptureEnabledByDefault', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR', value: 'AllowGameDVR', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\System\GameConfigStore', value: 'GameDVR_Enabled', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'AppCaptureEnabled', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'HistoricalCaptureEnabled', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'AudioCaptureEnabled', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'CursorCaptureEnabled', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'MicrophoneCaptureEnabledByDefault', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR', value: 'AllowGameDVR', data: '0', type: REG_DWORD, errorAction: Log}
   # Game Bar: no opening by Win+G or the controller's Xbox button, no start-up tips panel. The app stays installed
   # (Xbox sign-in, Gaming Services and anti-cheats do not depend on the overlay), so it can be switched on again in
   # Settings > Gaming > Game Bar.
-  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'UseNexusForGameBarEnabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'ShowStartupPanel', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'GamePanelStartupTipIndex', data: '3', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'UseNexusForGameBarEnabled', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'ShowStartupPanel', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'GamePanelStartupTipIndex', data: '3', type: REG_DWORD, errorAction: Log}
   # Xbox mode (Settings > Gaming > Xbox mode, the full-screen Xbox home on 25H2 and later) off: the switch only empties the
   # home app of the account (checked on the author's PC: "Microsoft.GamingApp_8wekyb3d8bbwe!Microsoft.Xbox.App" ->
   # ""). The Xbox app itself stays. Undo puts the previous value back.
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GamingConfiguration', value: 'GamingHomeApp', data: '', type: REG_SZ}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GamingConfiguration', value: 'GamingHomeApp', data: '', type: REG_SZ, errorAction: Log}
 
   # Game Mode is left on, as Windows ships it: AMD's 3D V-Cache driver on Ryzen X3D with two CCDs uses it to keep
   # games on the V-Cache CCD, and it keeps Windows Update from installing drivers or asking to restart during a game.
   # Versions 1.5.x switched it off; Restore-Defaults.ps1 puts it back.
   # Written explicitly, so it is on even if the user or another tool switched it off before (Windows' own default is
   # also on). Undo puts the previous values back.
-  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'AutoGameModeEnabled', data: '1', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'AllowAutoGameMode', data: '1', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'AutoGameModeEnabled', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\GameBar', value: 'AllowAutoGameMode', data: '1', type: REG_DWORD, errorAction: Log}
 
   # Communications: Windows lowers all other sound by 80% when Discord, TeamSpeak or a call opens a voice stream
   # (Sound > More sound settings > Communications). Set to "Do nothing": the game keeps its volume.
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Multimedia\Audio', value: 'UserDuckingPreference', data: '3', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Multimedia\Audio', value: 'UserDuckingPreference', data: '3', type: REG_DWORD, errorAction: Log}
 
   # Pointer acceleration off ("Enhance pointer precision"): the cursor moves the same distance for the same hand movement.
-  - !registryValue: {path: 'HKCU\Control Panel\Mouse', value: 'MouseSpeed', data: '0', type: REG_SZ}
-  - !registryValue: {path: 'HKCU\Control Panel\Mouse', value: 'MouseThreshold1', data: '0', type: REG_SZ}
-  - !registryValue: {path: 'HKCU\Control Panel\Mouse', value: 'MouseThreshold2', data: '0', type: REG_SZ}
+  - !registryValue: {path: 'HKCU\Control Panel\Mouse', value: 'MouseSpeed', data: '0', type: REG_SZ, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Control Panel\Mouse', value: 'MouseThreshold1', data: '0', type: REG_SZ, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Control Panel\Mouse', value: 'MouseThreshold2', data: '0', type: REG_SZ, errorAction: Log}
 
   # Sticky / Filter / Toggle Keys shortcuts (five presses of Shift, holding Shift) no longer throw a window over the game.
-  - !registryValue: {path: 'HKCU\Control Panel\Accessibility\StickyKeys', value: 'Flags', data: '506', type: REG_SZ}
-  - !registryValue: {path: 'HKCU\Control Panel\Accessibility\Keyboard Response', value: 'Flags', data: '122', type: REG_SZ}
-  - !registryValue: {path: 'HKCU\Control Panel\Accessibility\ToggleKeys', value: 'Flags', data: '58', type: REG_SZ}
+  - !registryValue: {path: 'HKCU\Control Panel\Accessibility\StickyKeys', value: 'Flags', data: '506', type: REG_SZ, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Control Panel\Accessibility\Keyboard Response', value: 'Flags', data: '122', type: REG_SZ, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Control Panel\Accessibility\ToggleKeys', value: 'Flags', data: '58', type: REG_SZ, errorAction: Log}
 
   # Processor time slices (Win32PrioritySeparation = 0x18 = 24): long, fixed quanta, the same length for the program
   # in front and for background programs (no foreground boost of the quantum). Since 1.6.7. Measurements by
   # Zero Unflesh found 0x18 together with Game Mode on to be the best combination, which is what Domain OS ships
-  # (Game Mode stays on). Our own 2026-11-18 CS2 test on one PC showed 0x26 (Windows' own scheduling) slightly higher
-  # in 1% / 0.1% low with the same average FPS: one PC, a small difference. Undo restores the previous value.
-  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl', value: 'Win32PrioritySeparation', data: '24', type: REG_DWORD}
+  # (Game Mode stays on). Our own A/B test on 2026-11-19 (one PC, CS2 on an empty map, same spot, variants alternated)
+  # found no measurable difference to 0x26 (Windows' own scheduling); 0x18 stays on those measurements. Undo restores
+  # the previous value.
+  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl', value: 'Win32PrioritySeparation', data: '24', type: REG_DWORD, errorAction: Log}
 
   # Hardware-accelerated GPU scheduling (Settings > Display > Graphics): the graphics card schedules its own work,
   # which takes some CPU work and latency off frame submission. Needs a WDDM 2.7+ driver and a GPU that supports it
   # (NVIDIA GTX 10 and newer, AMD RX 5000 and newer, Intel Arc); on others Windows ignores the value. Takes effect
   # after a restart. Undo puts the previous value back. 2 = on, 1 = off.
-  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers', value: 'HwSchMode', data: '2', type: REG_DWORD, option: 'gpu-hags'}
+  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers', value: 'HwSchMode', data: '2', type: REG_DWORD, option: 'gpu-hags', errorAction: Log}
 
   # Versions 1.5.7–1.6.0 set hypervisorlaunchtype off when virtualization was off in the BIOS. If virtualization is
   # switched on later, memory integrity / VBS would then silently not start, so the step is gone: the previous value
@@ -67,4 +68,4 @@ actions:
     exeDir: true
     wait: true
     weight: 1
-    errorAction: Log
+    handleExitCodes: {'!0': Halt}

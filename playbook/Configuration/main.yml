@@ -3,6 +3,14 @@ title: Domain OS
 description: Applies the documented Domain OS changes. Security components are never touched.
 privilege: TrustedInstaller
 actions:
+  # Errors: every step that runs one of our scripts stops the install when the script ends with an exit code other than 0
+  # (handleExitCodes {'!0': Halt}); each script exits 0 on success or "nothing to do" and 1 on a real failure, and
+  # writes the reason to %ProgramData%\Domain OS\Logs\install.log. The only exceptions are explained where they are
+  # (software.yml: Install-Runtimes; services.yml: powercfg). Native AME actions keep errorAction Log/Ignore, because
+  # AME does not define whether a service, task or value that this Windows build does not have is an error; instead
+  # the LAST step (Check-DomainOS.ps1 -AfterInstall) compares the result with expected.json and stops the install
+  # when anything differs. The state for Undo is saved before the first change, so a stopped install can be undone.
+
   # First: Domain OS installs only on Windows 11 Pro. On any other edition the install stops here, before any change.
   - !writeStatus: {status: 'Checking the Windows edition (Pro only)'}
   - !run:
@@ -11,9 +19,11 @@ actions:
     exeDir: true
     wait: true
     weight: 1
-    handleExitCodes: {'2': Halt}
+    handleExitCodes: {'!0': Halt}
 
   # Before anything else: the current state of everything the playbook may touch is written down for "Undo Domain OS".
+  # If it cannot be saved (or a saved state is damaged or was not written by Domain OS), the install stops here,
+  # before any change: exit code 1 -> Halt.
   - !writeStatus: {status: 'Saving the current state for Undo'}
   - !run:
     exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
@@ -22,18 +32,36 @@ actions:
     exeDir: true
     wait: true
     weight: 5
-    errorAction: Log
+    errorAction: Halt
+    handleExitCodes: {'!0': Halt}
+
+  # Then the undo tools: "Undo Domain OS" in the Start menu (Program Files\Domain OS\Tools, with the list of what it
+  # may restore), so it is on the PC even if the install stops part-way. Still before any change, so a failure halts.
+  - !writeStatus: {status: 'Installing Undo Domain OS'}
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Install-DomainOS.ps1" -Part Tools'
+    exeDir: true
+    wait: true
+    weight: 5
+    errorAction: Halt
+    handleExitCodes: {'!0': Halt}
+
+  # The options ticked in the wizard are recorded (HKLM\SOFTWARE\Domain OS\Options) for the check at the end and for
+  # "Check Domain OS" in the Start menu.
+  - !task: {path: 'Tasks\options.yml'}
 
   # Items earlier versions switched off and this one leaves alone go back to what they were (from the saved state).
+  # Runs with the playbook's TrustedInstaller rights (no runas): it touches only HKLM services, tasks and values, and
+  # some of those services do not let administrators change them back. Exit 1 when an item could not be put back.
   - !writeStatus: {status: 'Putting back settings earlier versions changed'}
   - !run:
     exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
     args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Restore-Defaults.ps1"'
-    runas: currentUserElevated
     exeDir: true
     wait: true
     weight: 2
-    errorAction: Log
+    handleExitCodes: {'!0': Halt}
 
   - !writeStatus: {status: 'Removing preinstalled apps'}
   - !task: {path: 'Tasks\apps.yml'}
@@ -56,5 +84,20 @@ actions:
 
   - !writeStatus: {status: 'Installing Domain OS tools'}
   - !task: {path: 'Tasks\software.yml'}
+
+  # LAST: every change is checked against expected.json (built from these task files by tools/gen-expected.py), for
+  # the options recorded above. Read-only. A service, task or app this Windows build does not have is skipped; any
+  # value or state that differs ends it with exit code 1 and the install stops with an error. Each difference is one
+  # line in %ProgramData%\Domain OS\Logs\check.log (what, expected, found, task file:line). As the signed-in user,
+  # elevated (like Save-State), so the per-user (HKCU) values are read from that user's own registry.
+  - !writeStatus: {status: 'Checking that every change is in place'}
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Check-DomainOS.ps1" -AfterInstall'
+    runas: currentUserElevated
+    exeDir: true
+    wait: true
+    weight: 3
+    handleExitCodes: {'!0': Halt}
 
   - !writeStatus: {status: 'Finished. Restart the computer.'}

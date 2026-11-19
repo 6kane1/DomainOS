@@ -6,12 +6,12 @@ actions:
   # the line whose build matches the PC (26200 = 25H2, 26300 = 26H2). Both are held on 26H2: 25H2 loses security
   # updates in October 2027, 26H2 in October 2028, and 25H2 -> 26H2 is a small enablement update with one restart.
   # Microsoft documents these policies for Pro and higher; on Home Windows may not honour them.
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'TargetReleaseVersion', data: '1', type: REG_DWORD, option: 'updates-no-feature'}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'ProductVersion', data: 'Windows 11', type: REG_SZ, option: 'updates-no-feature'}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'TargetReleaseVersionInfo', data: '26H2', type: REG_SZ, option: 'updates-no-feature', builds: ['26200']}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'TargetReleaseVersionInfo', data: '26H2', type: REG_SZ, option: 'updates-no-feature', builds: ['26300']}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'TargetReleaseVersion', data: '1', type: REG_DWORD, option: 'updates-no-feature', errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'ProductVersion', data: 'Windows 11', type: REG_SZ, option: 'updates-no-feature', errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'TargetReleaseVersionInfo', data: '26H2', type: REG_SZ, option: 'updates-no-feature', builds: ['26200'], errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'TargetReleaseVersionInfo', data: '26H2', type: REG_SZ, option: 'updates-no-feature', builds: ['26300'], errorAction: Log}
 
   # Drivers are not delivered by Windows Update: the user installs the makers' own (see the driver guide).
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'ExcludeWUDriversInQualityUpdate', data: '1', type: REG_DWORD, option: 'updates-no-drivers'}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching', value: 'SearchOrderConfig', data: '0', type: REG_DWORD, option: 'updates-no-drivers'}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'ExcludeWUDriversInQualityUpdate', data: '1', type: REG_DWORD, option: 'updates-no-drivers', errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching', value: 'SearchOrderConfig', data: '0', type: REG_DWORD, option: 'updates-no-drivers', errorAction: Log}
 

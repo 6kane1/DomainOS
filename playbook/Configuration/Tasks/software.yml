@@ -1,15 +1,9 @@
 ---
 title: Domain OS tools
-description: Copies the tools, installs the runtimes games expect, registers DomainScheduler to start with Windows and prepares the driver guide.
+description: Installs the runtimes games expect, registers DomainScheduler to start with Windows and prepares the driver guide. The tools themselves (Undo Domain OS and the rest) are copied first, in main.yml, right after the state is saved.
 actions:
-  - !run:
-    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
-    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Install-DomainOS.ps1" -Part Tools'
-    exeDir: true
-    wait: true
-    weight: 5
-    handleExitCodes: { "!0": error }
-
+  # Every !run below starts one of our scripts: exit code 0 = done or nothing to do, anything else stops the install
+  # (handleExitCodes), except Install-Runtimes (explained there). The reason is in %ProgramData%\Domain OS\Logs.
   - !writeStatus: {status: 'Installing Visual C++, DirectX and 7-Zip', option: 'install-runtimes'}
   - !run:
     exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
@@ -18,6 +12,9 @@ actions:
     wait: true
     weight: 60
     option: 'install-runtimes'
+    # The one exception to "stop on an error": downloads from the vendors can fail for reasons outside the PC (a server
+    # or the connection), each part is independent, and the step can be run again any time (Start > Domain OS >
+    # Install runtimes). Failures are written to runtimes.log and shown as warnings by "Check Domain OS".
     errorAction: Log
 
   - !writeStatus: {status: 'Installing the Domain OS app', option: 'install-scheduler'}
@@ -28,16 +25,30 @@ actions:
     wait: true
     weight: 10
     option: 'install-scheduler'
-    handleExitCodes: { "!0": error }
+    handleExitCodes: {'!0': Halt}
 
+  # The driver guide opens once at the next sign-in of the installing account, with its normal rights (HKCU RunOnce,
+  # so the browser does not run as administrator).
   - !run:
     exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
     args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Install-DomainOS.ps1" -Part Guide'
+    runas: currentUserElevated
     exeDir: true
     wait: true
     weight: 3
     option: 'open-guide'
-    errorAction: Log
+    handleExitCodes: {'!0': Halt}
+
+  # "What's new in Domain OS" (Guide\whats-new.html) opens once at the next sign-in, after every install, so an update
+  # shows what changed. Same way as the guide (HKCU RunOnce, normal rights). Also in Start > Domain OS.
+  - !run:
+    exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
+    args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Install-DomainOS.ps1" -Part WhatsNew'
+    runas: currentUserElevated
+    exeDir: true
+    wait: true
+    weight: 1
+    handleExitCodes: {'!0': Halt}
 
   # The Domain OS wallpapers: a desktop slideshow and one picture on the lock screen, for the installing account.
   # Ordinary settings (no policy is set): the user can change both in Settings at any time; the earlier look is saved
@@ -51,9 +62,10 @@ actions:
     wait: true
     weight: 2
     option: 'wallpaper'
-    errorAction: Log
+    handleExitCodes: {'!0': Halt}
 
-  # The "Domain OS" power plan: a copy of Balanced with USB selective suspend and PCIe ASPM off, display and disk never turned off.
+  # The "Domain OS" power plan: a copy of Balanced with USB selective suspend and PCIe ASPM off, display and disk never
+  # turned off (the display setting is a convenience, not a performance setting; OLED owners may want a timeout).
   - !writeStatus: {status: 'Creating the Domain OS power plan', option: 'power-plan'}
   - !run:
     exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
@@ -62,7 +74,7 @@ actions:
     wait: true
     weight: 3
     option: 'power-plan'
-    errorAction: Log
+    handleExitCodes: {'!0': Halt}
 
   # What is left of the removed apps (entries without an icon named "ms-resource:...", or Teams/Outlook/Copilot
   # registered again for the signed-in account) is removed, and checked once more at the next sign-in.
@@ -75,7 +87,7 @@ actions:
     wait: true
     weight: 3
     option: 'apps-basic'
-    errorAction: Log
+    handleExitCodes: {'!0': Halt}
   - !run:
     exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
     args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Remove-AppLeftovers.ps1" -Max'
@@ -84,7 +96,7 @@ actions:
     wait: true
     weight: 2
     option: 'apps-max'
-    errorAction: Log
+    handleExitCodes: {'!0': Halt}
 
   # Start menu pins rebuilt from installed programs (the tiles of removed apps disappear). First install only.
   - !run:
@@ -95,10 +107,10 @@ actions:
     wait: true
     weight: 2
     option: 'apps-basic'
-    errorAction: Log
+    handleExitCodes: {'!0': Halt}
 
   # Unpins every program from the taskbar (as the signed-in user; the original pins are kept for Undo).
-  # Runs last: the taskbar blinks once while Explorer restarts.
+  # Runs last: the taskbar blinks once while Explorer of this session restarts (Windows starts it again as the user).
   - !run:
     exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
     args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Set-Taskbar.ps1"'
@@ -107,4 +119,4 @@ actions:
     wait: true
     weight: 3
     option: 'taskbar-clean'
-    errorAction: Log
+    handleExitCodes: {'!0': Halt}

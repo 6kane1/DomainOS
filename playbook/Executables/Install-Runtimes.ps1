@@ -1,20 +1,31 @@
-<#
+﻿<#
   Domain OS — runtimes that games and tools expect: Visual C++ 2015-2022 (x64 and x86),
   the DirectX June 2010 end-user runtime (the old d3dx9/xinput/xaudio DLLs many games still load)
   and 7-Zip.
 
   Everything is downloaded from the vendor's own address. Microsoft files are accepted only with a
-  valid Microsoft signature. Each step is independent: a failed download never stops the others,
-  and the script never fails the playbook. Log: %ProgramData%\Domain OS\Logs\runtimes.log
+  valid Microsoft signature. 7-Zip installers carry no signature: one known version is downloaded and
+  accepted only when its SHA-256 matches the value below (checked against 7-zip.org and the 7-Zip GitHub
+  release); a newer 7-Zip comes with the next playbook version. Each step is independent: a failed
+  download never stops the others, and the script never fails the playbook.
+  Started from the Start menu it asks for administrator rights. Log: %ProgramData%\Domain OS\Logs\runtimes.log
 #>
 [CmdletBinding()]
 param([switch]$Skip7Zip, [switch]$SkipVC, [switch]$SkipDirectX)
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
+. (Join-Path $PSScriptRoot 'DomainOS-Common.ps1')
+if (Start-DomainOSElevated $MyInvocation.MyCommand.Path $PSBoundParameters) { exit 0 }
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 
-$logDir = Join-Path $env:ProgramData 'Domain OS\Logs'
+# 7-Zip 26.06 x64 (2026-11-06): the same file at both addresses.
+$SevenZipName = '7z2606-x64.exe'
+$SevenZipSha256 = '9B697F65ECC2D9B0152F5EE96D72DDE522A7827690349D9307935DACF40F42EC'
+$SevenZipUrls = @('https://www.7-zip.org/a/7z2606-x64.exe', 'https://github.com/ip7z/7zip/releases/download/26.06/7z2606-x64.exe')
+
+try { Protect-DomainOSData } catch { Write-Host "The Domain OS data folder could not be protected: $($_.Exception.Message)" }
+$logDir = Join-Path $DomainOSData 'Logs'
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 $log = Join-Path $logDir 'runtimes.log'
 $work = Join-Path $env:TEMP ('DomainOS-runtimes-' + [Guid]::NewGuid().ToString('N'))
@@ -103,20 +114,23 @@ if (-not $Skip7Zip) {
     Step '7-Zip' {
         $installed = (Get-ItemProperty 'HKLM:\SOFTWARE\7-Zip' -ErrorAction SilentlyContinue).Path
         if ($installed -and (Test-Path (Join-Path $installed '7z.exe'))) { return 'already installed' }
-        # The newest x64 installer named on the official download page; a known version when the page cannot be read.
-        $name = '7z2501-x64.exe'
-        try {
-            $page = (Invoke-WebRequest -Uri 'https://www.7-zip.org/download.html' -UseBasicParsing -TimeoutSec 30).Content
-            $m = [regex]::Match($page, 'a/(7z\d{4}-x64\.exe)')
-            if ($m.Success) { $name = $m.Groups[1].Value }
-        } catch { }
-        $file = Join-Path $work $name
-        Get-File "https://www.7-zip.org/a/$name" $file
-        # 7-Zip installers carry no Authenticode signature, so only the origin (HTTPS, 7-zip.org) and the file type are checked.
-        $bytes = [IO.File]::ReadAllBytes($file)
-        if ($bytes[0] -ne 0x4D -or $bytes[1] -ne 0x5A) { throw 'the download is not a program file' }
+        # One pinned version, checked by SHA-256 (7-Zip installers carry no Authenticode signature). The official
+        # site first, the 7-Zip GitHub release if it cannot be reached; a file with another hash is never run.
+        $file = Join-Path $work $SevenZipName
+        $got = $false; $why = ''
+        foreach ($url in $SevenZipUrls) {
+            try {
+                Get-File $url $file
+                $hash = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash
+                if ($hash -eq $SevenZipSha256) { $got = $true; break }
+                $why = "SHA-256 mismatch from $url ($hash)"
+                Write-Log "7-Zip: $why - the file is not run"
+                Remove-Item -LiteralPath $file -Force
+            } catch { $why = "$url`: $($_.Exception.Message)" }
+        }
+        if (-not $got) { throw "no download with the expected SHA-256 ($why)" }
         Invoke-Setup $file '/S' @(0) | Out-Null
-        "installed ($name)"
+        "installed ($SevenZipName, SHA-256 checked)"
     }
 }
 

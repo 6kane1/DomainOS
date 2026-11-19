@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domain OS — what's new</title>
+<!--
+  Opened once after the install (HKCU RunOnce, Install-DomainOS.ps1 -Part WhatsNew) and from the Start menu
+  ("What's new in Domain OS"). Local file, no network requests. The FIRST entry of NOTES must be the version in
+  playbook.conf: build.sh refuses to build otherwise. Newest first; English and Russian for every line.
+-->
+<style>
+:root{--bg:#09090b;--panel:rgba(255,255,255,.028);--line:rgba(255,255,255,.08);--strong:#f2f3f5;--text:#c9cbd1;--dim:#8a8d96;--faint:#5d606a;
+ --accent:#f4b6cb;--accent-soft:rgba(244,182,203,.13);--accent-line:rgba(244,182,203,.30)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg)}
+body{min-height:100vh;color:var(--text);font:15px/1.6 "Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+ background:radial-gradient(900px 520px at 10% -8%,rgba(244,182,203,.14),transparent 62%),radial-gradient(800px 600px at 105% 110%,rgba(190,198,214,.10),transparent 60%),var(--bg);background-attachment:fixed}
+.wrap{max-width:780px;margin:0 auto;padding:44px 20px 80px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--strong);font-weight:600;letter-spacing:-.01em}
+.brand i{width:16px;height:16px;border-radius:5px;background:linear-gradient(135deg,var(--accent),#c9cdd8)}
+.lang{margin-left:auto;display:flex;gap:4px}
+.lang button{font:inherit;font-size:13px;color:var(--dim);background:none;border:0;padding:5px 10px;border-radius:8px;cursor:pointer}
+.lang button.on{color:var(--strong);background:rgba(255,255,255,.07)}
+h1{font-size:30px;line-height:1.2;color:var(--strong);font-weight:600;letter-spacing:-.02em;margin:34px 0 8px}
+.lead{color:var(--dim)}
+.ver{margin-top:22px;padding:20px 22px;border-radius:14px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);opacity:0;transform:translateY(12px);animation:in .5s cubic-bezier(.2,.7,.2,1) forwards}
+.ver.cur{box-shadow:inset 0 0 0 1px var(--accent-line);background:linear-gradient(160deg,rgba(244,182,203,.07),rgba(255,255,255,.02) 60%)}
+@keyframes in{to{opacity:1;transform:none}}
+.ver h2{font-size:18px;color:var(--strong);font-weight:500;display:flex;align-items:baseline;gap:10px}
+.ver h2 small{font-size:13px;color:var(--dim);font-weight:400}
+.tag{font-size:12px;padding:2px 9px;border-radius:999px;color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent-line)}
+.ver h3{margin-top:14px;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--dim)}
+.ver ul{margin:6px 0 0 18px}
+.ver li{margin-top:5px}.ver li::marker{color:var(--accent)}
+.foot{margin-top:34px;color:var(--faint);font-size:13px}
+@media (prefers-reduced-motion:reduce){.ver{animation:none;opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><i></i>Domain OS<div class="lang"><button data-l="en">English</button><button data-l="ru">Русский</button></div></div>
+  <h1 id="h1"></h1>
+  <p class="lead" id="lead"></p>
+  <div id="list"></div>
+  <p class="foot" id="foot"></p>
+</div>
+<script>
+const NOTES = [
+  { v: "2.2.0", date: "2026-11-19",
+    groups: [
+      { en: "Safer install and undo", ru: "Надёжнее установка и откат", items: [
+        { en: "The install now stops on any error: every Domain OS step, and at the end a check of everything it set (each value, service and task, for the options you chose). The saved state is already there, so Undo works.",
+          ru: "Установка теперь останавливается при любой ошибке: на каждом шаге Domain OS и в конце, когда проверяется всё, что она поставила (каждое значение, служба и задание — для выбранных опций). Точка возврата к этому моменту уже сохранена, откат работает." },
+        { en: "New in Start → Domain OS: Check Domain OS. It checks everything Domain OS set, that Undo is ready, Toolbox, and the health of Windows (system files, drivers, disks, updates, crashes). It only reads and changes nothing.",
+          ru: "Новое в «Пуск → Domain OS»: Check Domain OS. Проверяет всё, что поставил Domain OS, готовность отката, Toolbox и здоровье Windows (системные файлы, драйверы, диски, обновления, сбои). Только читает, ничего не меняет." },
+        { en: "Administrator rights without the UAC prompt is now OFF by default. Without the tick the usual prompt comes back.",
+          ru: "«Права администратора без запроса UAC» теперь по умолчанию выключено. Без галочки обычный запрос возвращается." },
+        { en: "With the Maps app removed, the Downloaded Maps Manager service starts on demand: no more error at every boot.",
+          ru: "Раз приложение «Карты» удалено, служба «Диспетчер скачанных карт» запускается по запросу: больше никакой ошибки при каждой загрузке." },
+        { en: "Undo finds your taskbar pins, Start pins and wallpapers again (they were saved under the computer's name).",
+          ru: "Откат снова находит ваши закрепления на панели задач и в «Пуске» и обои (они сохранялись под именем компьютера)." },
+        { en: "The saved state for Undo is kept in a folder only administrators can change, and Undo uses only files Domain OS itself wrote.",
+          ru: "Сохранённое состояние для отката лежит в папке, которую могут менять только администраторы, и откат берёт только файлы, записанные самим Domain OS." },
+        { en: "If the state cannot be saved, the install stops before changing anything. It is written in one safe step, with a second copy of the original.",
+          ru: "Если состояние сохранить не удалось, установка останавливается до любых изменений. Оно записывается за один безопасный шаг, а копия оригинала хранится отдельно." },
+        { en: "Undo now also puts back services and scheduled tasks that Windows does not let administrators change: a one-time step runs as SYSTEM and is removed right after.",
+          ru: "Откат теперь возвращает и службы и задания, которые Windows не даёт менять администратору: для этого разово запускается шаг от имени SYSTEM, и сразу удаляется." },
+
+      ]},
+      { en: "Domain OS Toolbox", ru: "Domain OS Toolbox", items: [
+        { en: "Overclocking for AMD Radeon cards (RX 5000–9000, RX 470–590, Vega), always inside the limits the driver reports, with Reset to stock and the crash guard.",
+          ru: "Разгон видеокарт AMD Radeon (RX 5000–9000, RX 470–590, Vega) — всегда в пределах, которые сообщает драйвер, со сбросом на стандарт и защитой от сбоев." },
+        { en: "Updates are signed: Toolbox installs only an update with a valid signature, and a second (offline) key can replace the main one if it is ever lost. It also tells you when a newer playbook is on the website.",
+          ru: "Обновления подписаны: Toolbox ставит только обновление с верной подписью, а запасной (офлайн) ключ может заменить основной, если тот когда-нибудь потеряется. Он также сообщает, когда на сайте вышла новая версия плейбука." },
+        { en: "Its settings and backups moved to a protected folder; no freeze when a game starts.",
+          ru: "Настройки и резервные копии переехали в защищённую папку; нет подвисания при старте игры." }
+      ]},
+      { en: "Also", ru: "Ещё", items: [
+        { en: "This page: what changed, shown once after every install and in Start → Domain OS → What's new in Domain OS.",
+          ru: "Эта страница: что изменилось, открывается один раз после каждой установки и есть в «Пуск → Domain OS → What's new in Domain OS»." },
+        { en: "The driver guide and this page now really open after the restart (a scheduled task for the signed-in account, without administrator rights and without console windows).",
+          ru: "Гайд по драйверам и эта страница теперь действительно открываются после перезагрузки (задание планировщика для вошедшей учётной записи, без прав администратора и без окон консоли)." },
+        { en: "The tools in the Start menu ask for administrator rights when they need them; 7-Zip is checked by its checksum before it is installed.",
+          ru: "Инструменты в «Пуске» сами просят права администратора, когда они нужны; 7-Zip перед установкой проверяется по контрольной сумме." }
+      ]}
+    ]},
+];
+const T = {
+  en: { h1: v => "What's new in Domain OS " + v, lead: "Everything Domain OS changes is still documented and can be undone with Start → Domain OS → Undo Domain OS.",
+        cur: "installed", since: "since 2.1.1", foot: "Full list of changes: README on GitHub (github.com/6kane1/DomainOS). This page is a local file and sends nothing." },
+  ru: { h1: v => "Что нового в Domain OS " + v, lead: "Всё, что меняет Domain OS, по-прежнему описано и отменяется через «Пуск → Domain OS → Undo Domain OS».",
+        cur: "установлено", since: "после 2.1.1", foot: "Полный список изменений — в README на GitHub (github.com/6kane1/DomainOS). Эта страница — локальный файл, она ничего никуда не отправляет." }
+};
+let lang = /^ru/i.test(navigator.language || "") ? "ru" : "en";
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function draw() {
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.querySelectorAll(".lang button").forEach(b => b.classList.toggle("on", b.dataset.l === lang));
+  document.getElementById("h1").textContent = t.h1(NOTES[0].v);
+  document.getElementById("lead").textContent = t.lead;
+  document.getElementById("foot").textContent = t.foot;
+  document.getElementById("list").innerHTML = NOTES.map((n, i) =>
+    '<section class="ver' + (i === 0 ? ' cur' : '') + '" style="animation-delay:' + (i * 80) + 'ms"><h2>' + esc(n.v) +
+    (i === 0 ? ' <span class="tag">' + t.cur + '</span>' : '') + ' <small>' + esc(n.date) + (i === 0 ? ' · ' + t.since : '') + '</small></h2>' +
+    n.groups.map(g => '<h3>' + esc(g[lang]) + '</h3><ul>' + g.items.map(x => '<li>' + esc(x[lang]) + '</li>').join("") + '</ul>').join("") +
+    '</section>').join("");
+}
+document.querySelectorAll(".lang button").forEach(b => b.onclick = () => { lang = b.dataset.l; draw(); });
+draw();
+</script>
+</body>
+</html>

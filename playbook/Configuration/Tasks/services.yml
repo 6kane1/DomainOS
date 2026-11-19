@@ -14,19 +14,21 @@ actions:
   - !scheduledTask: {path: '\Microsoft\Windows\PI\Sqm-Tasks', operation: disable, option: 'svc-basic', errorAction: Ignore}
 
   # Edge stays installed, but it no longer keeps processes running when its window is closed.
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Edge', value: 'StartupBoostEnabled', data: '0', type: REG_DWORD, option: 'svc-basic'}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Edge', value: 'BackgroundModeEnabled', data: '0', type: REG_DWORD, option: 'svc-basic'}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Edge', value: 'StartupBoostEnabled', data: '0', type: REG_DWORD, option: 'svc-basic', errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Edge', value: 'BackgroundModeEnabled', data: '0', type: REG_DWORD, option: 'svc-basic', errorAction: Log}
 
   # ---- the user's choice (off by default): each takes a real function away ------------------------------
   # File indexing: Start menu search still finds programs and settings, file search becomes slow.
   - !service: {name: 'WSearch', operation: stop, option: 'svc-search', errorAction: Ignore}
-  - !service: {name: 'WSearch', operation: change, startup: 4, option: 'svc-search'}
+  - !service: {name: 'WSearch', operation: change, startup: 4, option: 'svc-search', errorAction: Ignore}
 
   # Hibernation and Fast Startup: the hibernation file (gigabytes) is removed and every start is a full, clean one.
+  # Not one of our scripts: powercfg's exit codes are not documented, so it keeps errorAction Log. Its result is
+  # checked by Check-DomainOS.ps1 at the end (HibernateEnabled = 0), which stops the install if it did not work.
   - !run: {exe: 'powercfg.exe', args: '/hibernate off', option: 'hibernate-off', errorAction: Log}
 
   # Store apps do not run in the background (their live tiles, sync and notifications stop).
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', value: 'LetAppsRunInBackground', data: '2', type: REG_DWORD, option: 'bg-apps'}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy', value: 'LetAppsRunInBackground', data: '2', type: REG_DWORD, option: 'bg-apps', errorAction: Log}
 
   # NOT touched, whatever is chosen: Defender and Security Center, Windows Update, BITS, audio, network, DNS, DHCP,
   # Plug and Play, input, Task Scheduler, WMI, the Xbox services (XblAuthManager, XblGameSave,

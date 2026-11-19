@@ -1,4 +1,4 @@
-<#
+﻿<#
   Domain OS — gives Windows Update back its stock behaviour: feature updates, drivers from Windows Update and
   automatic restarts. Run as administrator. Security updates were never switched off.
 #>

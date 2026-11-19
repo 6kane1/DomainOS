@@ -1,18 +1,18 @@
 ---
 title: More services off
-description: Error reporting, telemetry-related services and scheduled telemetry jobs, always applied. Only the start-up type changes (4 = disabled) or the task is disabled; the one exception, the link tracking service, is deleted after a backup. "Undo Domain OS" puts every one back. Services and tasks this Windows does not have are skipped.
+description: Error reporting, telemetry-related services and scheduled telemetry jobs, always applied. Only the start-up type changes (4 = disabled) or the task is disabled. The link tracking service stays as Windows has it (versions 1.6.7-2.1.0 deleted it; it is registered again here). "Undo Domain OS" puts every one back. Services and tasks this Windows does not have are skipped.
 actions:
   # ---- error reporting and telemetry services --------------------------------------------------------------
-  # Windows Error Reporting, the program compatibility assistant, the telemetry service.
+  # Windows Error Reporting, the program compatibility assistant.
   # Stops working: crash reports and "this program may not have installed correctly" prompts.
   - !service: {name: 'WerSvc', operation: change, startup: 4, errorAction: Ignore}
   - !service: {name: 'PcaSvc', operation: change, startup: 4, errorAction: Ignore}
   # Program Compatibility Assistant fully off: when the service starts once (for example after an update) it switches
   # its patch task on again, so the policy and the task are set too. The compatibility engine itself (shims for old
   # games) is NOT switched off.
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat', value: 'DisablePCA', data: '1', type: REG_DWORD}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat', value: 'DisablePCA', data: '1', type: REG_DWORD, errorAction: Log}
   - !scheduledTask: {path: '\Microsoft\Windows\Application Experience\PcaPatchDbTask', operation: disable, errorAction: Ignore}
-  - !service: {name: 'DiagTrack', operation: change, startup: 4, errorAction: Ignore}
+  # The telemetry service (DiagTrack) is stopped and disabled in privacy.yml.
   # Windows AI components host (Click to Do, AI actions; it ran on a PC without an NPU in a user report) and
   # the inventory collector behind the compatibility appraiser (its tasks and the policy are already off, the
   # service still ran). Stops working: AI actions in Click to Do / Photos.
@@ -21,14 +21,14 @@ actions:
 
   # Distributed Link Tracking Client (TrkWks): keeps shortcuts working when a file moves between computers in a
   # network. Left as Windows has it (Automatic) since 2.1.1. Versions 1.6.7–2.1.0 deleted it: on such PCs its saved
-  # registration is put back first, then it is set to Automatic again and started.
+  # registration is put back first, then it is set to Automatic again and started. Exit 1 when that fails.
   - !run:
     exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
     args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Set-TrkWks.ps1"'
     exeDir: true
     wait: true
     weight: 1
-    errorAction: Log
+    handleExitCodes: {'!0': Halt}
 
   # SysMain stays on in every case: it keeps memory compression and prefetch working. If an earlier test build
   # or another tweak switched it off, it is set back to automatic here.

@@ -3,43 +3,43 @@ title: Privacy and advertising
 description: Switches off diagnostic uploads beyond the required level, advertising and suggestions. Nothing here affects security or games.
 actions:
   # Diagnostic data: 1 = required only (0 is ignored on Home and Pro, so it would be a setting that does nothing).
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'AllowTelemetry', data: '1', type: REG_DWORD}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'AllowTelemetry', data: '1', type: REG_DWORD, errorAction: Log}
   # The telemetry service and its push helper: background work and uploads with no use for the owner of the PC.
   - !service: {name: 'DiagTrack', operation: stop, errorAction: Ignore}
   - !service: {name: 'DiagTrack', operation: change, startup: 4, errorAction: Ignore}
   - !service: {name: 'dmwappushservice', operation: stop, errorAction: Ignore}
   - !service: {name: 'dmwappushservice', operation: change, startup: 4, errorAction: Ignore}
   # The trace sessions that fed that service would still start at every boot and collect events nobody reads.
-  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\Diagtrack-Listener', value: 'Start', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\SQMLogger', value: 'Start', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\Diagtrack-Listener', value: 'Start', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\SQMLogger', value: 'Start', data: '0', type: REG_DWORD, errorAction: Log}
   # The rest of the documented "Data Collection and Preview Builds" policies that work on Home and Pro: no feedback
   # prompts, no device name in diagnostic data, no extra diagnostic logs or crash dumps collected for upload, no
   # OneSettings download of diagnostic configuration, no notification when the level changes.
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'DoNotShowFeedbackNotifications', data: '1', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'AllowDeviceNameInTelemetry', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'LimitDiagnosticLogCollection', data: '1', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'LimitDumpCollection', data: '1', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'DisableOneSettingsDownloads', data: '1', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'DisableTelemetryOptInChangeNotification', data: '1', type: REG_DWORD}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'DoNotShowFeedbackNotifications', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'AllowDeviceNameInTelemetry', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'LimitDiagnosticLogCollection', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'LimitDumpCollection', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'DisableOneSettingsDownloads', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'DisableTelemetryOptInChangeNotification', data: '1', type: REG_DWORD, errorAction: Log}
   # Customer Experience Improvement Program, Steps Recorder, Windows Error Reporting and the Malicious Software
   # Removal Tool's infection reports (policies; the error-reporting service is also switched off in services-extended).
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\SQMClient\Windows', value: 'CEIPEnable', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat', value: 'DisableUAR', data: '1', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting', value: 'Disabled', data: '1', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\MRT', value: 'DontReportInfectionInformation', data: '1', type: REG_DWORD}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\SQMClient\Windows', value: 'CEIPEnable', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat', value: 'DisableUAR', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting', value: 'Disabled', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\MRT', value: 'DontReportInfectionInformation', data: '1', type: REG_DWORD, errorAction: Log}
   # Typing, inking and speech: no learning from what you type and write, no online speech recognition,
   # no handwriting samples or error reports sent.
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\InputPersonalization', value: 'AllowInputPersonalization', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\TextInput', value: 'AllowLinguisticDataCollection', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\HandwritingErrorReports', value: 'PreventHandwritingErrorReports', data: '1', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\TabletPC', value: 'PreventHandwritingDataSharing', data: '1', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Input\TIPC', value: 'Enabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\InputPersonalization', value: 'RestrictImplicitInkCollection', data: '1', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\InputPersonalization', value: 'RestrictImplicitTextCollection', data: '1', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\InputPersonalization\TrainedDataStore', value: 'HarvestContacts', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy', value: 'HasAccepted', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\InputPersonalization', value: 'AllowInputPersonalization', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\TextInput', value: 'AllowLinguisticDataCollection', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\HandwritingErrorReports', value: 'PreventHandwritingErrorReports', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\TabletPC', value: 'PreventHandwritingDataSharing', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Input\TIPC', value: 'Enabled', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\InputPersonalization', value: 'RestrictImplicitInkCollection', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\InputPersonalization', value: 'RestrictImplicitTextCollection', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\InputPersonalization\TrainedDataStore', value: 'HarvestContacts', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy', value: 'HasAccepted', data: '0', type: REG_DWORD, errorAction: Log}
   # Microsoft Edge: no optional diagnostic data (Edge policy DiagnosticData = 0, required only).
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Edge', value: 'DiagnosticData', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Edge', value: 'DiagnosticData', data: '0', type: REG_DWORD, errorAction: Log}
 
   # Scheduled data collection. The compatibility appraiser is known for long disk and CPU bursts.
   - !scheduledTask: {path: '\Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser', operation: disable, errorAction: Ignore}
@@ -48,8 +48,8 @@ actions:
   - !scheduledTask: {path: '\Microsoft\Windows\Application Experience\MareBackup', operation: disable, errorAction: Ignore}
   # Documented policies "Turn off Application Telemetry" and "Turn off Inventory Collector".
   # The compatibility engine itself (DisableEngine) is left on: old games need its fixes.
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat', value: 'AITEnable', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat', value: 'DisableInventory', data: '1', type: REG_DWORD}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat', value: 'AITEnable', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat', value: 'DisableInventory', data: '1', type: REG_DWORD, errorAction: Log}
   - !scheduledTask: {path: '\Microsoft\Windows\Customer Experience Improvement Program\Consolidator', operation: disable, errorAction: Ignore}
   - !scheduledTask: {path: '\Microsoft\Windows\Customer Experience Improvement Program\UsbCeip', operation: disable, errorAction: Ignore}
   - !scheduledTask: {path: '\Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector', operation: disable, errorAction: Ignore}
@@ -57,32 +57,34 @@ actions:
   - !scheduledTask: {path: '\Microsoft\Windows\Feedback\Siuf\DmClientOnScenarioDownload', operation: disable, errorAction: Ignore}
 
   # Advertising ID and "tailored experiences" built from diagnostic data.
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo', value: 'Enabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Privacy', value: 'TailoredExperiencesWithDiagnosticDataEnabled', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo', value: 'Enabled', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Privacy', value: 'TailoredExperiencesWithDiagnosticDataEnabled', data: '0', type: REG_DWORD, errorAction: Log}
   # Feedback prompts.
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Siuf\Rules', value: 'NumberOfSIUFInPeriod', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Siuf\Rules', value: 'NumberOfSIUFInPeriod', data: '0', type: REG_DWORD, errorAction: Log}
   # Activity history is not collected and not uploaded.
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System', value: 'PublishUserActivities', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System', value: 'UploadUserActivities', data: '0', type: REG_DWORD}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System', value: 'PublishUserActivities', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System', value: 'UploadUserActivities', data: '0', type: REG_DWORD, errorAction: Log}
   # Recall (snapshots of the screen) stays off.
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI', value: 'DisableAIDataAnalysis', data: '1', type: REG_DWORD}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI', value: 'DisableAIDataAnalysis', data: '1', type: REG_DWORD, errorAction: Log}
   # Click to Do (AI actions on what is on the screen; it reads the screen in the background) stays off.
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI', value: 'DisableClickToDo', data: '1', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Policies\Microsoft\Windows\WindowsAI', value: 'DisableClickToDo', data: '1', type: REG_DWORD}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI', value: 'DisableClickToDo', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Policies\Microsoft\Windows\WindowsAI', value: 'DisableClickToDo', data: '1', type: REG_DWORD, errorAction: Log}
 
   # Suggestions and advertising: Start, Settings, lock screen, notifications.
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SystemPaneSuggestionsEnabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SoftLandingEnabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'RotatingLockScreenOverlayEnabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SubscribedContent-338388Enabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SubscribedContent-338389Enabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SubscribedContent-338393Enabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SubscribedContent-353694Enabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SubscribedContent-353696Enabled', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', value: 'Start_IrisRecommendations', data: '0', type: REG_DWORD}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement', value: 'ScoobeSystemSettingEnabled', data: '0', type: REG_DWORD}
+  # ContentDeliveryManager values marked [check: warn]: Windows rewrites that key itself and can drop them (2.1.9 on 26H2).
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SystemPaneSuggestionsEnabled', data: '0', type: REG_DWORD, errorAction: Log}   # [check: warn]
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SoftLandingEnabled', data: '0', type: REG_DWORD, errorAction: Log}   # [check: warn]
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'RotatingLockScreenOverlayEnabled', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SubscribedContent-338388Enabled', data: '0', type: REG_DWORD, errorAction: Log}   # [check: warn]
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SubscribedContent-338389Enabled', data: '0', type: REG_DWORD, errorAction: Log}   # [check: warn]
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SubscribedContent-338393Enabled', data: '0', type: REG_DWORD, errorAction: Log}   # [check: warn]
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SubscribedContent-353694Enabled', data: '0', type: REG_DWORD, errorAction: Log}   # [check: warn]
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SubscribedContent-353696Enabled', data: '0', type: REG_DWORD, errorAction: Log}   # [check: warn]
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', value: 'Start_IrisRecommendations', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement', value: 'ScoobeSystemSettingEnabled', data: '0', type: REG_DWORD, errorAction: Log}
   # Start menu search asks only the PC, not Bing.
-  - !registryValue: {path: 'HKCU\Software\Policies\Microsoft\Windows\Explorer', value: 'DisableSearchBoxSuggestions', data: '1', type: REG_DWORD}
+  - !registryValue: {path: 'HKCU\Software\Policies\Microsoft\Windows\Explorer', value: 'DisableSearchBoxSuggestions', data: '1', type: REG_DWORD, errorAction: Log}
   # Widgets board (news feed process).
   # On some 26H2 builds this key is locked even for TrustedInstaller: then it is logged and the install goes on.
+  # [check: warn] Check-DomainOS.ps1 reports a difference here as a warning, not as a failure, for that reason.
   - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Dsh', value: 'AllowNewsAndInterests', data: '0', type: REG_DWORD, errorAction: Log}

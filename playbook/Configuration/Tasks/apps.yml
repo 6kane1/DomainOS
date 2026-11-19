@@ -22,6 +22,10 @@ actions:
   - !appx: {name: 'Microsoft.ZuneVideo*', type: family, option: 'apps-basic'}                 # Films & TV
   - !appx: {name: 'Microsoft.549981C3F5F10*', type: family, option: 'apps-basic'}             # Cortana
   - !appx: {name: 'Microsoft.WindowsMaps*', type: family, option: 'apps-basic'}
+  # Without the Maps app the "Downloaded Maps Manager" service (MapsBroker, Automatic in Windows) ends with error 7023
+  # at every boot (seen on 26H2, 13 times a day). Manual: it still starts when something asks for offline maps. Undo
+  # puts back the start type saved before the first change.
+  - !service: {name: 'MapsBroker', operation: change, startup: 3, option: 'apps-basic', errorAction: Ignore}
   - !appx: {name: 'microsoft.windowscommunicationsapps*', type: family, option: 'apps-basic'} # old Mail and Calendar
   - !appx: {name: 'MicrosoftCorporationII.MicrosoftFamily*', type: family, option: 'apps-basic'}
   - !appx: {name: 'Microsoft.YourPhone*', type: family, option: 'apps-basic'}                 # Phone Link (starts with Windows)
@@ -70,10 +74,12 @@ actions:
   - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.MicrosoftPCManager_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
   - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.M365Companions_8wekyb3d8bbwe', operation: add, option: 'apps-basic', errorAction: Log}
 
-  # Windows Update would bring Dev Home and the new Outlook back: these two entries are its to-do list for that.
-  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\DevHomeUpdate', option: 'apps-basic'}
-  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\CrossDeviceUpdate', option: 'apps-basic'}
-  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\OutlookUpdate', option: 'apps-basic'}
+  # Windows Update would bring Dev Home, Cross Device and the new Outlook back: these three keys are its to-do list for
+  # that. They are deleted, not saved: "Undo Domain OS" does not create them again (Windows writes them again with
+  # the next feature update).
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\DevHomeUpdate', option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\CrossDeviceUpdate', option: 'apps-basic', errorAction: Log}
+  - !registryKey: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\OutlookUpdate', option: 'apps-basic', errorAction: Log}
 
   # Teams (chat) and the new Outlook are not installed again by Windows itself. Outlook: documented by Microsoft
   # (Microsoft 365 Apps, 'Block new Outlook preinstall'); Teams: the chat auto-install switch of Windows 11.
@@ -81,11 +87,14 @@ actions:
   - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe', value: 'BlockedOobeUpdaters', data: '["MS_Outlook"]', type: REG_SZ, option: 'apps-basic', errorAction: Log}
 
   # Windows installs "suggested" apps silently for every user: switched off.
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SilentInstalledAppsEnabled', data: '0', type: REG_DWORD, option: 'apps-basic'}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'PreInstalledAppsEnabled', data: '0', type: REG_DWORD, option: 'apps-basic'}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'OemPreInstalledAppsEnabled', data: '0', type: REG_DWORD, option: 'apps-basic'}
+  # Windows itself rewrites ContentDeliveryManager soon after sign-in and can drop these values (seen on 26H2 in
+  # 2.1.9: written, gone 30 s later): [check: warn] marks them, so the final check warns instead of stopping.
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'SilentInstalledAppsEnabled', data: '0', type: REG_DWORD, option: 'apps-basic', errorAction: Log}   # [check: warn]
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'PreInstalledAppsEnabled', data: '0', type: REG_DWORD, option: 'apps-basic', errorAction: Log}   # [check: warn]
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager', value: 'OemPreInstalledAppsEnabled', data: '0', type: REG_DWORD, option: 'apps-basic', errorAction: Log}   # [check: warn]
 
   # ---- OneDrive ---------------------------------------------------------------------------------------
+  # Exit 1 (install stops) only when OneDrive's own uninstaller is there but cannot be started.
   - !run:
     exe: '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe'
     args: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ".\Remove-OneDrive.ps1"'
@@ -94,7 +103,7 @@ actions:
     wait: true
     weight: 20
     option: 'apps-onedrive'
-    errorAction: Log
+    handleExitCodes: {'!0': Halt}
 
   # ---- maximum (off by default): the user gives up the Store and the Xbox app -------------------------
   - !appx: {name: 'Microsoft.WindowsStore*', type: family, option: 'apps-max'}

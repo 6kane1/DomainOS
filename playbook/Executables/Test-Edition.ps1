@@ -1,13 +1,17 @@
-<#
+﻿<#
   Domain OS — runs first, before anything is changed: the playbook installs only on Windows 11 Pro.
 
   Allowed editions (EditionID): Professional, ProfessionalN, ProfessionalWorkstation, ProfessionalWorkstationN.
   Any other edition (Home, Education, Enterprise, ...) → exit code 2, and the playbook stops ("handleExitCodes: Halt"),
   so nothing on the PC has been changed yet.
+  It is also the first script to create %ProgramData%\Domain OS: the folder gets its protected permissions here
+  (DomainOS-Common.ps1, Protect-DomainOSData). If that fails, Save-State.ps1 tries again and stops the install.
   Log: %ProgramData%\Domain OS\Logs\install.log
 #>
 $ErrorActionPreference = 'SilentlyContinue'
-$data = Join-Path $env:ProgramData 'Domain OS'
+. (Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) 'DomainOS-Common.ps1')
+$data = $DomainOSData
+try { Protect-DomainOSData } catch { Write-Host "The Domain OS data folder could not be protected yet: $($_.Exception.Message)" }
 New-Item -ItemType Directory -Force -Path (Join-Path $data 'Logs') | Out-Null
 $log = Join-Path $data 'Logs\install.log'
 $edition = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').EditionID

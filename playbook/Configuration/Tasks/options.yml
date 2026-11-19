@@ -1,0 +1,31 @@
+---
+title: Chosen options
+description: Records which options were ticked (HKLM\SOFTWARE\Domain OS\Options), so Check-DomainOS.ps1 knows what to expect. Changes nothing in Windows.
+actions:
+  # Written right after the state is saved and the tools are installed, before any change. The key is emptied first, so
+  # an option ticked in an earlier install and not now is not left behind; then one value per ticked option (= 1).
+  # Not a Windows setting: Save-State and the Undo allow-list skip HKLM\SOFTWARE\Domain OS (DomainOS-Common.ps1,
+  # Get-DomainOSPlaybookItems), and Undo deletes the key after a complete undo. tools/gen-expected.py fails the build
+  # when this list and the options of playbook.conf differ.
+  # Delete: errorAction Ignore, the key is missing on a first install. Writes: Halt, a write to our own key cannot
+  # fail for a reason that is not a real error, and without it the final check would expect the wrong things.
+  - !registryKey: {path: 'HKLM\SOFTWARE\Domain OS\Options', operation: delete, errorAction: Ignore}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'install-scheduler', data: '1', type: REG_DWORD, option: 'install-scheduler', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'install-runtimes', data: '1', type: REG_DWORD, option: 'install-runtimes', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'open-guide', data: '1', type: REG_DWORD, option: 'open-guide', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'wallpaper', data: '1', type: REG_DWORD, option: 'wallpaper', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'updates-no-feature', data: '1', type: REG_DWORD, option: 'updates-no-feature', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'updates-no-drivers', data: '1', type: REG_DWORD, option: 'updates-no-drivers', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'taskbar-clean', data: '1', type: REG_DWORD, option: 'taskbar-clean', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'ui-dark', data: '1', type: REG_DWORD, option: 'ui-dark', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'ui-no-notifications', data: '1', type: REG_DWORD, option: 'ui-no-notifications', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'uac-no-prompt', data: '1', type: REG_DWORD, option: 'uac-no-prompt', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'apps-basic', data: '1', type: REG_DWORD, option: 'apps-basic', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'apps-onedrive', data: '1', type: REG_DWORD, option: 'apps-onedrive', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'apps-max', data: '1', type: REG_DWORD, option: 'apps-max', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'svc-basic', data: '1', type: REG_DWORD, option: 'svc-basic', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'svc-search', data: '1', type: REG_DWORD, option: 'svc-search', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'power-plan', data: '1', type: REG_DWORD, option: 'power-plan', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'gpu-hags', data: '1', type: REG_DWORD, option: 'gpu-hags', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'hibernate-off', data: '1', type: REG_DWORD, option: 'hibernate-off', errorAction: Halt}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'bg-apps', data: '1', type: REG_DWORD, option: 'bg-apps', errorAction: Halt}

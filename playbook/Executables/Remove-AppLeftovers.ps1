@@ -1,4 +1,4 @@
-<#
+﻿<#
   Domain OS — removes what is left of the apps the playbook removed, so they disappear from the Start menu.
 
   Why: the playbook removes apps for all users at once. Windows can still keep a registration of such an app for the
@@ -13,15 +13,25 @@
     4. empties the Start menu's own cache of the app list and restarts Start, so it builds the list again from
        the apps that are really installed (pinned items are kept).
   -UserOnly does steps 1 and 4 only: that is what runs once at the next sign-in (no administrator rights needed then), in
-  case Windows registered something again during the first sign-in after the install.
+  case Windows registered something again during the first sign-in after the install. That run cannot write the log
+  (%ProgramData%\Domain OS is writable by administrators only); it only prints. Without -UserOnly the script needs
+  administrator rights and asks for them when started by hand.
 
   Nothing else is touched: apps outside the lists, the Store, Xbox services, Game Bar, WebView2 and Windows
-  Security stay. Every failure is written to the log and skipped. Log: %ProgramData%\Domain OS\Logs\install.log
+  Security stay. Every failure is written to the log and the script goes on with the next app.
+  Exit code: 0 = done or nothing left; 1 = an app of the lists is still there after a failed removal (and Windows does
+  not mark it as part of the system, NonRemovable), or the check at the next sign-in could not be scheduled. The
+  install stops then (software.yml, handleExitCodes). Log: %ProgramData%\Domain OS\Logs\install.log
 #>
 [CmdletBinding()]
 param([switch]$Max, [switch]$UserOnly)
 
 $ErrorActionPreference = 'Continue'
+# The helpers are needed in both modes (Get-DomainOSUser, Get-DomainOSUserFolder); elevation only without -UserOnly.
+. (Join-Path $PSScriptRoot 'DomainOS-Common.ps1')
+if (-not $UserOnly) {
+    if (Start-DomainOSElevated $MyInvocation.MyCommand.Path $PSBoundParameters) { exit 0 }
+}
 $data = Join-Path $env:ProgramData 'Domain OS'
 $log = Join-Path $data 'Logs\install.log'
 function Write-Log([string]$text) {
@@ -45,32 +55,47 @@ $maxList = @(
     'Microsoft.WindowsSoundRecorder', 'Microsoft.WindowsAlarms', 'Microsoft.MicrosoftStickyNotes'
 )
 $names = if ($Max) { $maxList } else { $basic }
-$removed = 0
+$removed = 0; $failed = 0
+# A failed removal counts only when the package is still there afterwards and is not one Windows refuses to remove.
+function Test-StillThere([string]$fullName, [switch]$All) {
+    $p = if ($All) { Get-AppxPackage -AllUsers -ErrorAction SilentlyContinue | Where-Object { $_.PackageFullName -eq $fullName } } else { Get-AppxPackage -ErrorAction SilentlyContinue | Where-Object { $_.PackageFullName -eq $fullName } }
+    $p = @($p)
+    return ($p.Count -gt 0 -and -not $p[0].NonRemovable)
+}
 
 foreach ($n in $names) {
     $pattern = "$n*"
     # 1. the signed-in account
     foreach ($p in @(Get-AppxPackage -Name $pattern -ErrorAction SilentlyContinue)) {
-        try { Remove-AppxPackage -Package $p.PackageFullName -ErrorAction Stop; $removed++; Write-Log "removed for $env:USERNAME`: $($p.PackageFullName)" }
-        catch { Write-Log "could not remove for $env:USERNAME`: $($p.PackageFullName) ($($_.Exception.Message))" }
+        try { Remove-AppxPackage -Package $p.PackageFullName -ErrorAction Stop; $removed++; Write-Log "removed for $((Get-DomainOSUser).Name)`: $($p.PackageFullName)" }
+        catch {
+            if (Test-StillThere $p.PackageFullName) { $failed++; Write-Log "FAILED to remove for $((Get-DomainOSUser).Name)`: $($p.PackageFullName) ($($_.Exception.Message))" }
+            else { Write-Log "could not remove for $((Get-DomainOSUser).Name), but it is gone or part of the system: $($p.PackageFullName) ($($_.Exception.Message))" }
+        }
     }
     if ($UserOnly) { continue }
     # 2. every account, staged copies included
     foreach ($p in @(Get-AppxPackage -AllUsers -Name $pattern -ErrorAction SilentlyContinue)) {
         try { Remove-AppxPackage -Package $p.PackageFullName -AllUsers -ErrorAction Stop; $removed++; Write-Log "removed for all accounts: $($p.PackageFullName)" }
-        catch { Write-Log "could not remove for all accounts: $($p.PackageFullName) ($($_.Exception.Message))" }
+        catch {
+            if (Test-StillThere $p.PackageFullName -All) { $failed++; Write-Log "FAILED to remove for all accounts: $($p.PackageFullName) ($($_.Exception.Message))" }
+            else { Write-Log "could not remove for all accounts, but it is gone or part of the system: $($p.PackageFullName) ($($_.Exception.Message))" }
+        }
     }
     # 3. new accounts
     foreach ($p in @(Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like $pattern })) {
         try { Remove-AppxProvisionedPackage -Online -PackageName $p.PackageName -AllUsers -ErrorAction Stop | Out-Null; $removed++; Write-Log "removed for new accounts: $($p.PackageName)" }
-        catch { Write-Log "could not remove for new accounts: $($p.PackageName) ($($_.Exception.Message))" }
+        catch {
+            if (@(Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Where-Object { $_.PackageName -eq $p.PackageName }).Count -gt 0) { $failed++; Write-Log "FAILED to remove for new accounts: $($p.PackageName) ($($_.Exception.Message))" }
+            else { Write-Log "could not remove for new accounts, but it is gone: $($p.PackageName) ($($_.Exception.Message))" }
+        }
     }
 }
 
 # 4. Start keeps its own cache of the app list (TempState of its package): entries of removed apps stay there even when
 #    Windows no longer has them (Get-StartApps does not list them). The cache is emptied while Start is closed;
 #    Start builds it again from the installed apps. Pinned items live in LocalState (start2.bin) and are not touched.
-$startPkg = Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\TempState'
+$startPkg = Join-Path (Get-DomainOSUserFolder 'LocalApplicationData') 'Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\TempState'
 Get-Process -Name 'StartMenuExperienceHost' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 Start-Sleep -Milliseconds 800
 if (Test-Path -LiteralPath $startPkg) {
@@ -94,6 +119,8 @@ if (-not $UserOnly) {
         New-Item -Path $key -Force | Out-Null
         Set-ItemProperty -Path $key -Name ('DomainOS-AppLeftovers' + $(if ($Max) { '-Max' } else { '' })) -Value $cmd
         Write-Log 'Check again at the next sign-in: scheduled'
-    } catch { Write-Log "Check at the next sign-in not scheduled: $($_.Exception.Message)" }
+    } catch { $failed++; Write-Log "FAILED: check at the next sign-in not scheduled: $($_.Exception.Message)" }
 }
+# The run at sign-in (-UserOnly) has no one reading its exit code: it always ends with 0.
+if ($failed -gt 0 -and -not $UserOnly) { Write-Log "FAILED: $failed app(s) could not be removed (see above)"; exit 1 }
 exit 0
