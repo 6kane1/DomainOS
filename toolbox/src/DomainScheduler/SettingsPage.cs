@@ -208,12 +208,28 @@ internal sealed class SettingsPage : Page
 		StackPanel col = Ui.Col(Ui.Head(L.T("Tester")), Ui.Note(L.T("Testers get a key in the closed Discord channel. With the key Toolbox also receives the test builds; without it, only stable releases.")));
 		TextBlock state = Ui.Text("", Ui.FsNote, "Dim", bold: false, wrap: true);
 		string typed = "";
+		Button channel = null;
 		void Show()
 		{
-			bool on = TesterKey.Current() != null;
-			state.Text = on ? L.T("Test channel on: this PC receives the test builds.") : L.T("No key: stable channel.");
+			bool key = TesterKey.Current() != null;
+			bool on = AppVersion.Channel == "test";
+			state.Text = on ? L.T("Test channel on: this PC receives the test builds.") : (key ? L.T("Key saved, stable releases only: test builds are not offered. A test build already installed stays until a newer stable release comes out.") : L.T("No key: stable channel."));
 			state.Foreground = Ui.B(on ? "Accent" : "Dim");
+			if (channel != null)
+			{
+				channel.Visibility = key ? Visibility.Visible : Visibility.Collapsed;
+				channel.Content = on ? L.T("Stable releases only") : L.T("Receive test builds");
+			}
 		}
+		// 1.16.0: the tester chooses the channel without removing the key.
+		channel = Ui.Btn("", delegate
+		{
+			bool on = AppVersion.Channel == "test";
+			Settings.Set("TestBuilds", on ? "false" : "true");
+			S.Did(on ? L.T("Update channel: stable releases only") : L.T("Update channel: test builds and stable releases"));
+			Show();
+			UpdateService.Instance?.CheckNow();
+		}, 190.0);
 		TextBox box = Ui.Input("", 360.0, delegate(string v) { typed = v; });
 		Button save = null;
 		save = Ui.Btn(L.T("Save key"), delegate
@@ -258,6 +274,9 @@ internal sealed class SettingsPage : Page
 		Show();
 		col.Children.Add(Ui.Row(box, save, remove));
 		col.Children.Add(state);
+		channel.Margin = new Thickness(0.0, 8.0, 0.0, 0.0);
+		channel.HorizontalAlignment = HorizontalAlignment.Left;
+		col.Children.Add(channel);
 		return col;
 	}
 

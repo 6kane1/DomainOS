@@ -17,8 +17,13 @@ public static class AppVersion
     /// <summary>"1.15.0" or "1.15.0-test1.1" (the informational version without the "+commit" tail).</summary>
     public static string Full => _full ??= Read();
 
-    /// <summary>"stable" or "test".</summary>
-    public static string Channel => TesterKey.Current() != null ? "test" : "stable";
+    /// <summary>
+    /// "stable" or "test": test while a tester key is saved, unless the tester chose "stable releases only" (1.16.0:
+    /// Settings "TestBuilds" = false keeps the key but asks for stable releases only).
+    /// </summary>
+    public static string Channel => ChannelFor(TesterKey.Current() != null, Settings.GetBool("TestBuilds", fallback: true));
+
+    public static string ChannelFor(bool hasKey, bool wantsTest) => hasKey && wantsTest ? "test" : "stable";
 
     public static bool IsTest => Channel == "test";
 
@@ -346,7 +351,7 @@ public static class Updater
             var stable = await Get("stable.json");
             UpdateFeed test = null;
             byte[] key = TesterKey.Current();
-            if (key != null)
+            if (key != null && AppVersion.Channel == "test")
             {
                 byte[] box = await Fetch(http, "test.bin", ct);
                 if (box != null)

@@ -230,6 +230,7 @@ internal sealed class Shell : Window
 		_pages.Add(new GameThreadsPage(hub, this));
 		_pages.Add(new ProcessesPage(hub, this));
 		_pages.Add(new ChangesPage(hub, this));
+		_pages.Add(new CheckPage(hub, this));
 		_pages.Add(new GpuPage(hub, this));
 		_pages.Add(new DriversPage(hub, this));
 		_pages.Add(new PowerPage(hub, this));

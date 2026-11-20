@@ -34,7 +34,11 @@ and a more even frame pacing — not a higher average FPS.
 - **Devices page**: read-only view of interrupt pinning (writing is an opt-in advanced feature).
 - **Frame-time watchdog.** If p99 frame time gets worse after the changes, they are taken off,
   re-measured, and kept off if the regression is real.
-- **Cache cleaner**, autostart through Task Scheduler, a one-click report, a colour-coded log.
+- **Check page** (1.16.0 Test 1.1): one 30-second run while you play — FPS, 1% / 0.1% low, longest frame, hitches and
+  how long the game's threads wait for a processor; the report is saved on the desktop. Nothing in the game is opened
+  (kernel trace and DXGI frames only).
+- **Cache cleaner**, autostart through Task Scheduler, a one-click report, a colour-coded log. The About page splits
+  the program's own load by thread (window, worker, DPC/ISR trace, frame trace) since 1.16.0 Test 1.
 
 No kernel driver, no DLL injection, no hooks, no memory patching — only documented Windows APIs
 (affinity, CPU Sets, ideal processor, priority classes, thread priority and boost, I/O and memory
@@ -134,12 +138,17 @@ offers a small, careful overclock with named profiles, one of which can be appli
   works after a failed apply or in a new session.
 - **Apply at start** re-applies the marked profile only on a card of the maker it was saved for, and never after
   Windows went down unexpectedly since the last apply (blue screen, freeze with a power-off): the crash guard is the
-  same for both makers.
+  same for both makers. Values that crashed Windows are remembered (since 1.16.0 Test 1): marking the same values or
+  higher for the start again asks first, with "No" as the default, and the profile shows the date of the crash.
 - No fan control, no memory timings, no process is closed. If the driver or its overclocking interface is missing,
   the page says so and nothing is written. AMD support is new in 1.15.0 Test 1.5 and has not yet been run on real
   Radeon cards: please report your card, driver version and what the page showed.
 
 ## Project status
+
+Test build: **1.16.0 Test 1.1** (testers only): Check page (one run), the crash memory of the GPU overclock, own load per
+thread (and the frame trace logs only the event it uses), and a switch for testers between test builds and stable
+releases. 236 automated tests.
 
 Released version: **1.15.0** (shipped with playbook 2.2.0 and 2.2.4, built and attested by GitHub, in [Releases](https://github.com/6kane1/DomainOS/releases)): signed self-update with a backup key, AMD Radeon overclocking, a notice when a new playbook is out. 227 automated tests run against a
 simulated Windows (`dotnet test tests/DomainScheduler.Tests`). Hardware coverage is narrow: please report
