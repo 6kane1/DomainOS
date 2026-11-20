@@ -128,6 +128,53 @@ Describe 'Get-DomainOSPlaybookItems and the Undo allow-list' {
     }
 }
 
+Describe 'Import-DomainOSRegFile fuzz (review 20.11.2026: generated planted files)' {
+    # 600 generated .reg files (seeded, reproducible): sections inside and outside the allowed key, '..', deleted keys,
+    # values of every kind, broken hex and junk lines. The property: a file is accepted only when every key is under
+    # the allowed one (no '..', no deletion) and every line is understood; then the count is the number of values.
+    BeforeAll {
+        Mock Get-DomainOSOwner { 'S-1-5-18' }
+        $script:fzKey = 'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband'
+        $script:rnd = New-Object System.Random 2011
+        function Pick([object[]]$a) { $a[$script:rnd.Next($a.Count)] }
+    }
+    It 'never accepts a key outside the allowed one, and counts only understood values' {
+        $accepted = 0; $refused = 0
+        for ($i = 0; $i -lt 600; $i++) {
+            $lines = New-Object System.Collections.Generic.List[string]
+            $bad = $false; $values = 0; $haveSection = $false
+            $n = $script:rnd.Next(1, 7)
+            for ($j = 0; $j -lt $n; $j++) {
+                switch ($script:rnd.Next(6)) {
+                    0 { $lines.Add("[$script:fzKey]"); $haveSection = $true }
+                    1 { $lines.Add("[$script:fzKey\" + (Pick @('Sub', 'A\B', 'x y', 'Ünï')) + ']'); $haveSection = $true }
+                    2 { $lines.Add('[' + (Pick @('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run', ("$script:fzKey" + 'Evil'), 'HKEY_CURRENT_USER\Software\Classes\exefile\shell\open\command', "$script:fzKey\..\..\Run", "-$script:fzKey", "$script:fzKey\a\..")) + ']'); $bad = $true; $haveSection = $true }
+                    default {
+                        $ok = Pick @('"A"="text"', '"B"=dword:00000001', '"C"=hex:00,01,ff', '@="d"', '"E"=hex(2):41,00,00,00', '"F"=hex(7):41,00,00,00,00,00', '"G"=hex(b):01,00,00,00,00,00,00,00', '"Q"="a \"q\" b"')
+                        $junk = Pick @('garbage', '"X"=hex(5):00,00,00,00', '"X"=hex(4):00,00', '"X"=dword:1', '"X"=hex(ffffffffff):00', '"X"=hex:zz', '"X"=hex:00,,01', '=', '"unterminated=1', '"X"=hex(b):00')
+                        if ($script:rnd.Next(4) -eq 0) { $lines.Add($junk); $bad = $true }
+                        else { $lines.Add($ok); if (-not $haveSection) { $bad = $true }; $values++ }
+                    }
+                }
+            }
+            $p = Join-Path $script:tmp ("fz$i.reg")
+            [IO.File]::WriteAllText($p, (@('Windows Registry Editor Version 5.00', '') + $lines + '') -join "`r`n", [Text.Encoding]::Unicode)
+            $got = $null; $threw = $false
+            try { $got = Import-DomainOSRegFile $p $script:fzKey -ValidateOnly } catch { $threw = $true }
+            if ($bad) {
+                $threw | Should -BeTrue -Because ("generated file $i must be refused:`n" + ($lines -join "`n"))
+                $refused++
+            } else {
+                $threw | Should -BeFalse -Because ("generated file $i is valid:`n" + ($lines -join "`n"))
+                $got | Should -Be $values
+                $accepted++
+            }
+        }
+        $accepted | Should -BeGreaterThan 20 -Because 'the generator must also make valid files'
+        $refused | Should -BeGreaterThan 100
+    }
+}
+
 Describe 'Import-DomainOSRegFile (saved .reg exports)' {
     BeforeAll {
         Mock Get-DomainOSOwner { 'S-1-5-18' }
