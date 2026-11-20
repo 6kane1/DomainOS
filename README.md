@@ -153,6 +153,8 @@ What it checks:
 
 A FAIL in the Domain OS part means something is not as Domain OS set it: usually another program or a Windows update changed it, or you changed it yourself in Settings. Applying the playbook again puts it right; Undo still returns the original state.
 
+What was tested on real PCs, with the numbers: [TEST-RESULTS.md](TEST-RESULTS.md) (one PC so far; reports from other hardware are welcome).
+
 ### Trying a version, going back, installing a newer one
 1. Apply a version. Its number and date go to `%ProgramData%\Domain OS\history.log`.
 2. If you do not like it: **Undo Domain OS**, restart. Windows is as it was before; the saved state is used up (if Undo reported a failure, it is kept: run Undo again).
