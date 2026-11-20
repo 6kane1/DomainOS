@@ -216,6 +216,8 @@ AME Wizard will say that the playbook is not verified: verification is issued by
 
 Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-2.2.4.apbx` in PowerShell must match the value on the website and in the release notes.
 
+For reviewers and contributors: how it is built — [ARCHITECTURE.md](ARCHITECTURE.md); what it protects against and what is left — [THREATMODEL.md](THREATMODEL.md). Every Toolbox build since 1.16.0 also ships an attested SBOM (`*.spdx.json`).
+
 ## License
 **Domain OS License** — all rights reserved (see [LICENSE](LICENSE)). You may read the code and use the official releases free of charge on your own PCs. Copying, re-uploading, publishing changed versions or builds based on this code, removing the author notices and selling are not allowed without the author's written permission. Versions published before 18 November 2026 under MIT stay MIT for the copies obtained then.
 Windows is a trademark of Microsoft; this project ships no part of Windows.

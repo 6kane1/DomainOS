@@ -1,0 +1,17 @@
+# Dependabot: a weekly look for updates of the pinned GitHub actions, the Toolbox's NuGet packages and the CI's pip
+# packages; security updates come at once. Every update is an ordinary pull request: it must pass the whole test suite
+# (main is protected) before it can be merged.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
+  - package-ecosystem: nuget
+    directories: [/toolbox/src/DomainScheduler.Lib, /toolbox/src/DomainScheduler, /toolbox/tests/DomainScheduler.Tests]
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
+  - package-ecosystem: pip
+    directories: [/tests, /.github/discord-status]
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
