@@ -610,14 +610,18 @@ FAQ = [
      '🇬🇧 Change them as usual: Settings → Personalization. Lock screen slideshow: Personalization → Lock screen → Slideshow → `C:\\Windows\\Web\\Wallpaper\\Domain OS`.\n'
      '🇷🇺 Меняются как обычно: «Параметры → Персонализация». Слайд-шоу на экране блокировки: Персонализация → Экран блокировки → Слайд-шоу → `C:\\Windows\\Web\\Wallpaper\\Domain OS`.'),
     (['schedtest', 'замер', 'бенчмарк', 'benchmark', 'results', 'график', 'сравни'], '**Benchmarks** · **Замеры**',
-     '🇬🇧 The benchmark tool and a beginner guide are in <#1572685486311342081>; post results in <#1572682487543365843> — the bot answers with a chart.\n'
-     '🇷🇺 Программа замеров и инструкция для новичков — в <#1572685486311342081>; результаты выкладывайте в <#1572682487543365843> — бот ответит графиком.'),
+     '🇬🇧 The benchmark tool and a beginner guide are in <#1572685486311342081>; post results in <#1572682487543365843> — the bot answers with a chart. '
+     'How to measure fairly (the same number of runs, a repeatable demo): https://6kane1.github.io/DomainOS/measure.html\n'
+     '🇷🇺 Программа замеров и инструкция для новичков — в <#1572685486311342081>; результаты выкладывайте в <#1572682487543365843> — бот ответит графиком. '
+     'Как мерить честно (поровну прогонов, повторяемое демо): https://6kane1.github.io/DomainOS/ru/measure.html'),
     (['home', 'хоум', 'домашн', 'только pro', 'pro only', 'останов', 'halt', 'не ставится', 'не устанавлив', 'первом шаге'], '**The install stops at the first step** · **Установка остановилась на первом шаге**',
      '🇬🇧 Domain OS installs on **Windows 11 Pro** only. Check Settings → System → About. On Home: switch to Pro with a Pro key (Settings → System → Activation).\n'
      '🇷🇺 Domain OS ставится только на **Windows 11 Pro**. Проверьте «Параметры → Система → О системе». На Home — перейдите на Pro своим ключом («Параметры → Система → Активация»).'),
     (['откат', 'вернуть', 'верни', 'undo', 'restore', 'удалить сборк', 'снести', 'снест', 'убрать сборк', 'как было'], '**How to undo** · **Как откатить**',
-     '🇬🇧 Start → Domain OS → **Undo Domain OS**, then restart. Toolbox changes: "Undo everything" in Toolbox.\n'
-     '🇷🇺 «Пуск» → Domain OS → **Undo Domain OS** и перезагрузка. Изменения Toolbox: «Вернуть всё как было» в Toolbox.'),
+     '🇬🇧 Start → Domain OS → **Undo Domain OS**, then restart. Toolbox changes: "Undo everything" in Toolbox. '
+     'Step by step and how to check that everything is back: <#1573077842302996550> · https://6kane1.github.io/DomainOS/undo.html\n'
+     '🇷🇺 «Пуск» → Domain OS → **Undo Domain OS** и перезагрузка. Изменения Toolbox: «Вернуть всё как было» в Toolbox. '
+     'Пошагово и как проверить, что всё вернулось: <#1573077842302996550> · https://6kane1.github.io/DomainOS/ru/undo.html'),
     (['драйв', 'дрова', 'дров', 'driver', 'видюх', 'видеокарт', 'nvidia', 'нвидиа', 'радеон', 'чипсет'], '**Drivers** · **Драйверы**',
      '🇬🇧 Graphics and chipset drivers only from the official NVIDIA / AMD / Intel sites, no driver packs. The driver page opens after the first restart.\n'
      '🇷🇺 Драйверы видеокарты и чипсета — только с официальных сайтов NVIDIA / AMD / Intel, без сборников. Страница драйверов открывается после первой перезагрузки.'),
