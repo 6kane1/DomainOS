@@ -108,7 +108,7 @@ once the day before (Kernel-Power 41; Toolbox's crash guard skipped it at the ne
 | longest frame | 9.0–11.4 ms | **8.3–9.4 ms** |
 
 Without the overclock the runs are steadier (narrower ranges, shorter worst frames) at about 4 % less FPS. Toolbox
-1.16.0 remembers values that crashed Windows and asks before they go back on the start.
+1.16.0 Test 1.1 remembers values that crashed Windows and asks before they go back on the start.
 
 ### 3.6 Two ways of recording give the same numbers · Два способа записи дают одни цифры (20.11.2026)
 The same deathmatch, 3 recordings with Windows Performance Recorder's built-in "GPU activity" + "Video glitches" profiles
@@ -126,10 +126,9 @@ The heavy recording itself costs about 90 FPS and adds ~100 ms frames at its sta
 In heavy deathmatch moments cs2's own low-priority worker threads (priority 2) wait up to ~2 ms behind cs2's busier
 threads inside the game's cores (with Toolbox Auto: 12 of 16 logical processors, the graphics-driver cores left out).
 Without Toolbox the same waits stay under ~0.6 ms, but the frames are worse (1 % low 401 vs 439, 76 vs 58 hitches,
-3 runs each). Only 8 of 50 hitches in a run had such a wait inside the frame. Next: an A/B on a repeatable demo
-(the same 30 s every run) instead of live deathmatch.
+3 runs each). Only 8 of 50 hitches in a run had such a wait inside the frame.
 
 ## 4. Not tested yet · Ещё не проверено
 - Other PCs (Intel, other GPUs, laptops); clean installs on 25H2.
 - AMD Radeon overclocking on real cards.
-- The Toolbox Check page (1.16.0 Test 1) and `DomainSchedTest --runs` on other PCs.
+- The Toolbox Check page (1.16.0 Test 1.1) and `DomainSchedTest --runs` on other PCs.
