@@ -27,9 +27,9 @@ actions:
   # Any program you start that asks for rights now gets them silently. Option, OFF by default since 2.1.9 (a silent
   # elevation is a real security cost); Undo restores the prompt.
   - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System', value: 'ConsentPromptBehaviorAdmin', data: '0', type: REG_DWORD, option: 'uac-no-prompt', errorAction: Log}
-  # Option not ticked: the prompt is Windows' default again (5 = ask for consent for non-Windows programs). Versions up to
+  # Option not ticked: the prompt is Windows' default again (3 = ask for consent for Windows programs). Versions up to
   # 2.1.8 ticked it by default, so an update without the tick brings the prompt back.
-  - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System', value: 'ConsentPromptBehaviorAdmin', data: '5', type: REG_DWORD, option: '!uac-no-prompt', errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System', value: 'ConsentPromptBehaviorAdmin', data: '3', type: REG_DWORD, option: '!uac-no-prompt', errorAction: Log}
 
   # "End task" in the taskbar's right-click menu (Settings > System > For developers): a frozen game is closed in two clicks.
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings', value: 'TaskbarEndTask', data: '1', type: REG_DWORD, errorAction: Log}
