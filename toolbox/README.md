@@ -226,6 +226,11 @@ carries it, so until then a leaked key could sign a fake feed. To shorten that w
 3. Publish the fixed Toolbox (signed with the backup key) as soon as it is built, and say so in the same places.
 4. Afterwards: in the changelog, name the revoked key id and the new key ids, and what happened.
 
+## Team
+
+- **6kane1** — author and owner of Domain OS.
+- **Zero Unflesh (zero_wake)** — co-owner of Domain OS and owner of AerialOS. Made a very large contribution to this project.
+
 ## License
 **Domain OS License 2.0** — all rights reserved (see [LICENSE](LICENSE)). You may read the code and use the official releases free of charge, for personal non-commercial use, on your own PCs. Copying, re-uploading, publishing changed versions or builds based on this code, removing the author notices and selling are not allowed without the author's written permission. **"Domain OS", "Domain OS Toolbox" and the Domain OS logo identify the author's work: they may not be used for other playbooks, builds, tools, sites, servers or channels, and no other work may be presented as Domain OS or based on it.** Versions published before 18 November 2026 under MIT stay MIT for the copies obtained then.
 Windows is a trademark of Microsoft; this project ships no part of Windows.
