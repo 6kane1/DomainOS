@@ -9,7 +9,11 @@ What it does:
     Hand it out ONLY in the closed testers channel. New key: delete the file and publish again.
   * <exe> is sealed with AES-256-GCM under the key -> tb-<version>.bin (for Toolbox's updater), and packed into
     DomainScheduler-<version>.7z with the key as password (for the first manual install with 7-Zip).
-    Both go to a GitHub pre-release "toolbox-test-<version>" (6kane1/DomainOS).
+    Both go to a pre-release "toolbox-test-<version>" of the PRIVATE repository 6kane1/DomainOS-test (since
+    1.16.0 Test 1.8): only the owner and invited testers can see it; test builds never go to the public 6kane1/DomainOS.
+  * download token: ~/.config/domainos/test-download-token.txt, a fine-grained GitHub token with Contents: read-only on
+    DomainOS-test only. It goes INSIDE the sealed feed; Toolbox 1.16.0 Test 1.8+ downloads the asset through the GitHub
+    API with it. Never print it. A leak: revoke it on GitHub, make a new one, publish again.
   * the test feed (version, url, SHA-256 and size of the sealed file, notes) is sealed too -> update/test.bin,
     and signed with the update key -> update/test.bin.sig. Nothing about a test build is readable without the key.
 Then commit and push the site checkout.
@@ -21,7 +25,8 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 CONF = os.path.expanduser('~/.config/domainos')
 KEYFILE = os.path.join(CONF, 'tester-key.txt')
 SIGN = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sign-feed.sh')
-REPO = '6kane1/DomainOS'
+REPO = '6kane1/DomainOS-test'          # private: owner + invited testers only
+TOKENFILE = os.path.join(CONF, 'test-download-token.txt')
 MAGIC = b'DOSE1'
 # Test releases are labelled so they are never mistaken for the stable playbook (the release marked Latest, titled
 # "✅ Domain OS <ver> — playbook, stable"). When a test playbook archive is added to a release, add it to the title too
@@ -76,8 +81,19 @@ def main():
     staged = os.path.join(tmp, 'DomainScheduler.exe')
     with open(exe, 'rb') as s, open(staged, 'wb') as d: d.write(s.read())
     subprocess.run(['7zr', 'a', '-t7z', '-mhe=on', '-mx=1', '-p' + ktext, sz, staged], check=True, stdout=subprocess.DEVNULL)
+    token = open(TOKENFILE).read().strip()
+    if not token.startswith('github_pat_'): sys.exit('test-download-token.txt must hold a fine-grained token (github_pat_...)')
+    if not dry:
+        subprocess.run(['gh', 'release', 'create', tag, binf, sz, '-R', REPO, '--prerelease', '--target', 'main',
+                        '--title', f'🧪 TEST · Toolbox {version} — testers only', '--notes', NOTES], check=True)
+        aid = subprocess.run(['gh', 'api', f'repos/{REPO}/releases/tags/{tag}', '--jq',
+                              f'.assets[] | select(.name=="{os.path.basename(binf)}") | .id'],
+                             check=True, capture_output=True, text=True).stdout.strip()
+        if not aid.isdigit(): sys.exit('asset id not found')
+    else: aid = '0'
     feed = {'toolbox': {'version': version, 'sealed': True,
-                        'url': f'https://github.com/{REPO}/releases/download/{tag}/{os.path.basename(binf)}',
+                        'url': f'https://api.github.com/repos/{REPO}/releases/assets/{aid}',
+                        'token': token,
                         'sha256': hashlib.sha256(open(binf, 'rb').read()).hexdigest(), 'size': os.path.getsize(binf),
                         'notes_en': en, 'notes_ru': ru}}
     upd = os.path.join(site, 'update'); os.makedirs(upd, exist_ok=True)
@@ -90,10 +106,6 @@ def main():
     print('sealed', binf, os.path.getsize(binf), '| 7z', os.path.getsize(sz), '| feed', tb)
     print('exe sha256', hashlib.sha256(open(exe, 'rb').read()).hexdigest())
     if dry: print('dry run: nothing uploaded; files in', tmp); return
-    subprocess.run(['gh', 'release', 'create', tag, binf, sz, '-R', REPO, '--prerelease', '--target', 'main',
-                    '--title', f'🧪 TEST · Toolbox {version} — testers only',
-                    '--notes', NOTES],
-                   check=True)
     print('released', tag, '— now commit and push', site)
 
 

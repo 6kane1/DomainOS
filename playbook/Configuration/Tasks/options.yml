@@ -26,6 +26,5 @@ actions:
   - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'svc-basic', data: '1', type: REG_DWORD, option: 'svc-basic', errorAction: Halt}
   - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'svc-search', data: '1', type: REG_DWORD, option: 'svc-search', errorAction: Halt}
   - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'power-plan', data: '1', type: REG_DWORD, option: 'power-plan', errorAction: Halt}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'gpu-hags', data: '1', type: REG_DWORD, option: 'gpu-hags', errorAction: Halt}
   - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'hibernate-off', data: '1', type: REG_DWORD, option: 'hibernate-off', errorAction: Halt}
   - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'bg-apps', data: '1', type: REG_DWORD, option: 'bg-apps', errorAction: Halt}

@@ -7,10 +7,6 @@ actions:
   # microphone. The policy switches recording and broadcasting off for every account.
   - !registryValue: {path: 'HKCU\System\GameConfigStore', value: 'GameDVR_Enabled', data: '0', type: REG_DWORD, errorAction: Log}
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'AppCaptureEnabled', data: '0', type: REG_DWORD, errorAction: Log}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'HistoricalCaptureEnabled', data: '0', type: REG_DWORD, errorAction: Log}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'AudioCaptureEnabled', data: '0', type: REG_DWORD, errorAction: Log}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'CursorCaptureEnabled', data: '0', type: REG_DWORD, errorAction: Log}
-  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR', value: 'MicrophoneCaptureEnabledByDefault', data: '0', type: REG_DWORD, errorAction: Log}
   - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR', value: 'AllowGameDVR', data: '0', type: REG_DWORD, errorAction: Log}
   # Game Bar: no opening by Win+G or the controller's Xbox button, no start-up tips panel. The app stays installed
   # (Xbox sign-in, Gaming Services and anti-cheats do not depend on the overlay), so it can be switched on again in
@@ -57,7 +53,7 @@ actions:
   # which takes some CPU work and latency off frame submission. Needs a WDDM 2.7+ driver and a GPU that supports it
   # (NVIDIA GTX 10 and newer, AMD RX 5000 and newer, Intel Arc); on others Windows ignores the value. Takes effect
   # after a restart. Undo puts the previous value back. 2 = on, 1 = off.
-  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers', value: 'HwSchMode', data: '2', type: REG_DWORD, option: 'gpu-hags', errorAction: Log}
+  - !registryValue: {path: 'HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers', value: 'HwSchMode', data: '2', type: REG_DWORD, errorAction: Log}
 
   # Versions 1.5.7–1.6.0 set hypervisorlaunchtype off when virtualization was off in the BIOS. If virtualization is
   # switched on later, memory integrity / VBS would then silently not start, so the step is gone: the previous value

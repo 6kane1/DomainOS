@@ -514,8 +514,10 @@ def check_forbidden(actions, conf):
                 silent = (val == 'consentpromptbehavioradmin' and num == 0) or (val == 'promptonsecuredesktop' and num == 0)
                 if silent and str(a.get('option')) != uac_opt:
                     p.append(f'{w}: {a.get("value")} = {num} (no UAC prompt) only behind option "{uac_opt}", has option {a.get("option")!r}')
-                if val == 'consentpromptbehavioradmin' and num not in (0, 5):
-                    p.append(f'{w}: ConsentPromptBehaviorAdmin = {num}: only 0 (option) or 5 (Windows default) are expected')
+                # 0 = no prompt (only behind the option); 3 = ask for credentials, the playbook's value without the tick
+                # since 2.2.6 (owner's decision 2026-11-21); 5 = Windows default, used up to 2.2.4.
+                if val == 'consentpromptbehavioradmin' and num not in (0, 3, 5):
+                    p.append(f'{w}: ConsentPromptBehaviorAdmin = {num}: only 0 (option), 3 (credentials) or 5 (Windows default) are expected')
             if val == 'enablelua':
                 p.append(f'{w}: EnableLUA must never be written')
         if t == '!service':
