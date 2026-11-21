@@ -50,6 +50,12 @@ actions:
   - !scheduledTask: {path: '\Microsoft\Windows\Feedback\Siuf\DmClient', operation: disable, errorAction: Ignore}
   - !scheduledTask: {path: '\Microsoft\Windows\Feedback\Siuf\DmClientOnScenarioDownload', operation: disable, errorAction: Ignore}
 
+  # Enable Windows firewall, disable notifications firewall
+  - !registryValue: {path: 'HKLM\SYSTEM\ControlSet001\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile', value: 'DisableNotifications', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SYSTEM\ControlSet001\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile', value: 'EnableFirewall', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SYSTEM\ControlSet001\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile', value: 'DisableNotifications', data: '1', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SYSTEM\ControlSet001\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile', value: 'EnableFirewall', data: '1', type: REG_DWORD, errorAction: Log}
+  
   # Advertising ID and "tailored experiences" built from diagnostic data.
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo', value: 'Enabled', data: '0', type: REG_DWORD, errorAction: Log}
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Privacy', value: 'TailoredExperiencesWithDiagnosticDataEnabled', data: '0', type: REG_DWORD, errorAction: Log}
