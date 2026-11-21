@@ -218,6 +218,11 @@ Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-2.2.4.apbx` in Pow
 
 For reviewers and contributors: how it is built — [ARCHITECTURE.md](ARCHITECTURE.md); what it protects against and what is left — [THREATMODEL.md](THREATMODEL.md). Every Toolbox build since 1.16.0 also ships an attested SBOM (`*.spdx.json`).
 
+## Team
+
+- **6kane1** — author and owner of Domain OS.
+- **Zero Unflesh (zero_wake)** — co-owner of Domain OS and owner of AerialOS. Made a very large contribution to this project.
+
 ## License
 **Domain OS License 2.0** — all rights reserved (see [LICENSE](LICENSE)). You may read the code and use the official releases free of charge, for personal non-commercial use, on your own PCs. Copying, re-uploading, publishing changed versions or builds based on this code, removing the author notices and selling are not allowed without the author's written permission. **"Domain OS", "Domain OS Toolbox" and the Domain OS logo identify the author's work: they may not be used for other playbooks, builds, tools, sites, servers or channels, and no other work may be presented as Domain OS or based on it.** Versions published before 18 November 2026 under MIT stay MIT for the copies obtained then.
 Windows is a trademark of Microsoft; this project ships no part of Windows.
