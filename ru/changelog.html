@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Версии и изменения — Domain OS</title>
+<meta name="description" content="Все выпуски Domain OS с датами и главными изменениями.">
+<meta name="theme-color" content="#060608">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="../img/icon-256.png">
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="preload" href="../fonts/Inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../site.css?v=230a">
+</head><body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>DOMAIN OS</a>
+    <span class="status"><span class="blip" aria-hidden="true"></span>ВЕРСИИ</span>
+    <nav class="nav" aria-label="Страницы"><a href="index.html">Плейбук</a><a href="install.html">Установка</a><a href="scheduler.html">Toolbox</a><a href="results.html">Замеры</a><a href="undo.html">Откат</a><a href="changelog.html" aria-current="page">Версии</a><a href="faq.html">Вопросы</a></nav>
+    <a class="dc" href="https://discord.gg/wBGsV7WEpm" rel="noopener" aria-label="Наш Discord-сервер"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.8 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 10.8 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.5-4.3-.8-8.1-3.2-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg><span>Discord</span></a>
+    <a class="lang" href="../changelog.html" hreflang="en" lang="en">EN</a>
+    <a class="btn main small" href="index.html#download">Скачать</a>
+  </div>
+  <div class="subnav"><div class="wrap"><span>НА СТРАНИЦЕ</span><a href="#versions">Версии и изменения</a></div></div>
+  <i class="progress" aria-hidden="true"></i>
+</header>
+<main>
+<style>
+/* undo / measure / changelog pages */
+.xp{max-width:78ch}
+.xp h3{margin:26px 0 8px;font-size:1.08rem}
+.xp p,.xp li{line-height:1.6}
+.xp ul,.xp ol{padding-left:1.2em;margin:6px 0 12px}
+.xp li{margin:4px 0}
+.xp pre{overflow-x:auto;padding:10px 12px;border:1px solid var(--line,rgba(255,255,255,.1));background:rgba(255,255,255,.025);font-size:13.5px;line-height:1.5}
+.xp .warn{padding:10px 12px;border-left:2px solid var(--pink,#f4b6cb);background:rgba(255,255,255,.02);margin:12px 0}
+.ver{border:1px solid var(--line,rgba(255,255,255,.1));border-radius:14px;padding:14px 18px;margin:12px 0;background:rgba(255,255,255,.02)}
+.ver h3{margin:0 0 6px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline}
+.ver h3 small{font:500 12px var(--mono,monospace);opacity:.7}
+.ver .now{font:600 11px var(--mono,monospace);padding:2px 7px;border:1px solid currentColor;border-radius:6px}
+.ver ul{margin:6px 0 0}
+</style><section class="sec" id="versions"><div class="wrap"><div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>Версии</div><h2>Версии и изменения</h2><p>Ссылки на файлы есть только у текущей версии: ставьте всегда её. Старые версии здесь — для истории.</p></div><div class="xp"><div class="ver"><h3>Domain OS 2.3.0 · Toolbox 1.16.0 <small>21.11.2026</small><span class="now">текущая</span></h3><ul><li>Остаются «Советы», Cortana, Карты, «Мобильные устройства»; Store остаётся даже с Maximum. Перед установкой AME просит выключить переключатели «Безопасности Windows»: после перезагрузки включите их обратно.</li><li>Больше рекламы и подсказок выключено, уровень диагностических данных 0, брандмауэр включён без уведомлений, запрещены сборки Insider; HAGS всегда включён; без галочки UAC спрашивает пароль или PIN.</li><li>Toolbox 1.16.0: страница «Обновления и тесты», только Dynamic Top-5, «Применить раскладку» с подтверждением, защита от фоновых всплесков; на 6 ядрах и меньше все ядра игре.</li></ul><p><a href="https://github.com/6kane1/DomainOS/releases/tag/v2.3.0" rel="noopener">Полный список изменений на GitHub</a> · <a href="index.html#download">Скачать</a></p></div><div class="ver"><h3>Domain OS 2.2.4 · Toolbox 1.15.0 <small>19.11.2026</small></h3><ul><li>Откат проверен полным циклом на реальном ПК: установка → Check → откат (Failed: 0) → сверка каждой настройки → снова установка.</li><li>Откат возвращает службы и задания, которые может менять только SYSTEM, и значения, которые может менять только Windows (TrustedInstaller).</li><li>Откат снова возвращает порядок значков на панели задач; установка больше не останавливается на обоях.</li><li>Архив плейбука собирается и аттестуется на GitHub.</li></ul><p><a href="https://github.com/6kane1/DomainOS/releases/tag/v2.2.4" rel="noopener">Полный список изменений на GitHub</a></p></div><div class="ver"><h3>Domain OS 2.2.0 · Toolbox 1.15.0 <small>19.11.2026</small></h3><ul><li>Установка останавливается при любой ошибке и в конце проверяет всё, что поставила.</li><li>Новое: «Пуск» → Domain OS → Check Domain OS — состояние ПК и готовность отката, ничего не меняет.</li><li>Запрос UAC по умолчанию остаётся; откат возвращает больше (службы SYSTEM, план питания, значки, обои).</li><li>Toolbox 1.15.0: подписанные обновления, разгон AMD Radeon (за флагом), уведомление о новом плейбуке, данные в защищённой папке.</li></ul><p><a href="https://github.com/6kane1/DomainOS/releases/tag/v2.2.0" rel="noopener">Полный список изменений на GitHub</a></p></div><div class="ver"><h3>Domain OS 2.1.1 · Toolbox 1.14.1 <small>18.11.2026</small></h3><ul><li>Только Windows 11 Pro, 25H2 и 26H2; на других редакциях установка останавливается до любых изменений.</li><li>Удалённые приложения не возвращаются после обновлений; полное контекстное меню сразу; «Завершить задачу» на панели задач.</li><li>Discord и голосовые чаты больше не приглушают звук игры; коды ошибок на синем экране.</li><li>Новые обои 4K и тема Domain OS; уведомления работают по умолчанию; Spotify больше не удаляется.</li></ul><p><a href="https://github.com/6kane1/DomainOS/releases/tag/v2.1.1" rel="noopener">Полный список изменений на GitHub</a></p></div><div class="ver"><h3>Domain OS 2.0.0 · Toolbox 1.11.1 <small>18.11.2026</small></h3><ul><li>Игра не попадает на ядра драйвера видеокарты: Toolbox находит их с 3-й секунды игры.</li><li>Auto больше не выключается, когда закрываешь игру.</li><li>Убрано то, что в замерах не помогло: парковка ядер, жёсткая привязка потоков, сторож времени кадра и другое.</li><li>Только русский и английский язык, полный перевод.</li></ul></div><div class="ver"><h3>Domain OS 1.6.8 <small>17.11.2026</small></h3><ul><li>Xbox mode, Game Bar и запись игр выключены; игровой режим остаётся включённым.</li></ul></div><div class="ver"><h3>Domain OS 1.6.7 <small>17.11.2026</small></h3><ul><li>HAGS включён по умолчанию; Win32PrioritySeparation = 0x18; служба TrkWks удалена (в 2.1.1 возвращена).</li></ul></div><div class="ver"><h3>Domain OS 1.6.6 <small>17.11.2026</small></h3><ul><li>Удалённые приложения больше не остаются в «Пуске» пустыми записями.</li></ul></div><div class="ver"><h3>Domain OS 1.6.4 <small>17.11.2026</small></h3><ul><li>Поддержка Windows 11 23H2 убрана.</li></ul></div></div></div></section></main>
+<footer><div class="wrap"><span>DOMAIN OS 2.3.0 · © 2026 · ALL RIGHTS RESERVED</span><a href="scheduler.html">Domain OS Toolbox</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="../changelog.html" hreflang="en">English</a><span>Версия 2.3.0 прошла тестовые сборки и автоматическую проверку каждого изменения, но реальные ПК разные: сообщайте о том, что ломается.</span><span>Команда: 6kane1 (автор и владелец) и Zero Unflesh (zero_wake), совладелец Domain OS и владелец AerialOS, внёсший очень большой вклад в этот проект.</span></div></footer>
+<script src="../site.js?v=230a"></script>
+</body></html>

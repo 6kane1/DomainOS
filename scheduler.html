@@ -9,29 +9,29 @@
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="preload" href="fonts/Inter-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="site.css?v=224a">
+<link rel="stylesheet" href="site.css?v=230a">
 </head><body>
 <header class="top">
   <div class="wrap bar">
     <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>DOMAIN OS</a>
-    <span class="status"><span class="blip" aria-hidden="true"></span>TOOLBOX <b>1.15.0</b></span>
-    <nav class="nav" aria-label="Pages"><a href="index.html">Playbook</a><a href="install.html">Install</a><a href="scheduler.html" aria-current="page">Toolbox</a><a href="results.html">Results</a><a href="faq.html">FAQ</a></nav>
+    <span class="status"><span class="blip" aria-hidden="true"></span>TOOLBOX <b>1.16.0</b></span>
+    <nav class="nav" aria-label="Pages"><a href="index.html">Playbook</a><a href="install.html">Install</a><a href="scheduler.html" aria-current="page">Toolbox</a><a href="results.html">Results</a><a href="undo.html">Undo</a><a href="changelog.html">Versions</a><a href="faq.html">FAQ</a></nav>
     <a class="dc" href="https://discord.gg/wBGsV7WEpm" rel="noopener" aria-label="Our Discord server"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.8 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 10.8 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.5-4.3-.8-8.1-3.2-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg><span>Discord</span></a>
     <a class="lang" href="ru/scheduler.html" hreflang="ru" lang="ru">RU</a>
     <a class="btn main small" href="#download">Download</a>
   </div>
-  <div class="subnav"><div class="wrap"><span>ON THIS PAGE</span><a href="#new">What's new in 1.15.0</a><a href="#expect">What to expect</a><a href="#how">How to use</a><a href="#features">What it does</a><a href="#overclock">GPU overclocking</a><a href="#advanced">Advanced users</a><a href="#safety">Safety</a><a href="#download">Download</a></div></div>
+  <div class="subnav"><div class="wrap"><span>ON THIS PAGE</span><a href="#new">What's new in 1.16.0</a><a href="#expect">What to expect</a><a href="#how">How to use</a><a href="#features">What it does</a><a href="#overclock">GPU overclocking</a><a href="#advanced">Advanced users</a><a href="#safety">Safety</a><a href="#download">Download</a></div></div>
   <i class="progress" aria-hidden="true"></i>
 </header>
 <main>
 
 <div class="hero"><div class="wrap">
   <div>
-    <p class="kicker"><span class="acc">▍</span> Domain OS Toolbox 1.15.0</p>
+    <p class="kicker"><span class="acc">▍</span> Domain OS Toolbox 1.16.0</p>
     <h1>Your game gets <em>the best cores</em></h1>
     <p class="lead">Toolbox is the gaming app Domain OS installs. Turn on Auto, start a game, and it gives the game the best CPU cores and quiets everything else in the background. Close the game and everything goes back to how it was.</p>
     <div class="actions">
-      <a class="btn main" href="#download">Download 1.15.0</a>
+      <a class="btn main" href="#download">Download 1.16.0</a>
       <a class="btn" href="#how">How to use it</a>
     </div>
     <p class="meta">free<i>/</i>nothing injected into the game<i>/</i>everything goes back by itself</p>
@@ -45,8 +45,8 @@
 </div></div>
 
 <section id="new"><div class="wrap">
-  <div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>What's new</div><h2>What's new in Toolbox 1.15.0</h2><p>The main points in short, the full list under the button. The Windows changes of playbook 2.1.1 are <a href="index.html#new">on the main page</a>.</p></div>
-  <div class="newgrid one"><div class="p newp"><div class="cap"><span class="acc">▍</span>Toolbox 1.15.0</div><ul class="keyl"><li><strong>Signed updates</strong> arrive by themselves, with a backup key</li><li><strong>AMD Radeon overclocking</strong> next to NVIDIA, behind its own flag</li><li>A notice when a <strong>new playbook</strong> is out</li><li><strong>Built on GitHub</strong> with a build attestation</li></ul></div></div><details class="more allmore"><summary><span>All changes (8)</span><i aria-hidden="true"></i></summary><div class="newgrid morecols one"><div class="morecol"><div class="cap"><span class="acc">▍</span>Toolbox 1.15.0</div><ul class="plain"><li><strong>Signed updates.</strong> Toolbox checks for updates once a day and installs only an update with a valid signature and checksum. If the new version does not start, the previous one comes back by itself.</li><li><strong>A backup update key</strong> is kept offline: if the main key is lost or leaked, updates keep working and the old key is revoked.</li><li><strong>It tells you when a new playbook is out:</strong> one tray notice per version, never during a game, and an "Open the website" button.</li><li><strong>AMD Radeon overclocking</strong> (RX 5000–9000, RX 470–590, Vega) next to NVIDIA: inside the driver's limits, voltage only lowered, "Reset to stock", the crash guard. Behind a feature flag, off by default. <a href="#overclock">How to turn it on</a>. New: please report your card and driver.</li><li>Settings and backups live in a folder only administrators can change (<code>%ProgramData%\Domain OS Toolbox</code>); every restored value is checked against what Toolbox itself writes.</li><li>System tools are started by their full path; an old "Apply at start" GPU mark is asked about once, with the profile's values shown.</li><li>No freeze when a game starts; core assignments are put back after a crash.</li><li><strong>Built in public on GitHub</strong> with a signed build attestation: <code>gh attestation verify</code> names the workflow and the exact commit.</li></ul></div></div></details>
+  <div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>What's new</div><h2>What's new in Toolbox 1.16.0</h2><p>The main points in short, the full list under the button. The Windows changes of playbook 2.3.0 are <a href="index.html#new">on the main page</a>.</p></div>
+  <div class="newgrid one"><div class="p newp"><div class="cap"><span class="acc">▍</span>Toolbox 1.16.0</div><ul class="keyl"><li>One <strong>Updates and testing</strong> page</li><li><strong>Dynamic Top-5</strong> is the only thread mode</li><li><strong>Burst guard</strong> on by default</li><li><strong>Devices:</strong> an Apply the layout button with a confirmation</li></ul></div></div><details class="more allmore"><summary><span>All changes (7)</span><i aria-hidden="true"></i></summary><div class="newgrid morecols one"><div class="morecol"><div class="cap"><span class="acc">▍</span>Toolbox 1.16.0</div><ul class="plain"><li><strong>Updates and testing:</strong> one page for the update check, rolling back to the previous version and the update channel.</li><li><strong>Dynamic Top-5 is the only thread mode:</strong> the role plan is removed.</li><li><strong>Devices:</strong> instead of the big table, one line and an <strong>Apply the layout</strong> button; its confirmation lists which device gets which core. When the layout is already in place, there is nothing to apply.</li><li><strong>Burst guard</strong> (Settings, on): a background program that keeps loading the processor during a game gives way to the game (it is never stopped); when free memory is low, the game keeps its memory. Services, launchers, audio, voice, streaming, VR, network boosters, security software and anti-cheats are never touched. On a clean PC it does nothing.</li><li><strong>6 cores or fewer:</strong> the game gets every core and no core is kept for devices (on a tester's i5-10400F the old layout cost 6% of the 1% low in CS2). 8 cores and more work as before.</li><li>Check page (one measured run), crash memory of the GPU overclock, shorter texts in Settings. The device layout and <a href="#overclock">GPU overclocking</a> pages are open by default; both ask before writing anything.</li><li><strong>Measured</strong> on a Ryzen 7 7800X3D + RTX 5060 (CS2, Dust2 benchmark, 2 runs per group): with Toolbox 1.16.0 average FPS 715 vs 700 without Toolbox, 1% low 286 vs 271. More runs and other PCs are welcome.</li></ul></div></div></details>
 </div></section>
 
 <section id="expect"><div class="wrap">
@@ -60,28 +60,27 @@
   <div class="cards two shots">
     <figure class="shot"><div class="frame"><video controls muted playsinline loop preload="metadata" poster="img/en-home-active.webp" width="1920" height="1080" aria-label="Video: four steps in Toolbox"><source src="img/guide-en.webm" type="video/webm"></video></div><figcaption><span class="chip">video</span>The four steps. The video is made on an interface image.</figcaption></figure>
     <div class="p act"><div class="cap"><span class="acc">▍</span>Optimize devices<span class="r">once</span></div>
-    <p style="margin-top:10px">Each key device gets a core of its own: the USB controller with the mouse, the graphics card, the network card. Storage is not touched, MSI only where the device supports it, laptops are not touched. If Windows did not start or crashed after the change, everything is reverted by itself. The button shows the state: "restart needed" or "active".</p></div>
+    <p style="margin-top:10px">Each key device gets a core of its own: the USB controller with the mouse, the graphics card, the network card. On processors with 6 cores or fewer no core is kept for devices: the game gets every core. Storage is not touched, MSI only where the device supports it, laptops are not touched. If Windows did not start or crashed after the change, everything is reverted by itself. The button shows the state: "restart needed" or "active". On the Devices page the "Apply the layout" button does the same: before writing, it shows which device gets which core.</p></div>
   </div>
-  
 </div></section>
 
 <section id="features"><div class="wrap">
   <div class="sh"><div class="label"><span class="n">04</span><span class="acc">▍</span>What it does</div><h2>What the app does</h2><p>While you play. No input needed.</p></div>
-  <div class="cards"><div class="p card"><div class="hd"><span class="ix">01</span><h3>The best cores for the game</h3></div><p>The most important parts of the game run on the fastest CPU cores and don't get in each other's way.</p></div><div class="p card"><div class="hd"><span class="ix">02</span><h3>A quieter background</h3></div><p>Your browser and other background programs get fewer resources and low disk priority while you play, so the game reads from disk first. OBS, Discord, audio and VR software and game launchers are left alone.</p></div><div class="p card"><div class="hd"><span class="ix">03</span><h3>Cores free of extra work</h3></div><p>Your mouse, graphics card and network also keep the CPU busy. The app notices which cores they occupy and moves the game to free ones.</p></div><div class="p card"><div class="hd"><span class="ix">04</span><h3>Auto-tune</h3></div><p>Tries different settings while you play, compares smoothness and offers the best one. Nothing changes until you press "Apply".</p></div><div class="p card"><div class="hd"><span class="ix">05</span><h3>Quiet timers</h3></div><p>Some background apps, like RGB lighting and monitoring tools, wake the CPU thousands of times a second. The app calms that down while you play.</p></div><div class="p card"><div class="hd"><span class="ix">06</span><h3>Everything goes back</h3></div><p>Before any change, the app remembers how things were and restores them when the game closes. Even after a crash.</p></div></div>
+  <div class="cards"><div class="p card"><div class="hd"><span class="ix">01</span><h3>The best cores for the game</h3></div><p>The most important parts of the game run on the fastest CPU cores and don't get in each other's way.</p></div><div class="p card"><div class="hd"><span class="ix">02</span><h3>A quieter background</h3></div><p>Your browser and other background programs get fewer resources and low disk priority while you play, so the game reads from disk first. OBS, Discord, audio and VR software and game launchers are left alone.</p></div><div class="p card"><div class="hd"><span class="ix">03</span><h3>Cores free of extra work</h3></div><p>Your mouse, graphics card and network also keep the CPU busy. The app notices which cores they occupy and moves the game to free ones.</p></div><div class="p card"><div class="hd"><span class="ix">04</span><h3>Auto-tune</h3></div><p>Tries different settings while you play, compares smoothness and offers the best one. Nothing changes until you press "Apply".</p></div><div class="p card"><div class="hd"><span class="ix">05</span><h3>Burst guard</h3></div><p>If a background program keeps loading the processor during a game, it gives way to the game, but it is never stopped. When memory runs low, the game keeps its own. Services, launchers, audio, voice, streaming, VR, security software and anti-cheats are never touched. On by default; on a clean PC it does nothing.</p></div><div class="p card"><div class="hd"><span class="ix">06</span><h3>Quiet timers</h3></div><p>Some background apps, like RGB lighting and monitoring tools, wake the CPU thousands of times a second. The app calms that down while you play.</p></div><div class="p card"><div class="hd"><span class="ix">07</span><h3>Everything goes back</h3></div><p>Before any change, the app remembers how things were and restores them when the game closes. Even after a crash.</p></div></div>
 </div></section>
 
 <section id="overclock"><div class="wrap">
-  <div class="sh"><div class="label"><span class="n">05</span><span class="acc">▍</span>Overclocking</div><h2>GPU overclocking (NVIDIA)</h2><p>An advanced function. It is hidden behind a feature flag, and you use it at your own risk.</p></div>
+  <div class="sh"><div class="label"><span class="n">05</span><span class="acc">▍</span>Overclocking</div><h2>GPU overclocking (NVIDIA and AMD Radeon)</h2><p>An advanced function, you use it at your own risk. Since 1.16.0 the page is open by default, but nothing is written until you apply a profile and confirm.</p></div>
   <div class="split oc">
     <div>
-      <ol class="steps"><li><span class="p">Turn on <b>"Advanced mode"</b> at the top right.</span></li><li><span class="p">Open the <b>"Settings"</b> gear → <b>"Feature flags"</b>.</span></li><li><span class="p">Turn on <b>"GPU overclocking (clock offsets and voltage boost, NVIDIA)"</b>.</span></li><li><span class="p">The sliders appear on the <b>"Graphics card"</b> page: core, memory and voltage, profiles, "Apply at start", "Reset to stock".</span></li></ol>
+      <ol class="steps"><li><span class="p">Turn on <b>"Advanced mode"</b> at the top right.</span></li><li><span class="p">Open the <b>"Graphics card"</b> page: the clock and voltage sliders, profiles, "Apply at start", "Reset to stock".</span></li><li><span class="p">Apply a profile. Toolbox asks for confirmation before writing anything.</span></li></ol>
       <div class="p warnbox">
         <div class="cap">▲ At your own risk</div>
         <p><strong>Crash guard:</strong> if a blue screen or sudden power-off happened after an overclock, the profile is not applied at the next start. An ordinary restart does not reset the overclock.</p>
         <p>Wrong values make the card unstable, and extra voltage shortens its life.</p>
       </div>
     </div>
-    <figure class="shot"><div class="frame"><img src="img/en-gpu.webp" width="1920" height="1032" alt="The Graphics card page with the overclocking sliders" loading="lazy"></div><figcaption><span class="chip">interface image</span>The Graphics card page after the flag is on</figcaption></figure>
+    <figure class="shot"><div class="frame"><img src="img/en-gpu.webp" width="1920" height="1032" alt="The Graphics card page with the overclocking sliders" loading="lazy"></div><figcaption><span class="chip">interface image</span>The Graphics card page with the overclocking sliders</figcaption></figure>
   </div>
 </div></section>
 
@@ -98,20 +97,20 @@
 <section id="download"><div class="wrap">
   <div class="sh"><div class="label"><span class="n">08</span><span class="acc">▍</span>Download</div><h2>Download</h2><p>If you install the Domain OS playbook, you don't need this separately: it installs Toolbox and puts a shortcut on the desktop.</p></div>
   <div class="p dl">
-    <div class="head"><span class="blip" aria-hidden="true"></span><span class="fn">DOMAINOS-TOOLBOX-1.15.0.EXE</span><span class="chip on">in playbook 2.2.4</span></div>
+    <div class="head"><span class="blip" aria-hidden="true"></span><span class="fn">DOMAINOS-TOOLBOX-1.16.0.EXE</span><span class="chip on">in playbook 2.3.0</span></div>
     <div class="body">
       <dl>
-        <dt>file</dt><dd><span class="nw">DomainOS-Toolbox-1.15.0.exe</span> · 71.1 MB</dd>
-        <dt>sha-256</dt><dd class="hash">f82487cd4d692fc0a8d63b2b510b2ad27a2b1b06ea718551de45e6634dc0a604</dd>
-        <dt>check</dt><dd class="prompt">Get-FileHash .\DomainOS-Toolbox-1.15.0.exe</dd>
+        <dt>file</dt><dd><span class="nw">DomainOS-Toolbox-1.16.0.exe</span> · 71.1 MB</dd>
+        <dt>sha-256</dt><dd class="hash">eeaa00bfbdf599b1d60242378ab605710e74a12bb55cce1934a09430c31e95b5</dd>
+        <dt>check</dt><dd class="prompt">Get-FileHash .\DomainOS-Toolbox-1.16.0.exe</dd>
         <dt>system</dt><dd>Windows 10 and 11, 64-bit</dd>
         <dt>install</dt><dd>not needed, run as administrator</dd>
       </dl>
-      <div class="actions"><a class="btn main" href="https://github.com/6kane1/DomainOS/releases/download/v2.2.4/DomainOS-Toolbox-1.15.0.exe">Download Toolbox <span class="k">1.15.0</span></a><a class="btn" href="https://github.com/6kane1/DomainOS/tree/main/toolbox">Source code</a></div>
+      <div class="actions"><a class="btn main" href="https://github.com/6kane1/DomainOS/releases/download/v2.3.0/DomainOS-Toolbox-1.16.0.exe">Download Toolbox <span class="k">1.16.0</span></a><a class="btn" href="https://github.com/6kane1/DomainOS/tree/main/toolbox">Source code</a></div>
     </div>
   </div>
 </div></section>
 </main>
-<footer><div class="wrap"><span>DOMAIN OS TOOLBOX 1.15.0</span><a href="index.html">Domain OS playbook</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="ru/scheduler.html" hreflang="ru">Русский</a><span>Anti-cheat developers have not confirmed compatibility. Use at your own risk.</span><span>Team: 6kane1 (author and owner) and Zero Unflesh (zero_wake), co-owner of Domain OS and owner of AerialOS, who made a very large contribution to this project.</span></div></footer>
-<script src="site.js?v=224a"></script>
+<footer><div class="wrap"><span>DOMAIN OS TOOLBOX 1.16.0</span><a href="index.html">Domain OS playbook</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="ru/scheduler.html" hreflang="ru">Русский</a><span>Anti-cheat developers have not confirmed compatibility. Use at your own risk.</span><span>Team: 6kane1 (author and owner) and Zero Unflesh (zero_wake), co-owner of Domain OS and owner of AerialOS, who made a very large contribution to this project.</span></div></footer>
+<script src="site.js?v=230a"></script>
 </body></html>

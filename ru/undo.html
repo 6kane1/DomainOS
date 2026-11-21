@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Откат Domain OS</title>
+<meta name="description" content="Как откатить Domain OS и проверить, что всё вернулось.">
+<meta name="theme-color" content="#060608">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="../img/icon-256.png">
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="preload" href="../fonts/Inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../site.css?v=230a">
+</head><body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>DOMAIN OS</a>
+    <span class="status"><span class="blip" aria-hidden="true"></span>ОТКАТ <b>2.3.0</b></span>
+    <nav class="nav" aria-label="Страницы"><a href="index.html">Плейбук</a><a href="install.html">Установка</a><a href="scheduler.html">Toolbox</a><a href="results.html">Замеры</a><a href="undo.html" aria-current="page">Откат</a><a href="changelog.html">Версии</a><a href="faq.html">Вопросы</a></nav>
+    <a class="dc" href="https://discord.gg/wBGsV7WEpm" rel="noopener" aria-label="Наш Discord-сервер"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.8 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 10.8 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.5-4.3-.8-8.1-3.2-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg><span>Discord</span></a>
+    <a class="lang" href="../undo.html" hreflang="en" lang="en">EN</a>
+    <a class="btn main small" href="index.html#download">Скачать</a>
+  </div>
+  <div class="subnav"><div class="wrap"><span>НА СТРАНИЦЕ</span><a href="#undo">Как откатить</a></div></div>
+  <i class="progress" aria-hidden="true"></i>
+</header>
+<main>
+<style>
+/* undo / measure / changelog pages */
+.xp{max-width:78ch}
+.xp h3{margin:26px 0 8px;font-size:1.08rem}
+.xp p,.xp li{line-height:1.6}
+.xp ul,.xp ol{padding-left:1.2em;margin:6px 0 12px}
+.xp li{margin:4px 0}
+.xp pre{overflow-x:auto;padding:10px 12px;border:1px solid var(--line,rgba(255,255,255,.1));background:rgba(255,255,255,.025);font-size:13.5px;line-height:1.5}
+.xp .warn{padding:10px 12px;border-left:2px solid var(--pink,#f4b6cb);background:rgba(255,255,255,.02);margin:12px 0}
+.ver{border:1px solid var(--line,rgba(255,255,255,.1));border-radius:14px;padding:14px 18px;margin:12px 0;background:rgba(255,255,255,.02)}
+.ver h3{margin:0 0 6px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline}
+.ver h3 small{font:500 12px var(--mono,monospace);opacity:.7}
+.ver .now{font:600 11px var(--mono,monospace);padding:2px 7px;border:1px solid currentColor;border-radius:6px}
+.ver ul{margin:6px 0 0}
+</style><section class="sec" id="undo"><div class="wrap"><div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>Откат</div><h2>Как откатить Domain OS</h2><p>Откат возвращает Windows к состоянию до вашей самой первой установки Domain OS — без переустановки Windows. Актуально для плейбука 2.3.0; проверено на реальном ПК: установка → откат → сверка каждой настройки → снова установка.</p></div><div class="xp"><h3>Что возвращается</h3><ul>
+<li>каждое значение реестра, служба и задание, которые менял Domain OS (в том числе те, что может менять только SYSTEM или сама Windows);</li>
+<li>план питания, гибернация, запрос UAC, тема, мышь, значки на панели задач и в «Пуске», обои, меню правой кнопки, OneDrive;</li>
+<li>раскладка устройств Toolbox (после перезагрузки).</li></ul><h3>Что остаётся</h3><ul>
+<li><b>ваши файлы, игры, программы и сохранения</b> — откат меняет только настройки;</li>
+<li>удалённые приложения (Teams, Copilot …): откат <b>показывает их список</b>, нужные ставятся из Microsoft Store;</li>
+<li>библиотеки Visual C++ / DirectX, папка с картинками Domain OS, сам Toolbox (откат из «Пуска» его не удаляет).</li></ul><h3>Как откатить</h3><ol>
+<li>Не обязательно, но разумно: «Пуск» → <i>Создание точки восстановления</i> → <b>Создать</b>.</li>
+<li>Закройте игры и античиты.</li>
+<li>«Пуск» → <b>Domain OS → Undo Domain OS</b> → разрешите запрос администратора.</li>
+<li>Дождитесь конца (1–5 мин), окно не закрывайте. В последних строках должно быть <b><code>Failed: 0</code></b> и <i>Restart the computer to finish</i>.</li>
+<li><b>Перезагрузите ПК.</b></li></ol><h3>Как проверить, что всё вернулось</h3><ul>
+<li>«Пуск» → Domain OS → <b>Check Domain OS</b>: должно быть <i>Domain OS was undone</i>, а раздел <b>Windows health</b> — весь PASS.</li>
+<li>Полная сверка каждой сохранённой настройки: <a href="https://github.com/6kane1/DomainOS/blob/main/tests/Verify-Undo.ps1" rel="noopener">Verify-Undo.ps1</a>, PowerShell <b>от администратора</b>:
+<pre>powershell -ExecutionPolicy Bypass -NoExit -File "C:\Путь\Verify-Undo.ps1"</pre>
+Результат: <code>Result: … back as before, … different</code>.</li>
+<li>Нормальные отличия (Windows меняет их сама): <code>GameDVR_Enabled</code>, значения <code>ContentDeliveryManager</code>, обои «Windows: интересное», вернувшиеся обычной картинкой.</li></ul><h3>Если где-то FAILED</h3><p>Ничего не потеряно: при любой ошибке <b>сохранённое состояние остаётся</b>. Перезагрузитесь и запустите <b>Undo Domain OS</b> ещё раз.</p>
+<p>Снова FAILED? Напишите в <a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a>, канал 14・help: файл <code>C:\ProgramData\Domain OS\Logs\undo.log</code> и отчёт Check Domain OS с рабочего стола.</p>
+<p class="warn">Не удаляйте <code>C:\ProgramData\Domain OS</code> — там лежит сохранённое исходное состояние.</p>
+<p>После отката и перезагрузки любая версия Domain OS ставится как в первый раз.</p></div></div></section></main>
+<footer><div class="wrap"><span>DOMAIN OS 2.3.0 · © 2026 · ALL RIGHTS RESERVED</span><a href="scheduler.html">Domain OS Toolbox</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="../undo.html" hreflang="en">English</a><span>Версия 2.3.0 прошла тестовые сборки и автоматическую проверку каждого изменения, но реальные ПК разные: сообщайте о том, что ломается.</span><span>Команда: 6kane1 (автор и владелец) и Zero Unflesh (zero_wake), совладелец Domain OS и владелец AerialOS, внёсший очень большой вклад в этот проект.</span></div></footer>
+<script src="../site.js?v=230a"></script>
+</body></html>
