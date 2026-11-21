@@ -11,7 +11,6 @@ actions:
   # its patch task on again, so the policy and the task are set too. The compatibility engine itself (shims for old
   # games) is NOT switched off.
   - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat', value: 'DisablePCA', data: '1', type: REG_DWORD, errorAction: Log}
-  - !scheduledTask: {path: '\Microsoft\Windows\Application Experience\PcaPatchDbTask', operation: disable, errorAction: Ignore}
   # The telemetry service (DiagTrack) is stopped and disabled in privacy.yml.
   # Windows AI components host (Click to Do, AI actions; it ran on a PC without an NPU in a user report) and
   # the inventory collector behind the compatibility appraiser (its tasks and the policy are already off, the

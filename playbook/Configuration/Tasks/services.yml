@@ -5,7 +5,6 @@ actions:
   # ---- basic set (option svc-basic, on by default) -------------------------------------------------------
   # Offline maps: map data updates for the removed Maps app.
   - !scheduledTask: {path: '\Microsoft\Windows\Maps\MapsUpdateTask', operation: disable, option: 'svc-basic', errorAction: Ignore}
-  - !scheduledTask: {path: '\Microsoft\Windows\Maps\MapsToastTask', operation: disable, option: 'svc-basic', errorAction: Ignore}
   # Parental controls: the Family app is removed.
   - !scheduledTask: {path: '\Microsoft\Windows\Shell\FamilySafetyMonitor', operation: disable, option: 'svc-basic', errorAction: Ignore}
   - !scheduledTask: {path: '\Microsoft\Windows\Shell\FamilySafetyRefreshTask', operation: disable, option: 'svc-basic', errorAction: Ignore}
