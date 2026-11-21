@@ -44,14 +44,14 @@ $basic = @(
     'Clipchamp.Clipchamp', 'Microsoft.BingNews', 'Microsoft.BingWeather', 'Microsoft.BingSearch',
     'Microsoft.MicrosoftSolitaireCollection', 'MSTeams', 'MicrosoftTeams', 'Microsoft.Copilot',
     'Microsoft.OutlookForWindows', 'Microsoft.Windows.DevHome', 'Microsoft.WindowsFeedbackHub', 'Microsoft.GetHelp',
-    'Microsoft.Getstarted', 'Microsoft.MicrosoftOfficeHub', 'Microsoft.PowerAutomateDesktop', 'Microsoft.Todos',
-    'Microsoft.ZuneVideo', 'Microsoft.549981C3F5F10', 'Microsoft.WindowsMaps', 'microsoft.windowscommunicationsapps',
-    'MicrosoftCorporationII.MicrosoftFamily', 'Microsoft.YourPhone', 'MicrosoftWindows.CrossDevice',
+    'Microsoft.MicrosoftOfficeHub', 'Microsoft.PowerAutomateDesktop', 'Microsoft.Todos',
+    'Microsoft.ZuneVideo', 'microsoft.windowscommunicationsapps',
+    'MicrosoftCorporationII.MicrosoftFamily', 'Microsoft.YourPhone',
     'MicrosoftWindows.Client.WebExperience', 'Disney.37853FC22B2CE', '7EE7776C.LinkedInforWindows',
     'Microsoft.Windows.AIHub', 'Microsoft.PCManager', 'Microsoft.MicrosoftPCManager', 'Microsoft.M365Companions'
 )
 $maxList = @(
-    'Microsoft.WindowsStore', 'Microsoft.GamingApp', 'Microsoft.Windows.Photos', 'Microsoft.WindowsCamera',
+    'Microsoft.GamingApp', 'Microsoft.Windows.Photos', 'Microsoft.WindowsCamera',
     'Microsoft.WindowsSoundRecorder', 'Microsoft.WindowsAlarms', 'Microsoft.MicrosoftStickyNotes'
 )
 $names = if ($Max) { $maxList } else { $basic }

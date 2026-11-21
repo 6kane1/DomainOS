@@ -47,6 +47,41 @@ h1{font-size:30px;line-height:1.2;color:var(--strong);font-weight:600;letter-spa
 </div>
 <script>
 const NOTES = [
+  { v: "2.3.0", date: "2026-11-21",
+    groups: [
+      { en: "Apps", ru: "Приложения", items: [
+        { en: "Tips, Cortana, Maps and Mobile devices (needed to use a phone with the PC) are kept now. The Store stays even with Maximum. Their reinstall block from earlier versions is lifted.",
+          ru: "«Советы», Cortana, Карты и «Мобильные устройства» (нужны для работы телефона с ПК) теперь остаются. Store остаётся даже с Maximum. Запрет на их повторную установку из прошлых версий снят." },
+        { en: "The blocks on the Teams Chat and new Outlook auto-install are gone (the apps themselves are still removed).",
+          ru: "Убраны запреты на автоустановку чата Teams и нового Outlook (сами приложения по-прежнему удаляются)." }
+      ]},
+      { en: "Privacy and advertising", ru: "Приватность и реклама", items: [
+        { en: "Diagnostic data level 0; the diagnostic data choice in Settings is locked by policy.",
+          ru: "Уровень диагностических данных 0; выбор уровня в «Параметрах» закреплён политикой." },
+        { en: "More advertising and suggestions off: lock screen pictures and tips, suggestions in Settings and Start, content delivery. Cross Device Resume is off.",
+          ru: "Выключено больше рекламы и подсказок: картинки и советы на экране блокировки, рекомендации в «Параметрах» и «Пуске», доставка контента. Выключено Cross Device Resume." },
+        { en: "Windows Firewall stays on for private and public networks; only its pop-up notifications are off.",
+          ru: "Брандмауэр Windows включён для частной и общественной сети; выключены только его всплывающие уведомления." },
+        { en: "No Insider preview builds and no feature experiments (policies).",
+          ru: "Запрещены предварительные сборки Insider и эксперименты с функциями (политики)." }
+      ]},
+      { en: "Games and system", ru: "Игры и система", items: [
+        { en: "Hardware-accelerated GPU scheduling (HAGS) is always on, no longer a tick.",
+          ru: "Аппаратное планирование GPU (HAGS) включено всегда, больше не галочка." },
+        { en: "Without the UAC tick, UAC asks for the account's password or PIN at every elevation.",
+          ru: "Без галочки UAC при каждом повышении прав спрашивает пароль или PIN учётной записи." },
+        { en: "Before the install AME Wizard asks to switch off the Windows Security toggles. Domain OS does not change Defender: switch them back on after the restart.",
+          ru: "Перед установкой AME Wizard просит выключить переключатели «Безопасности Windows». Domain OS Defender не меняет: после перезагрузки включите их обратно." }
+      ]},
+      { en: "Toolbox 1.16.0", ru: "Toolbox 1.16.0", items: [
+        { en: "A new page Updates and testing; the role plan is gone (Dynamic Top-5 only); Devices: an Apply the layout button with a confirmation instead of the big table.",
+          ru: "Новая страница «Обновления и тесты»; ролевой план убран (только Dynamic Top-5); Devices: кнопка «Применить раскладку» с подтверждением вместо большой таблицы." },
+        { en: "Burst guard: a background program that loads the processor during a game gives way to the game; when free memory is low the game keeps its memory.",
+          ru: "Защита от фоновых всплесков: фоновая программа, которая грузит процессор во время игры, уступает игре; при нехватке памяти игра удерживает свою память." },
+        { en: "On processors with 6 cores or fewer the game gets every core and no core is kept for devices.",
+          ru: "На процессорах с 6 ядрами и меньше игра получает все ядра, отдельные ядра под устройства не выделяются." }
+      ]}
+    ]},
   { v: "2.2.4", date: "2026-11-19",
     groups: [
       { en: "Undo, checked on a real PC", ru: "Откат, проверенный на реальном ПК", items: [

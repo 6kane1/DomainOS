@@ -17,6 +17,11 @@ actions:
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize', value: 'AppsUseLightTheme', data: '0', type: REG_DWORD, option: 'ui-dark', errorAction: Log}
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize', value: 'SystemUsesLightTheme', data: '0', type: REG_DWORD, option: 'ui-dark', errorAction: Log}
 
+  # Cross Device Resume off (continuing on the PC what was started on a phone), since 2.2.6.
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', value: 'IsEnabled', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\CrossDeviceResume\Configuration', value: 'IsResumeAllowed', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\CrossDeviceResume\Configuration', value: 'IsOneDriveResumeAllowed', data: '0', type: REG_DWORD, errorAction: Log}
+
   # Notifications off (Settings → System → Notifications, the main switch): no pop-ups and no sounds over a game.
   # Defender keeps protecting; its state stays visible in Windows Security. Turn the switch back on in Settings at any time.
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\PushNotifications', value: 'ToastEnabled', data: '0', type: REG_DWORD, option: 'ui-no-notifications', errorAction: Log}
@@ -27,9 +32,9 @@ actions:
   # Any program you start that asks for rights now gets them silently. Option, OFF by default since 2.1.9 (a silent
   # elevation is a real security cost); Undo restores the prompt.
   - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System', value: 'ConsentPromptBehaviorAdmin', data: '0', type: REG_DWORD, option: 'uac-no-prompt', errorAction: Log}
-  # Option not ticked: the prompt is Windows' default again (5 = ask for consent for non-Windows programs). Versions up to
-  # 2.1.8 ticked it by default, so an update without the tick brings the prompt back.
-  - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System', value: 'ConsentPromptBehaviorAdmin', data: '5', type: REG_DWORD, option: '!uac-no-prompt', errorAction: Log}
+  # Option not ticked (since 2.2.6): 3 = UAC asks for the account's credentials (password or PIN) at every elevation.
+  # Versions up to 2.1.8 ticked the option by default, so an update without the tick brings a prompt back.
+  - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System', value: 'ConsentPromptBehaviorAdmin', data: '3', type: REG_DWORD, option: '!uac-no-prompt', errorAction: Log}
 
   # "End task" in the taskbar's right-click menu (Settings > System > For developers): a frozen game is closed in two clicks.
   - !registryValue: {path: 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings', value: 'TaskbarEndTask', data: '1', type: REG_DWORD, errorAction: Log}
