@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -65,6 +65,37 @@ internal sealed class GameThreadsPage : Page
 		return grid;
 	}
 
+	private Button _maskBtn;
+
+	private static string MaskSetting() => Settings.GetBool("AutoNoMask") ? "off" : (Settings.Get("AutoMask") ?? "auto");
+
+	private static bool MaskOn() => !AutoLogic.KeepsAllCores(TopoBuilder.Live(), MaskSetting());
+
+	private void MaskText()
+	{
+		if (_maskBtn == null) return;
+		bool on = MaskOn();
+		_maskBtn.Content = on ? L.T("Core mask: on") : L.T("Core mask: off (every core to the game)");
+		_maskBtn.ToolTip = on ? L.T("Click to give the game every core") : L.T("Click to keep a few cores for devices and the background");
+		Ui.Primary(_maskBtn, on);
+	}
+
+	/// <summary>1.16.1 Test 4: a short guide: the mask is a per-PC choice and has to be measured.</summary>
+	private static UIElement MaskGuide()
+	{
+		var col = Ui.Col(Ui.Head(L.T("Core mask: test it on your PC")),
+			Ui.Note(L.T("The mask keeps a few cores for devices and the background. On some PCs it helps, on others the game runs out of cores at busy moments. Only a measurement tells.")));
+		string[] steps =
+		{
+			L.T("1. Same scene each time: a benchmark map or the same deathmatch, the same settings."),
+			L.T("2. Alternate: mask off, mask on, off, on (the button above). Wait 10 s after each switch."),
+			L.T("3. At least 3 runs of each, the same number for both. Compare the 1% low and the stutters, not the average FPS."),
+			L.T("4. Keep the mask only if it is better in every pair of runs. On processors with one cache and no E-cores it is off by default: owner's measurements found no gain from it."),
+		};
+		foreach (string st in steps) { var tb = Ui.Text(st, Ui.FsNote, "Text", bold: false, wrap: true); tb.Margin = new Thickness(0, 3, 0, 0); col.Children.Add(tb); }
+		return Ui.Card(col);
+	}
+
 	public override FrameworkElement Build()
 	{
 		TextBlock textBlock = new TextBlock
@@ -91,14 +122,6 @@ internal sealed class GameThreadsPage : Page
 			FontSize = Ui.FsBody,
 			Margin = new Thickness(3.0, 0.0, 0.0, 0.0)
 		};
-		_role.Click += delegate
-		{
-			SetMode(top5: false);
-		};
-		_top5.Click += delegate
-		{
-			SetMode(top5: true);
-		};
 		Border element = new Border
 		{
 			CornerRadius = new CornerRadius(3.0),
@@ -121,8 +144,26 @@ internal sealed class GameThreadsPage : Page
 		{
 			Margin = new Thickness(0.0, 0.0, 0.0, 16.0)
 		};
-		DockPanel.SetDock(element, Dock.Right);
-		dockPanel.Children.Add(element);
+		// 1.16.0 Test 1.9: the role plan is gone (it only made things worse in the owner's measurements); dynamic Top-5
+		// is the only thread mode, so the mode switch is not shown.
+		// 1.16.1 Test 3: one button for the core mask (setting AutoMask: auto = the rule, off = every core to the game).
+		// Auto reads the setting at every re-apply, so the change reaches the game within ~10 s, no restart needed.
+		_maskBtn = new Button { Height = 30.0, Padding = new Thickness(14.0, 0.0, 14.0, 1.0), FontSize = Ui.FsBody, VerticalAlignment = VerticalAlignment.Top };
+		_maskBtn.Click += delegate
+		{
+			// 1.16.1 Test 4: the button flips the mask whatever the rule says: back to the rule ("auto") or against it.
+			var t = TopoBuilder.Live();
+			bool ruleMask = !AutoLogic.KeepsAllCores(t, "auto");
+			bool on = MaskOn();
+			string v = on ? (ruleMask ? "off" : "auto") : (ruleMask ? "auto" : "on");
+			Settings.Set("AutoMask", v);
+			Settings.SetBool("AutoNoMask", false);
+			S.Did(on ? L.T("Core mask: off, the game gets every core") : L.T("Core mask: on, a few cores are kept for devices and the background"));
+			MaskText();
+		};
+		MaskText();
+		DockPanel.SetDock(_maskBtn, Dock.Right);
+		dockPanel.Children.Add(_maskBtn);
 		dockPanel.Children.Add(Ui.Col(textBlock, _sub));
 		_headRow = new Grid();
 		_key = "";
@@ -144,11 +185,10 @@ internal sealed class GameThreadsPage : Page
 			obj.LineHeight = Ui.FsNote * 1.5;
 			obj.Margin = new Thickness(0.0, 0.0, 14.0, 0.0);
 		}
-		TextBlock textBlock3 = Ui.Note(L.T("To compare the two modes, play the same scene with each and look at the 1% low / p99 frame time; a few percent of difference is noise."));
 		StackPanel child = Ui.Col(dockPanel, _headRow, _rows, new Border
 		{
 			Height = 16.0
-		}, Ui.Card(uniformGrid), Ui.Card(Ui.Col(Ui.Head(L.T("Last moves")), _log)), textBlock3);
+		}, Ui.Card(uniformGrid), MaskGuide(), Ui.Card(Ui.Col(Ui.Head(L.T("Last moves")), _log)));
 		Tick();
 		return Ui.Scroll(child);
 		static UIElement Column(string head, UIElement body)
@@ -157,25 +197,6 @@ internal sealed class GameThreadsPage : Page
 			textBlock4.FontWeight = FontWeights.Medium;
 			textBlock4.Margin = new Thickness(0.0, 0.0, 12.0, 3.0);
 			return Ui.Col(textBlock4, body);
-		}
-	}
-
-	private void SetMode(bool top5)
-	{
-		if (!_busy && H.Auto.Top5Mode != top5)
-		{
-			_busy = true;
-			Settings.SetBool("Top5On", top5);
-			S.Did(top5 ? L.T("Dynamic Top-5: on") : L.T("Dynamic Top-5: off"));
-			H.Opt.Run(delegate
-			{
-				H.Auto.SetTop5(top5);
-				return top5;
-			}, delegate
-			{
-				_busy = false;
-				Tick();
-			});
 		}
 	}
 

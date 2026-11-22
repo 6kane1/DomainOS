@@ -15,6 +15,6 @@ actions:
   - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate', value: 'ExcludeWUDriversInQualityUpdate', data: '1', type: REG_DWORD, option: 'updates-no-drivers', errorAction: Log}
   - !registryValue: {path: 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching', value: 'SearchOrderConfig', data: '0', type: REG_DWORD, option: 'updates-no-drivers', errorAction: Log}
 
-  # Prevent to get a preview-builds
+  # No Insider preview builds and no feature experiments (policies, since 2.2.6).
   - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds', value: 'AllowBuildPreview', data: '0', type: REG_DWORD, errorAction: Log}
   - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds', value: 'EnableExperimentation', data: '0', type: REG_DWORD, errorAction: Log}

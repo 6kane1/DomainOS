@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.IO;
@@ -21,6 +21,8 @@ public partial class App : Application
 	private Mutex _mutex;
 
 	private EventWaitHandle _showEvent;
+
+	private AutoCommand _autoCmd;
 
 	private readonly Hub _hub = new Hub();
 
@@ -108,6 +110,23 @@ public partial class App : Application
 			Shutdown((err == null) ? 0 : 1);
 			return;
 		}
+		// --auto on|off|status (1.16.0-test1.3): for Domain Bench. Talks to the running Toolbox and exits; never starts one.
+		// --auto-mask on|off (1.16.0-test1.4, test setting AutoNoMask): off = Auto keeps everything else but gives the game
+		// every processor. Read by the running Toolbox at its next pass; switch it while Auto is off.
+		int maskArg = Array.IndexOf(e.Args, "--auto-mask");
+		if (maskArg >= 0)
+		{
+			string v = maskArg + 1 < e.Args.Length ? e.Args[maskArg + 1].ToLowerInvariant() : "";
+			if (v is "on" or "off" or "auto") { Settings.Set("AutoMask", v); Settings.SetBool("AutoNoMask", false); AppLog.Add("Auto mask: " + v + " (--auto-mask)", AppLog.Sev.Info); AppLog.Flush(); }
+			Shutdown(v is "on" or "off" or "auto" ? 0 : 4);
+			return;
+		}
+		int autoArg = Array.IndexOf(e.Args, "--auto");
+		if (autoArg >= 0)
+		{
+			Shutdown(AutoCommand.Send(autoArg + 1 < e.Args.Length ? e.Args[autoArg + 1] : "status"));
+			return;
+		}
 		_mutex = new Mutex(initiallyOwned: true, "Local\\DomainScheduler.Instance", out var createdNew);
 		// After an update the old version is still closing: wait for it to let go (up to 60 s).
 		if (!createdNew && e.Args.Contains("--after-update"))
@@ -190,6 +209,8 @@ public partial class App : Application
 		};
 		GameMask.IrqSource = Devices.PinnedIrqs;
 		EtwIrq.StopOrphan();
+		BlackBox.StopOrphan();
+		ReadyProbe.StopOrphan();
 		EtwIrq.StopOrphanSched();
 		System.Threading.Tasks.Task.Run(SafetyAtStart);
 		System.Threading.Tasks.Task.Run(() =>
@@ -208,6 +229,14 @@ public partial class App : Application
 		{
 			WatchList = () => _hub.Watch
 		};
+		// 1.16.0-test1.5: on 8 cores or fewer the game keeps every processor (AutoLogic.KeepsAllCores); setting AutoMask
+		// auto|on|off, --auto-mask. The test1.4 setting AutoNoMask=true still means "off".
+		var topoAtStart = TopoBuilder.Live();
+		string MaskSetting() => Settings.GetBool("AutoNoMask") ? "off" : (Settings.Get("AutoMask") ?? "auto");
+		_hub.Auto.MaskFilter = mp => AutoLogic.KeepsAllCores(topoAtStart, MaskSetting()) ? AutoLogic.AllCores(topoAtStart, mp) : mp;
+		AppLog.Add(AutoLogic.KeepsAllCores(topoAtStart, MaskSetting())
+			? L.F("Auto: the game keeps every processor ({0} cores; setting {1})", topoAtStart?.PhysicalCount ?? 0, MaskSetting())
+			: L.F("Auto: the game mask is used ({0} cores; setting {1})", topoAtStart?.PhysicalCount ?? 0, MaskSetting()), AppLog.Sev.Info);
 		_hub.Sys = new SysLayer(engine);
 		_hub.SelfTest = ThreadIni.SelfTest();
 		_hub.Auto.SelfTestProblems = _hub.SelfTest;
@@ -234,7 +263,7 @@ public partial class App : Application
 			AppLog.Add(L.F("Presets: {0}", ex4.Message), AppLog.Sev.Error);
 		}
 		_hub.Configure();
-		_hub.Auto.SetTop5(Settings.GetBool("Top5On"));
+		_hub.Auto.SetTop5(true);   // 1.16.0 Test 1.9: dynamic Top-5 is the only thread mode (the role plan is gone)
 		_hub.Auto.SelfLoadLine = _hub.SelfLine;
 		try
 		{
@@ -247,6 +276,9 @@ public partial class App : Application
 		_hub.Opt = new Optimizer(base.Dispatcher, _hub);
 		_window = new Shell(_hub);
 		_hub.Opt.Evaluate += _window.Refresh;
+		_autoCmd = new AutoCommand(() => _hub.Auto.On, () => base.Dispatcher.Invoke(() => { if (!_hub.Auto.On) _hub.Auto.Click(); }),
+			() => base.Dispatcher.Invoke(() => { if (_hub.Auto.On) _hub.Auto.Click(); }));
+		_hub.Auto.Changed += () => _autoCmd?.Mirror();
 		_hub.Auto.Changed += delegate
 		{
 			base.Dispatcher.BeginInvoke(new Action(_window.Refresh));
@@ -449,6 +481,8 @@ public partial class App : Application
 		_hub.Opt?.Dispose();
 		_hub.Frames?.Dispose();
 		_hub.Irq.Dispose();
+		_hub.Box.Dispose();
+		_hub.Waits.Dispose();
 		try { string d = DefenderGameExclusion.RemoveAll(); if (d.Length > 0) AppLog.Add(d); } catch (Exception) { }
 		try { string p = GamePower.Restore(); if (p.Length > 0) AppLog.Add(p); } catch (Exception) { }
 		_tray?.Dispose();

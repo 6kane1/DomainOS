@@ -228,13 +228,16 @@ internal sealed class Shell : Window
 		_pages.Add(new QuickPage(hub, this));
 		_pages.Add(new MasksPage(hub, this));
 		_pages.Add(new GameThreadsPage(hub, this));
+		_pages.Add(new BlackBoxPage(hub, this));
 		_pages.Add(new ProcessesPage(hub, this));
 		_pages.Add(new ChangesPage(hub, this));
+		_pages.Add(new CheckPage(hub, this));
 		_pages.Add(new GpuPage(hub, this));
 		_pages.Add(new DriversPage(hub, this));
 		_pages.Add(new PowerPage(hub, this));
 		_pages.Add(new DevicesPage(hub, this));
 		_pages.Add(new SettingsPage(hub, this));
+		_pages.Add(new UpdatePage(hub, this));
 		_pages.Add(new AboutPage(hub, this));
 
 		// ---- status block of the advanced layout (Scheduler section)

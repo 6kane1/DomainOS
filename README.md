@@ -13,7 +13,7 @@ A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 2
 > **Before you start**
 > - **It can be undone without reinstalling Windows** (see [Undo](#undo)). Removed apps are not reinstalled automatically: Undo lists them for you to install from the Microsoft Store (the Store itself comes back automatically if it was removed). Still, try it in a virtual machine first.
 > - **Average FPS does not go up** because of a playbook. What you get is fewer background processes, no advertising, no forced restarts and a system that is set up the same way every time.
-> - Domain OS is young. Version 2.2.4 went through testers and an automatic check of every change, but real PCs differ: report what breaks.
+> - Domain OS is young. Version 2.3.1 went through test builds and an automatic check of every change, but real PCs differ: report what breaks.
 
 ## What stays untouched — on purpose
 
@@ -23,7 +23,7 @@ A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 2
 | Secure Boot, TPM, VBS, memory integrity, kernel mitigations | FACEIT, Vanguard, EasyAntiCheat and BattlEye check them. |
 | Security and quality updates, Defender definitions | A system without them is unsafe within weeks. |
 | Xbox Identity Provider, Gaming Services, the Game Bar app | Games sign in and save through them. The Game Bar overlay is off, but the app is not removed. |
-| Microsoft Store, App Installer (winget), Edge, WebView2 | Launchers and many programs need them. The Store can be removed with the "Maximum" option. |
+| Microsoft Store, App Installer (winget), Edge, WebView2 | Launchers and many programs need them. The Store stays even with the "Maximum" option (since 2.3.0). |
 | Core Windows services | Only services with no use on a gaming PC are disabled, each one named and explained. Blind mass disabling breaks features. |
 
 ## Supported versions of Windows
@@ -43,23 +43,24 @@ The playbook was run on 25H2 and 26H2. On 25H2 Windows offers the 26H2 update: i
 Every item can be found in `playbook/Configuration/Tasks/*.yml` with a comment next to it.
 
 ### Preinstalled apps (option, on by default)
-Removes apps that advertise or start in the background: Clipchamp, News, Weather, Bing search, Solitaire, Teams, Copilot app, new Outlook, Dev Home, Feedback Hub, Get Help, Tips, Microsoft 365 hub, Power Automate, To Do, Films & TV, Cortana, Maps, old Mail, Family, Phone Link, Mobile devices (Cross Device), Widgets and sponsored stubs (Disney+, LinkedIn). Spotify is not removed (people install it on purpose; its Start advertising is gone with the clean Start pins). Windows is told not to bring Dev Home and Outlook back and not to install "suggested" apps silently.
+Removes apps that advertise or start in the background: Clipchamp, News, Weather, Bing search, Solitaire, Teams, Copilot app, new Outlook, Dev Home, Feedback Hub, Get Help, Microsoft 365 hub, Power Automate, To Do, Films & TV, old Mail, Family, Phone Link, Widgets and sponsored stubs (Disney+, LinkedIn). Spotify is not removed (people install it on purpose; its Start advertising is gone with the clean Start pins). Windows is told not to install "suggested" apps silently, and its to-do entries that would bring Dev Home and Outlook back are removed. Kept since 2.3.0: Tips, Cortana, Maps and Mobile devices (Cross Device, needed to use a phone with the PC).
 
 - **OneDrive** (option, on): removed with its own uninstaller. Your files stay.
-- **Maximum** (option, off): also the Store, Xbox app, Photos, Camera, Sound Recorder, Clock, Sticky Notes.
+- **Maximum** (option, off): also the Xbox app, Photos, Camera, Sound Recorder, Clock, Sticky Notes. The Store stays.
 
 ### Privacy and advertising
-- Diagnostic data at the required level; the telemetry service and its helper are disabled.
+- Diagnostic data level 0 (`AllowTelemetry` = 0); the telemetry service and its helper are disabled.
 - Scheduled data collection is disabled, including the compatibility appraiser, known for long disk and CPU bursts, and its second job `MareBackup`.
-- The telemetry trace sessions (`Diagtrack-Listener`, `SQMLogger`) no longer start at boot: with the service disabled nobody read their events.
-- The policies "Turn off Application Telemetry" and "Turn off Inventory Collector" are set. The compatibility engine that old games rely on is not touched.
-- All other documented diagnostic-data policies that work on Pro: no feedback prompts, no device name in diagnostic data, no extra diagnostic logs or crash dumps collected, no OneSettings download, no change notification; CEIP, Steps Recorder, Windows Error Reporting and MRT infection reports off; no learning from typing and inking, no online speech recognition, no handwriting data sharing; Edge optional diagnostic data off (Edge then shows "managed by your organization", as with any policy).
+- The policy "Turn off Application Telemetry" is set. The compatibility engine that old games rely on is not touched.
+- All other documented diagnostic-data policies that work on Pro: no feedback prompts, no extra diagnostic logs or crash dumps collected, the diagnostic data choice in Settings is locked to the policy; CEIP, Steps Recorder, Windows Error Reporting and MRT infection reports off; no learning from typing and inking, no online speech recognition, no handwriting data sharing; Edge optional diagnostic data off (Edge then shows "managed by your organization", as with any policy).
 - Advertising ID, tailored experiences, feedback prompts, activity history and Recall are off.
-- Suggestions and advertising in Start, Settings, the lock screen and notifications are off.
+- Suggestions and advertising in Start, Settings, the lock screen and notifications are off (`ContentDeliveryManager`: content delivery, rotating lock screen and its tips, suggested content in Settings and Start).
+- Windows Firewall stays on for the private and public networks; only its pop-up notifications are off.
+- Cross Device Resume (continuing on the PC what you did on the phone) is off.
 - Start menu search no longer sends what you type to Bing. The Widgets board is off.
 
 ### Services and background work
-- **Basic set (option, on):** six scheduled jobs of removed apps and of data collection (maps, family safety, disk check proxy, SQM). Edge stays, but no longer keeps processes running after its window is closed. Services themselves are left as Windows sets them (one exception: with the Maps app removed, the Downloaded Maps Manager service starts on demand instead of at every boot, where it only ended with an error): printing, Bluetooth, fax, diagnostics, sync and the small system drivers are not touched.
+- **Basic set (option, on):** scheduled jobs of removed apps and of data collection (offline map updates, family safety, disk check proxy, SQM). Edge stays, but no longer keeps processes running after its window is closed. Services themselves are left as Windows sets them: printing, Bluetooth, fax, diagnostics, sync and the small system drivers are not touched.
 - **Your choice (options, off):** file indexing, hibernation with Fast Startup, background activity of Store apps. Each of these removes a function, so each is a separate tick.
 - **Telemetry services and jobs (always applied):** error reporting (WerSvc), compatibility assistant (PcaSvc), telemetry (DiagTrack), Windows AI components host (WSAIFabricSvc), the inventory collector (InventorySvc); the Distributed Link Tracking Client (TrkWks) stays as Windows has it, Automatic (versions 1.6.7–2.1.0 deleted it; on such PCs its saved registration is put back and the service started again); plus 14 scheduled telemetry jobs: device census, usage-data reporting, sustainability telemetry, startup-app scan, troubleshooting scans, disk and power diagnostics, WinSAT, error-report upload. Defragmentation/TRIM, registry backup, restore points, SysMain, time sync and Defender stay. Versions 1.5.0–1.6.0 switched off more (diagnostics, sync, small drivers, printing, Bluetooth, the basic services, the restart policy); installing 1.6.0 or later puts all of those back to what they were before the first install.
 - **Hypervisor launch type:** versions 1.5.7–1.6.0 switched the hypervisor start off when virtualization was off in the BIOS. That step is gone (if virtualization is switched on later, memory integrity and VBS would silently not start); installing 1.6.2 or later puts the previous value back.
@@ -67,19 +68,20 @@ Removes apps that advertise or start in the background: Clipchamp, News, Weather
 - Never switched off: Defender, Windows Update, audio, network, input, Task Scheduler, WMI, the Xbox services, TPM and Secure Boot services, anti-cheat services.
 
 ### Windows Update (two options, on by default)
+- **No preview builds (always):** the policies `AllowBuildPreview` = 0 and `EnableExperimentation` = 0 in `HKLM\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds`: no Insider builds and no feature experiments.
 - **Hold Windows on 26H2 (no further feature updates)**: `TargetReleaseVersion` = 26H2. On 26H2 nothing changes but the pin; on 25H2 this means one feature update to 26H2 (a small enablement update with one restart), then no further feature updates. **26H2 gets security updates until October 2028:** before then, apply a newer Domain OS version (it moves the pin) or run "Give Windows Update back its defaults" from the Start menu folder "Domain OS".
 - **No drivers from Windows Update:** you install the makers' drivers; the driver guide shows which.
 
 Security updates keep coming. The Start menu folder "Domain OS" has a shortcut that puts everything back.
 
 ### Gaming settings
-- **Game capture fully off:** background recording (Game DVR), recording by hand, recorded sound, cursor and microphone, plus the policy that forbids recording and broadcasting. Windows 11 ships with background recording off; if it was switched on, it cost GPU and disk time in every game — now it stays off until you allow recording again.
+- **Game capture off:** background recording (Game DVR) and recording by hand, plus the policy that forbids recording and broadcasting. Windows 11 ships with background recording off; if it was switched on, it cost GPU and disk time in every game — now it stays off until you allow recording again.
 - **Pointer acceleration off.**
 - **Sticky / Filter / Toggle Keys shortcuts off**, so five presses of Shift no longer throw a window over the game.
 - **Game Bar off (since 1.6.8).** It does not open on Win+G or the controller's Xbox button, but the app stays installed and can be switched on in Settings > Gaming. Undo puts the previous values back.
 - **Xbox mode off (since 1.6.8):** the full-screen Xbox experience (Settings > Gaming > Xbox mode) is not used as the home screen. The Xbox app itself stays. Undo puts the previous value back.
 - **Game Mode stays on**, as Windows ships it: AMD's 3D V-Cache driver on Ryzen X3D with two CCDs uses it to keep games on the V-Cache CCD, and it keeps Windows Update from installing drivers or asking to restart during a game.
-- **Hardware-accelerated GPU scheduling (HAGS), on by default (option):** `HwSchMode` = 2 in `HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers`. The graphics card schedules its own work, which takes some CPU work and latency off frame submission. Needs a supported GPU and driver (NVIDIA GTX 10 and newer, AMD RX 5000 and newer, Intel Arc); otherwise Windows ignores it. Works after a restart; Undo puts the previous value back.
+- **Hardware-accelerated GPU scheduling (HAGS), always on (since 2.3.0 no longer an option):** `HwSchMode` = 2 in `HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers`. The graphics card schedules its own work, which takes some CPU work and latency off frame submission. Needs a supported GPU and driver (NVIDIA GTX 10 and newer, AMD RX 5000 and newer, Intel Arc); otherwise Windows ignores it. Works after a restart; Undo puts the previous value back.
 - **`Win32PrioritySeparation` = 0x18:** long, fixed time slices, the same length for the program in front and for background programs (Windows' own value gives short, variable slices with three times the slice in front). Why 0x18: measurements by Zero Unflesh found 0x18 **together with Game Mode on** to be the best combination, and that is exactly what Domain OS ships (Game Mode stays on). Our own A/B test on 19.11.2026 (one PC, CS2 on an empty map, the same spot, variants alternated) found no measurable difference between 0x18 and Windows' 0x26: FPS, 1% / 0.1% low and frame times were within the run-to-run spread. So 0x18 stays on the strength of those measurements; runs from other PCs are welcome on the results page. Undo restores the previous value.
 
 ### Interface
@@ -90,7 +92,7 @@ File extensions are shown and Explorer opens on "This PC". No effect on performa
 
 - **Dark theme** (option, on): for Windows and for apps.
 - **Notifications off** (option, off by default since 2.1.1): the main switch in Settings → System → Notifications. No pop-ups or sounds over a game. Defender keeps working; its state is visible in Windows Security. Switch notifications back on in Settings at any time.
-- **Administrator rights without the UAC prompt** (option, off by default since 2.1.9): your account was already an administrator; now a program that asks for administrator rights gets them without the "Do you want to allow this app to make changes?" window. UAC itself stays on, so Store apps, Xbox and anti-cheats keep working. The price: any program you start that asks for rights gets them silently, so run only what you trust. It is off by default: tick it only if you want the convenience; Undo brings the prompt back.
+- **Administrator rights without the UAC prompt** (option, off by default since 2.1.9): your account was already an administrator; now a program that asks for administrator rights gets them without the "Do you want to allow this app to make changes?" window. UAC itself stays on, so Store apps, Xbox and anti-cheats keep working. The price: any program you start that asks for rights gets them silently, so run only what you trust. It is off by default: tick it only if you want the convenience; Undo brings the prompt back. Without the tick (since 2.3.0) UAC asks for the account's password or PIN at every elevation (`ConsentPromptBehaviorAdmin` = 3), not only a Yes / No.
 
 ### Power plan (option, on)
 **Domain OS** — a fresh copy of Windows' Balanced plan with four plugged-in settings changed and nothing else. Processor settings, core parking and boost stay exactly as in Balanced, which is what AMD and Intel tune their processors for; on battery a laptop behaves as with Balanced.
@@ -127,7 +129,7 @@ Domain OS changes settings; it does not cut components out of Windows. That is w
 
 **What Undo does not put back:**
 - OneDrive for accounts created later (the default profile's first-sign-in entry stays removed; OneDrive can be installed from microsoft.com or the Store);
-- Windows Update's to-do entries for Dev Home, Cross Device and the new Outlook (`Orchestrator\UScheduler_Oobe`; Windows writes them again with the next feature update);
+- Windows Update's to-do entries for Dev Home and the new Outlook (`Orchestrator\UScheduler_Oobe`; Windows writes them again with the next feature update);
 - the installed runtimes (Visual C++, DirectX, 7-Zip) — they stay; uninstall them in Settings → Apps if you want;
 - the Domain OS pictures in `C:\Windows\Web\Wallpaper\Domain OS` and the per-user settings of other accounts (see above).
 
@@ -195,7 +197,7 @@ Since 2.0 the rule is: Defender, SmartScreen, VBS / memory integrity, TPM and Se
 
 ## How to use
 1. Install a clean Windows 11 Pro, 25H2 or 26H2. **Before the first connection to the internet** run `extras/No-WU-Drivers.reg`: otherwise Windows Update installs its own drivers before the playbook can forbid it. Then finish Windows Update and restart.
-2. Download AME Wizard and `Domain-OS-2.2.4.apbx`.
+2. Download AME Wizard and `Domain-OS-2.3.1.apbx`. Since 2.3.0 AME Wizard asks you to switch off the four main toggles in Windows Security (real-time protection and the others) before it starts: Domain OS does not change Defender, the wizard only needs it quiet while it works. **Switch them back on after the restart** (Windows Security > Virus & threat protection > Manage settings).
 3. Drag the `.apbx` into AME Wizard, choose the options, start.
 4. Restart. The driver guide opens: follow it from top to bottom.
 
@@ -214,10 +216,13 @@ AME Wizard will say that the playbook is not verified: verification is issued by
 
 **Proof that the playbook archive is built from this source:** from 2.2.4 on, `Domain-OS-<version>.apbx` is built by `.github/workflows/apbx-build.yml` on GitHub's machines: it takes the attested Toolbox exe (and checks its attestation), runs the whole test suite, packs and attests the archive. Check it with `gh attestation verify Domain-OS-2.2.4.apbx -R 6kane1/DomainOS`. The archive is encrypted with a random salt, so a rebuild never has the same SHA-256: the attestation binds the published file.
 
-Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-2.2.4.apbx` in PowerShell must match the value on the website and in the release notes.
+Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-2.3.1.apbx` in PowerShell must match the value on the website and in the release notes.
 
-For reviewers and contributors: how it is built — [ARCHITECTURE.md](ARCHITECTURE.md); what it protects against and what is left — [THREATMODEL.md](THREATMODEL.md). Every Toolbox build since 1.16.0 also ships an attested SBOM (`*.spdx.json`).
+## Team
+
+- **6kane1** — author and owner of Domain OS.
+- **Zero Unflesh (zero_wake)** — co-owner of Domain OS and owner of AerialOS. Made a very large contribution to this project.
 
 ## License
-**Domain OS License 2.0** — all rights reserved (see [LICENSE](LICENSE)). You may read the code and use the official releases free of charge, for personal non-commercial use, on your own PCs. Copying, re-uploading, publishing changed versions or builds based on this code, removing the author notices and selling are not allowed without the author's written permission. **"Domain OS", "Domain OS Toolbox" and the Domain OS logo identify the author's work: they may not be used for other playbooks, builds, tools, sites, servers or channels, and no other work may be presented as Domain OS or based on it.** Versions published before 18 November 2026 under MIT stay MIT for the copies obtained then.
+**Domain OS License** — all rights reserved (see [LICENSE](LICENSE)). You may read the code and use the official releases free of charge on your own PCs. Copying, re-uploading, publishing changed versions or builds based on this code, removing the author notices and selling are not allowed without the author's written permission. Versions published before 18 November 2026 under MIT stay MIT for the copies obtained then.
 Windows is a trademark of Microsoft; this project ships no part of Windows.

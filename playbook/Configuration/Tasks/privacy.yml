@@ -3,7 +3,7 @@ title: Privacy and advertising
 description: Switches off diagnostic uploads beyond the required level, advertising and suggestions. Nothing here affects security or games.
 actions:
   # Diagnostic data: 1 = required only (0 is ignored on Pro, so it would be a setting that does nothing).
-  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'AllowTelemetry', data: '0', type: REG_DWORD, errorAction: Log}
+  - !registryValue: {path: 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection', value: 'AllowTelemetry', data: '1', type: REG_DWORD, errorAction: Log}
   # The telemetry service and its push helper: background work and uploads with no use for the owner of the PC.
   - !service: {name: 'DiagTrack', operation: stop, errorAction: Ignore}
   - !service: {name: 'DiagTrack', operation: change, startup: 4, errorAction: Ignore}
@@ -50,7 +50,7 @@ actions:
   - !scheduledTask: {path: '\Microsoft\Windows\Feedback\Siuf\DmClient', operation: disable, errorAction: Ignore}
   - !scheduledTask: {path: '\Microsoft\Windows\Feedback\Siuf\DmClientOnScenarioDownload', operation: disable, errorAction: Ignore}
 
-  # Enable Windows firewall, disable notifications firewall
+  # Windows Firewall stays on for the private (Standard) and public profiles; only its notifications are off (2.2.6).
   - !registryValue: {path: 'HKLM\SYSTEM\ControlSet001\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile', value: 'DisableNotifications', data: '1', type: REG_DWORD, errorAction: Log}
   - !registryValue: {path: 'HKLM\SYSTEM\ControlSet001\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile', value: 'EnableFirewall', data: '1', type: REG_DWORD, errorAction: Log}
   - !registryValue: {path: 'HKLM\SYSTEM\ControlSet001\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile', value: 'DisableNotifications', data: '1', type: REG_DWORD, errorAction: Log}

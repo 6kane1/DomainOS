@@ -288,7 +288,10 @@ def area_J(R, ctx):
     if not os.path.isdir(site):
         R.add(J, 'website checkout', SKIP, f'{site} not found (gh-pages checkout)')
         return
-    pages = sorted(p for p in glob.glob(os.path.join(site, '**', '*.html'), recursive=True) if '/.git/' not in p)
+    # The owner's hub is a password-encrypted page at a private path, not part of the public site: it is skipped and its
+    # path is never printed in the (public) CI log.
+    _hub = lambda f: '<title>Domain OS Пульт</title>' in open(f, encoding='utf-8', errors='ignore').read(4000)
+    pages = sorted(p for p in glob.glob(os.path.join(site, '**', '*.html'), recursive=True) if '/.git/' not in p and not _hub(p))
     R.ok(J, f'website has pages ({len(pages)})', len(pages) >= 4, 'fewer than 4 pages')
     for p in pages:
         relp = os.path.relpath(p, site)

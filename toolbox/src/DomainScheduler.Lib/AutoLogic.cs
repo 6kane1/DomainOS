@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace DomainScheduler;
 
@@ -55,6 +55,31 @@ public static class AutoLogic
         if (TopoBuilder.PopCount(p) < TopoBuilder.PopCount(full) * AutoPolicy.MinMaskFraction) return full;
         if (Domains(t, p) > 1 && HasSingleDomain(t)) return BestSingleDomain(t);
         return p;
+    }
+
+    /// <summary>
+    /// 1.16.1 Test 4: a processor with ONE cache domain and no E-cores keeps every processor for the game, at any core
+    /// count (6 or fewer before). The mask only helps where it separates something: two CCDs (the V-Cache die) or P- and
+    /// E-cores. Measurements (owner's 7800X3D, CS2 deathmatch, 22.11.2026, mask off/on alternated in one session, 3 runs
+    /// each): without the mask the game's main threads never waited for a core longer than 0.5 ms (13 times per 30 s
+    /// with it), the longest wait fell from 940 to 202 µs, the longest frame from 14.6 to 11.3 ms; 1% / 0.1% low equal,
+    /// runs far steadier. Earlier: a tester's i5-10400F (6 cores) lost 6% of its 1% low with the mask.
+    /// Setting "AutoMask": auto (this rule), on (always the mask), off (never a mask); the Core mask button sets on/off.
+    /// </summary>
+    public const int SmallCpuCores = 6;   // kept for the device layout (IrqLayout): no device cores on 6 cores or fewer
+
+    public static bool KeepsAllCores(Topo t, string setting)
+    {
+        setting = (setting ?? "").Trim().ToLowerInvariant();
+        if (setting == "off") return true;
+        if (setting == "on" || t == null) return false;
+        return !t.Hybrid && t.PhysicalCount > 0 && (t.LLCGroups?.Count ?? 1) <= 1;
+    }
+
+    public static MaskPlan AllCores(Topo t, MaskPlan mp)
+    {
+        if (mp == null || !mp.Satisfied || t == null) return mp;
+        return new MaskPlan { Spec = mp.Spec + " (all processors)", Resolved = mp.Resolved, Irq = mp.Irq, Mask = t.FullMask(), Satisfied = true };
     }
 
     public sealed class MaskPlan
