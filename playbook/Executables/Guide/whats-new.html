@@ -47,6 +47,25 @@ h1{font-size:30px;line-height:1.2;color:var(--strong);font-weight:600;letter-spa
 </div>
 <script>
 const NOTES = [
+  { v: "2.3.1", date: "2026-11-22",
+    groups: [
+      { en: "Toolbox 1.16.1", ru: "Toolbox 1.16.1", items: [
+        { en: "Wait probe: Dynamic Top-5 picks the game's threads by load and by how long they wait for a core, and moves a thread only for a clear reason (other programs, drivers, its own waits).",
+          ru: "Датчик ожиданий: Dynamic Top-5 выбирает потоки игры по загрузке и по тому, как долго они ждут ядро, и переставляет поток только по понятной причине (другие программы, драйверы, его собственные ожидания)." },
+        { en: "Processors with one cache and no E-cores give the game every core. The Core mask button switches the mask in one click, with a short guide on testing it.",
+          ru: "Процессоры с одним кэшем и без E-ядер отдают игре все ядра. Кнопка «Маска ядер» переключает маску одним нажатием, рядом короткая инструкция, как её проверить." },
+        { en: "Graphics-driver and interrupt cores are held 60 s, so the game's threads are no longer moved every few seconds.",
+          ru: "Ядра драйвера видеокарты и прерываний держатся 60 с, поэтому потоки игры больше не переставляются каждые несколько секунд." },
+        { en: "Black box: every stutter of the game explained in plain words (cause and what to do). Switch in Settings.",
+          ru: "Чёрный ящик: каждый рывок игры объясняется простыми словами (причина и что сделать). Переключатель в настройках." },
+        { en: "The burst guard holds the game's memory only when the game really reads its pages back from disk.",
+          ru: "Защита от всплесков удерживает память игры, только когда игра действительно читает свои страницы обратно с диска." }
+      ]},
+      { en: "Playbook", ru: "Плейбук", items: [
+        { en: "The Windows changes are the same as in 2.3.0. Install 2.3.1 over 2.3.0 in AME Wizard, or just let Toolbox update itself.",
+          ru: "Изменения Windows те же, что в 2.3.0. Поставьте 2.3.1 поверх 2.3.0 в AME Wizard или просто дайте Toolbox обновиться самому." }
+      ]}
+    ]},
   { v: "2.3.0", date: "2026-11-21",
     groups: [
       { en: "Apps", ru: "Приложения", items: [

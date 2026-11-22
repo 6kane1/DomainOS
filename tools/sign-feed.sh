@@ -1,5 +1,6 @@
 #!/bin/sh
 # Signs Domain OS update feeds (update/stable.json, update/test.bin) with a private update key: writes <file>.sig
+# and <file>.signed (signature line + feed in one file, read by Toolbox 1.16.1 Test 4 and newer)
 # (base64 DER ECDSA P-256 over SHA-256, the format every Toolbox version reads; no key id inside, Toolbox tries each
 # key it trusts). After signing, each .sig is checked against the key's public half, so a bad signature never ships.
 #
@@ -46,5 +47,7 @@ for f in "$@"; do
   openssl dgst -sha256 -sign "$KEY" -out "$SIG" "$f"
   openssl dgst -sha256 -verify "$PUB" -signature "$SIG" "$f" >/dev/null
   base64 -w0 "$SIG" > "$f.sig"
+  # Toolbox 1.16.1 Test 4+: signature and feed in one file (the site cache can never pair a feed with an old .sig).
+  { cat "$f.sig"; printf '\n'; cat "$f"; } > "$f.signed"
   echo "signed $f ($WHICH key $ID)"
 done
