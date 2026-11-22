@@ -14,7 +14,7 @@
 <header class="top">
   <div class="wrap bar">
     <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>DOMAIN OS</a>
-    <span class="status"><span class="blip" aria-hidden="true"></span>INSTALL <b>2.3.0</b></span>
+    <span class="status"><span class="blip" aria-hidden="true"></span>INSTALL <b>2.3.1</b></span>
     <nav class="nav" aria-label="Pages"><a href="index.html">Playbook</a><a href="install.html" aria-current="page">Install</a><a href="scheduler.html">Toolbox</a><a href="results.html">Results</a><a href="undo.html">Undo</a><a href="changelog.html">Versions</a><a href="faq.html">FAQ</a></nav>
     <a class="dc" href="https://discord.gg/wBGsV7WEpm" rel="noopener" aria-label="Our Discord server"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.8 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 10.8 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.5-4.3-.8-8.1-3.2-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg><span>Discord</span></a>
     <a class="lang" href="ru/install.html" hreflang="ru" lang="ru">RU</a>
@@ -34,7 +34,7 @@
 
 <section id="before"><div class="wrap">
   <div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>Before you start</div><h2>What to prepare</h2><p>Do all of this on any PC with internet, before reinstalling.</p></div>
-  <ol class="steps"><li><span class="p"><b>Back up your important files</b> to another drive or the cloud. A clean install wipes the system drive completely.</span></li><li><span class="p"><b>Make sure you have Windows 11 Pro</b> or a Pro key. Domain OS installs <b>on Pro only</b>: on Home the install stops at the first step and changes nothing. To check: Settings → System → About ("Edition").</span></li><li><span class="p"><b>Prepare a folder for the USB stick</b> (put it on the stick next to the Windows installer, see step 2):<br>• <a href="downloads/No-WU-Drivers.reg" download>No-WU-Drivers.reg</a> — stops Windows from installing its own drivers;<br>• <a href="https://ameliorated.io/">AME Wizard</a> — the program that installs the playbook;<br>• <a href="https://github.com/6kane1/DomainOS/releases/download/v2.3.0/Domain-OS-2.3.0.apbx">Domain-OS-2.3.0.apbx</a> — the playbook itself;<br>• <b>the network card driver</b> from the maker of your motherboard or laptop — in case Windows has no internet after the install.</span></li></ol>
+  <ol class="steps"><li><span class="p"><b>Back up your important files</b> to another drive or the cloud. A clean install wipes the system drive completely.</span></li><li><span class="p"><b>Make sure you have Windows 11 Pro</b> or a Pro key. Domain OS installs <b>on Pro only</b>: on Home the install stops at the first step and changes nothing. To check: Settings → System → About ("Edition").</span></li><li><span class="p"><b>Prepare a folder for the USB stick</b> (put it on the stick next to the Windows installer, see step 2):<br>• <a href="downloads/No-WU-Drivers.reg" download>No-WU-Drivers.reg</a> — stops Windows from installing its own drivers;<br>• <a href="https://ameliorated.io/">AME Wizard</a> — the program that installs the playbook;<br>• <a href="https://github.com/6kane1/DomainOS/releases/download/v2.3.1/Domain-OS-2.3.1.apbx">Domain-OS-2.3.1.apbx</a> — the playbook itself;<br>• <b>the network card driver</b> from the maker of your motherboard or laptop — in case Windows has no internet after the install.</span></li></ol>
   <div class="p warnbox" style="margin-top:14px"><div class="cap"><span class="acc">▍</span>Original image only</div><p><strong>Do not use "lite", "gaming" or any modified Windows images</strong> or other people’s builds. The playbook expects plain Windows from Microsoft: modified images already have components removed or broken, and the result is unpredictable.</p></div>
 </div></section>
 
@@ -56,7 +56,7 @@
 
 <section id="playbook"><div class="wrap">
   <div class="sh"><div class="label"><span class="n">05</span><span class="acc">▍</span>Playbook</div><h2>Installing Domain OS</h2><p>About 10 minutes. Leave the PC alone meanwhile.</p></div>
-  <ol class="steps"><li><span class="p"><b>Laptop: plug in the charger.</b> AME Wizard does not start on battery. The internet must be connected.</span></li><li><span class="p"><b>Open AME Wizard</b> and drag <code>Domain-OS-2.3.0.apbx</code> into its window. If Windows asks whether to run it, allow it.</span></li><li><span class="p"><b>Tick the boxes you want.</b> If unsure, leave them as they are: the defaults suit most people. What every box does is in <a href="index.html#install">the table on the main page</a>.</span></li><li><span class="p"><b>Start the install and wait.</b> Do not turn the PC off, do not close the window, do not start other programs. At the end the PC restarts by itself.</span></li></ol>
+  <ol class="steps"><li><span class="p"><b>Laptop: plug in the charger.</b> AME Wizard does not start on battery. The internet must be connected.</span></li><li><span class="p"><b>Open AME Wizard</b> and drag <code>Domain-OS-2.3.1.apbx</code> into its window. If Windows asks whether to run it, allow it.</span></li><li><span class="p"><b>Tick the boxes you want.</b> If unsure, leave them as they are: the defaults suit most people. What every box does is in <a href="index.html#install">the table on the main page</a>.</span></li><li><span class="p"><b>Start the install and wait.</b> Do not turn the PC off, do not close the window, do not start other programs. At the end the PC restarts by itself.</span></li></ol>
   <div class="p act upg" style="margin-top:14px"><div class="cap"><span class="acc">▍</span>If something goes wrong</div><p>The install log is in <code>%ProgramData%\Domain OS\Logs\install.log</code>. Everything can be undone: Start → Domain OS → <b>Undo Domain OS</b>, then restart.</p></div>
 </div></section>
 
@@ -67,7 +67,7 @@
 </div></section>
 
 <section id="toolbox"><div class="wrap">
-  <div class="sh"><div class="label"><span class="n">07</span><span class="acc">▍</span>Toolbox</div><h2>Setting up Toolbox</h2><p>Toolbox 1.16.0 is already installed, the shortcut is on the desktop. You do this once.</p></div>
+  <div class="sh"><div class="label"><span class="n">07</span><span class="acc">▍</span>Toolbox</div><h2>Setting up Toolbox</h2><p>Toolbox 1.16.1 is already installed, the shortcut is on the desktop. You do this once.</p></div>
   <ol class="steps"><li><span class="p"><b>Open Toolbox</b> and press <b>"Turn on Auto"</b>. From then on it finds the game every time by itself.</span></li><li><span class="p"><b>With the game closed</b>, press <b>"Optimize devices"</b> once and restart the PC. If Windows does not start after that, everything is reverted by itself.</span></li><li><span class="p"><b>Optional:</b> "Auto-tune" during a game (about 8 minutes), then "Apply". More on <a href="scheduler.html#how">the Toolbox page</a>.</span></li></ol>
 </div></section>
 
@@ -82,6 +82,6 @@
   <div class="p act upg" style="margin-top:14px"><div class="cap"><span class="acc">▍</span>Need help?</div><p>Open a post in the help channel of our Discord server: build and Toolbox versions, <code>winver</code>, CPU and graphics card, what you did, and attach <code>%ProgramData%\Domain OS\Logs\install.log</code> and <code>%LOCALAPPDATA%\DomainScheduler\log.txt</code>.</p></div>
 </div></section>
 </main>
-<footer><div class="wrap"><span>DOMAIN OS 2.3.0 · © 2026 · ALL RIGHTS RESERVED</span><a href="scheduler.html">Domain OS Toolbox</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="ru/install.html" hreflang="ru">Русский</a><span>Version 2.3.0 went through test builds and an automatic check of every change, but real PCs differ: report what breaks.</span><span>Team: 6kane1 (author and owner) and Zero Unflesh (zero_wake), co-owner of Domain OS and owner of AerialOS, who made a very large contribution to this project.</span></div></footer>
+<footer><div class="wrap"><span>DOMAIN OS 2.3.1 · © 2026 · ALL RIGHTS RESERVED</span><a href="scheduler.html">Domain OS Toolbox</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="ru/install.html" hreflang="ru">Русский</a><span>Version 2.3.1 went through test builds and an automatic check of every change, but real PCs differ: report what breaks.</span><span>Team: 6kane1 (author and owner) and Zero Unflesh (zero_wake), co-owner of Domain OS and owner of AerialOS, who made a very large contribution to this project.</span></div></footer>
 <script src="site.js?v=230a"></script>
 </body></html>
