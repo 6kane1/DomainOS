@@ -25,14 +25,15 @@ on:
         required: true
         default: "DomainOS-Toolbox-1.15.0.exe"
 
-permissions:
-  contents: write        # attach to a release
-  id-token: write        # Sigstore signing for the attestation
-  attestations: write
+permissions: {}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write        # attach to a release
+      id-token: write        # Sigstore signing
+      attestations: write
     timeout-minutes: 30
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
