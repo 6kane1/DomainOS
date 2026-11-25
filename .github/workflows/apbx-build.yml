@@ -17,13 +17,11 @@ on:
         description: "Release to attach the .apbx to (it must exist, e.g. as a draft)"
         required: true
       toolbox_tag:
-        description: "Release that holds the attested Toolbox exe"
+        description: "Release that holds the attested Toolbox exe (e.g. v1.16.1) — no default on purpose"
         required: true
-        default: "v2.2.0"
       toolbox_asset:
-        description: "File name of the Toolbox exe in that release"
+        description: "File name of the Toolbox exe in that release (e.g. DomainOS-Toolbox-1.16.1.exe)"
         required: true
-        default: "DomainOS-Toolbox-1.15.0.exe"
 
 permissions:
   contents: write        # attach to a release
@@ -87,6 +85,16 @@ jobs:
           cp "$RUNNER_TEMP/tb/$TB_ASSET" toolbox/DomainScheduler.exe
           echo "Toolbox SHA-256: $(sha256sum toolbox/DomainScheduler.exe | cut -d' ' -f1)"
 
+      - name: Toolbox version matches this playbook
+        env:
+          TB_ASSET: ${{ inputs.toolbox_asset }}
+        run: |
+          ver="${TB_ASSET#DomainOS-Toolbox-}"; ver="${ver%.exe}"
+          [[ "$ver" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]] || { echo "::error::cannot parse version from $TB_ASSET"; exit 1; }
+          grep -qF "$ver" playbook/playbook.conf || {
+            echo "::error::playbook.conf does not declare Toolbox $ver — this exe does not belong to this playbook"; exit 1; }
+          echo "OK: playbook.conf declares Toolbox $ver"
+
       - name: Layout for run-all.py
         run: |
           mkdir -p "$RUNNER_TEMP/dos"
@@ -122,8 +130,14 @@ jobs:
           path: out/
           retention-days: 30
 
-      - name: Attach to the release
+      - name: Attach to the release (draft only)
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag }}
-        run: gh release upload "$RELEASE_TAG" out/* --clobber -R "$GITHUB_REPOSITORY"
+        run: |
+          draft=$(gh release view "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" --json isDraft -q .isDraft)
+          if [ "$draft" != "true" ]; then
+            echo "::error::$RELEASE_TAG is already published. --clobber would replace files whose SHA-256 is on the website and in the release notes. Attach to a draft, then publish."
+            exit 1
+          fi
+          gh release upload "$RELEASE_TAG" out/* --clobber -R "$GITHUB_REPOSITORY"
