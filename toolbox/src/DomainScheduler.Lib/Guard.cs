@@ -36,7 +36,6 @@ public static class Guard
     /// <summary>Anti-cheat clients that protect a game they run with (CS2 on FACEIT / ESEA).</summary>
     static readonly Dictionary<string, string> AcClients = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["faceit.exe"] = "FACEIT", ["FACEITService.exe"] = "FACEIT", ["faceitclient.exe"] = "FACEIT",
         ["ESEAClient.exe"] = "ESEA", ["eseaclient.exe"] = "ESEA",
         ["vgc.exe"] = "Vanguard", ["vgtray.exe"] = "Vanguard",
     };
