@@ -206,17 +206,17 @@ AME Wizard will say that the playbook is not verified: verification is issued by
 ## Build from source
 `./build.sh` (needs `7zr` and Python 3 with PyYAML): checks the task files and every PowerShell script, writes `playbook/Executables/expected.json` with `tools/gen-expected.py` (the list of every change, with file and line, that Check Domain OS compares the PC with; the build also stops when `Tasks/options.yml` does not record exactly the options of `playbook.conf`), then packs `playbook/` into a 7z archive with the password `malte`, as AME Wizard expects.
 
-**Toolbox** is in this repository too: `toolbox/` holds its full source (C#, .NET 8, WPF) with the tests. The source follows development, so it can be newer than the released Toolbox; the released program is `DomainOS-Toolbox-1.15.0.exe` in [Releases](https://github.com/6kane1/DomainOS/releases).
+**Toolbox** is in this repository too: `toolbox/` holds its full source (C#, .NET 8, WPF) with the tests. The source follows development, so it can be newer than the released Toolbox; the released program is `DomainOS-Toolbox-<version>.exe` in Releases — the current version is named on the website and in the latest release.(https://github.com/6kane1/DomainOS/releases).
 - `./build.sh` — packs the exe saved as `toolbox/DomainScheduler.exe` (the released one; the build goes on without the app if it is missing);
 - `./build.sh path/to/DomainScheduler.exe` — packs that exe;
 - `./build.sh --toolbox-from-source` — builds Toolbox from `toolbox/src` first (needs the .NET 8 SDK);
 - tests: `dotnet test toolbox/tests/DomainScheduler.Tests`.
 
-**Proof that a Toolbox exe is built from this source:** from 1.15.0 on, Toolbox is built on GitHub's own machines by `.github/workflows/toolbox-build.yml` (tests first), and every exe gets a signed build-provenance attestation. Check any copy with the GitHub CLI: `gh attestation verify DomainScheduler.exe -R 6kane1/DomainOS` — it names the workflow and the exact commit; a file changed by even one byte fails. (1.14.1 and the test builds before 1.15.0 were built before this existed.)
+**Proof that a Toolbox exe is built from this source:** from 1.15.0 on, Toolbox is built on GitHub's own machines by `.github/workflows/toolbox-build.yml` (tests first), and every exe gets a signed build-provenance attestation. Check any copy with the GitHub CLI: `gh attestation verify DomainOS-Toolbox-<version>.exe -R 6kane1/DomainOS` — it names the workflow and the exact commit; a file changed by even one byte fails. (1.14.1 and the test builds before 1.15.0 were built before this existed.)
 
-**Proof that the playbook archive is built from this source:** from 2.2.4 on, `Domain-OS-<version>.apbx` is built by `.github/workflows/apbx-build.yml` on GitHub's machines: it takes the attested Toolbox exe (and checks its attestation), runs the whole test suite, packs and attests the archive. Check it with `gh attestation verify Domain-OS-2.2.4.apbx -R 6kane1/DomainOS`. The archive is encrypted with a random salt, so a rebuild never has the same SHA-256: the attestation binds the published file.
+**Proof that the playbook archive is built from this source:** from 2.2.4 on, `Domain-OS-<version>.apbx` is built by `.github/workflows/apbx-build.yml` on GitHub's machines: it takes the attested Toolbox exe (and checks its attestation), runs the whole test suite, packs and attests the archive. Check it with `gh attestation verify Domain-OS-<version>.apbx -R 6kane1/DomainOS`. The archive is encrypted with a random salt, so a rebuild never has the same SHA-256: the attestation binds the published file.
 
-Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-2.3.1.apbx` in PowerShell must match the value on the website and in the release notes.
+Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-<version>.apbx` in PowerShell must match the value on the website and in the release notes.
 
 ## Team
 
