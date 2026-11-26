@@ -1,0 +1,37 @@
+name: Test report
+description: A measurement or a problem from a tester (one zip from DomainOS-Report.ps1)
+title: "[Test] "
+labels: ["test report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Run `DomainOS-Report.ps1` (website, How to measure) and attach the zip it puts on your desktop. It has the PC basics, the logs and the measurement.
+  - type: input
+    id: cpu
+    attributes: { label: CPU, placeholder: "Ryzen 7 7800X3D" }
+    validations: { required: true }
+  - type: input
+    id: gpu
+    attributes: { label: GPU and driver, placeholder: "RTX 5060, 581.xx" }
+    validations: { required: true }
+  - type: input
+    id: build
+    attributes: { label: Domain OS and Toolbox versions, placeholder: "2.3.1 + Toolbox 1.16.2 Test 2" }
+    validations: { required: true }
+  - type: input
+    id: scenario
+    attributes: { label: Scenario, placeholder: "CS2 deathmatch, Mirage, 1080p low" }
+    validations: { required: true }
+  - type: input
+    id: runs
+    attributes: { label: Runs (n) per variant, placeholder: "3 with Toolbox, 3 without" }
+    validations: { required: true }
+  - type: textarea
+    id: what
+    attributes: { label: What you compared or what went wrong }
+    validations: { required: true }
+  - type: textarea
+    id: zip
+    attributes: { label: The report zip, description: Drag the DomainOS-Report-....zip here }
+    validations: { required: true }
