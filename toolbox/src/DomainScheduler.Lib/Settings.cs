@@ -235,7 +235,6 @@ public static class Settings
         ["AllowElevatedPriority"] = () => "false",
         ["Autostart"] = () => "true",
         ["Advanced"] = () => "true",        // 1.16.0: the advanced layout by default (owner's setting)
-        ["FaceitAllowed"] = () => "false",
         ["Language"] = () => L.Detect(),
     };
 
@@ -280,8 +279,6 @@ public static class Settings
         string s = Get(name);
         return s.Length == 0 ? fallback : s.Equals("true", StringComparison.OrdinalIgnoreCase);
     }
-
-    public static bool FaceitAllowed() => GetBool("FaceitAllowed", false);
 
     public static int GetInt(string name, int fallback) =>
         int.TryParse(Get(name, fallback.ToString(CultureInfo.InvariantCulture)), NumberStyles.Integer, CultureInfo.InvariantCulture, out int n) ? n : fallback;
