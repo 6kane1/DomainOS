@@ -98,17 +98,7 @@ public static class Guard
         if (IsAntiCheatProcess(exe)) return L.F("{0} is an anti-cheat", exe);
         if (ClientProtected.Contains(exe) && runningExes != null)
             foreach (var r in runningExes)
-                if (AcClients.TryGetValue(r, out var client))
-                {
-                    // FACEIT + cs2.exe: разрешено только при явном opt-in
-                    if (client == "FACEIT" && exe.Equals("cs2.exe", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (!Settings.FaceitAllowed())
-                            return L.F("{0} runs under {1}", exe, client);  // default: защищено
-                        break;  // разрешено, не возвращаем ошибку
-                    }
-                    return L.F("{0} runs under {1}", exe, client);
-                }
+                if (AcClients.TryGetValue(r, out var client)) return L.F("{0} runs under {1}", exe, client);
         return null;
     }
 }
