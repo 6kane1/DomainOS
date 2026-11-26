@@ -15,49 +15,60 @@
   <div class="wrap bar">
     <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>DOMAIN OS</a>
     <span class="status"><span class="blip" aria-hidden="true"></span>UNDO <b>2.3.1</b></span>
-    <nav class="nav" aria-label="Pages"><a href="index.html">Playbook</a><a href="install.html">Install</a><a href="scheduler.html">Toolbox</a><a href="results.html">Results</a><a href="undo.html" aria-current="page">Undo</a><a href="changelog.html">Versions</a><a href="support.html">Support</a><a href="faq.html">FAQ</a></nav>
+    <nav class="nav" aria-label="Pages"><a href="index.html">Playbook</a><a href="install.html">Install</a><a href="scheduler.html">Toolbox</a><a href="results.html">Results</a><a href="undo.html" aria-current="page">Undo</a><a href="changelog.html">Versions</a><a href="support.html">Services</a><a href="faq.html">FAQ</a></nav>
     <a class="dc" href="https://discord.gg/wBGsV7WEpm" rel="noopener" aria-label="Our Discord server"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.8 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 10.8 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.5-4.3-.8-8.1-3.2-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg><span>Discord</span></a>
     <a class="lang" href="ru/undo.html" hreflang="ru" lang="ru">RU</a>
     <a class="btn main small" href="index.html#download">Download</a>
   </div>
-  <div class="subnav"><div class="wrap"><span>ON THIS PAGE</span><a href="#undo">How to undo</a></div></div>
+  <div class="subnav"><div class="wrap"><span>ON THIS PAGE</span><a href="#what">What comes back</a><a href="#before">Before</a><a href="#undo">Undo</a><a href="#check">Check</a><a href="#failed">If FAILED</a></div></div>
   <i class="progress" aria-hidden="true"></i>
 </header>
 <main>
+
 <style>
-/* undo / measure / changelog pages */
-.xp{max-width:78ch}
-.xp h3{margin:26px 0 8px;font-size:1.08rem}
-.xp p,.xp li{line-height:1.6}
-.xp ul,.xp ol{padding-left:1.2em;margin:6px 0 12px}
-.xp li{margin:4px 0}
-.xp pre{overflow-x:auto;padding:10px 12px;border:1px solid var(--line,rgba(255,255,255,.1));background:rgba(255,255,255,.025);font-size:13.5px;line-height:1.5}
-.xp .warn{padding:10px 12px;border-left:2px solid var(--pink,#f4b6cb);background:rgba(255,255,255,.02);margin:12px 0}
-.ver{border:1px solid var(--line,rgba(255,255,255,.1));border-radius:14px;padding:14px 18px;margin:12px 0;background:rgba(255,255,255,.02)}
-.ver h3{margin:0 0 6px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline}
-.ver h3 small{font:500 12px var(--mono,monospace);opacity:.7}
-.ver .now{font:600 11px var(--mono,monospace);padding:2px 7px;border:1px solid currentColor;border-radius:6px}
-.ver ul{margin:6px 0 0}
-</style><section class="sec" id="undo"><div class="wrap"><div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>Undo</div><h2>How to undo Domain OS</h2><p>Undo puts Windows back to how it was before your very first Domain OS install, without reinstalling Windows. Up to date for playbook 2.3.1; checked on a real PC: install → Undo → every setting compared → install again.</p></div><div class="xp"><h3>What comes back</h3><ul>
-<li>every registry value, service and scheduled task Domain OS changed (also the ones only SYSTEM or Windows itself may change);</li>
-<li>power plan, hibernation, UAC prompt, theme, mouse, taskbar and Start pins, wallpapers, right-click menu, OneDrive;</li>
-<li>the Toolbox device layout (after the restart).</li></ul><h3>What stays</h3><ul>
-<li><b>your files, games, programs and saves</b> — Undo changes settings only;</li>
-<li>removed apps (Teams, Copilot …): Undo <b>lists</b> them, install the ones you want from the Microsoft Store;</li>
-<li>Visual C++ / DirectX runtimes, the Domain OS pictures folder, Toolbox itself (Undo from Start does not uninstall it).</li></ul><h3>How to undo</h3><ol>
-<li>Optional but wise: Start → <i>Create a restore point</i> → <b>Create</b>.</li>
-<li>Close games and anti-cheats.</li>
-<li>Start → <b>Domain OS → Undo Domain OS</b> → allow the administrator prompt.</li>
-<li>Wait for the end (1–5 min) and do not close the window. The last lines should say <b><code>Failed: 0</code></b> and <i>Restart the computer to finish</i>.</li>
-<li><b>Restart.</b></li></ol><h3>Check that everything is back</h3><ul>
-<li>Start → Domain OS → <b>Check Domain OS</b>: it should say <i>Domain OS was undone</i> and <b>Windows health</b> all PASS.</li>
-<li>A full comparison of every saved setting: <a href="https://github.com/6kane1/DomainOS/blob/main/tests/Verify-Undo.ps1" rel="noopener">Verify-Undo.ps1</a>, PowerShell <b>as administrator</b>:
-<pre>powershell -ExecutionPolicy Bypass -NoExit -File "C:\Path\Verify-Undo.ps1"</pre>
-Result: <code>Result: … back as before, … different</code>.</li>
-<li>Normal differences (Windows changes them itself): <code>GameDVR_Enabled</code>, <code>ContentDeliveryManager</code> values, a Windows Spotlight wallpaper coming back as a still picture.</li></ul><h3>If something says FAILED</h3><p>Nothing is lost: <b>the saved state is kept</b> when anything fails. Restart and run <b>Undo Domain OS</b> again.</p>
-<p>Still FAILED? Post in <a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a>, channel 14・help: <code>C:\ProgramData\Domain OS\Logs\undo.log</code> and the Check Domain OS report from the desktop.</p>
-<p class="warn">Do not delete <code>C:\ProgramData\Domain OS</code> — the saved original state lives there.</p>
-<p>After Undo and a restart, any Domain OS version installs like the first time.</p></div></div></section></main>
+.ugrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:6px}
+.ulist{margin:10px 0 0;padding-left:1.15em;display:flex;flex-direction:column;gap:8px;line-height:1.55}
+.ulist li::marker{color:#f4b6cb}
+.ucode{overflow-x:auto;margin:10px 0 0;padding:10px 12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.025);font-size:13.5px;line-height:1.5}
+</style>
+<section class="hero one"><div class="wrap">
+  <div class="kicker"><span class="acc">▍</span>Undo</div>
+  <h1>How to undo Domain OS</h1>
+  <p class="lead">Undo puts Windows back to how it was before your very first Domain OS install, without reinstalling. For playbook 2.3.1; checked on a real PC with the full cycle: install, undo, every setting compared, install again.</p>
+  <p class="meta">Time: 1–5 minutes and a restart<i>/</i>Your files are not touched<i>/</i>Can be repeated</p>
+</div></section>
+
+<section id="what"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>What comes back</div><h2>What Undo puts back and what it keeps</h2><p>Undo changes only the settings Domain OS changed.</p></div>
+  <div class="ugrid">
+    <div class="p" style="padding:18px 20px"><div class="cap"><span class="acc">▍</span>Comes back</div><ul class="ulist"><li>Every registry value, service and scheduled task Domain OS changed, also the ones only SYSTEM or Windows itself may change</li><li>Power plan, hibernation, the UAC prompt, theme, mouse</li><li>Taskbar and Start pins, wallpapers, the right-click menu, OneDrive</li><li>The Toolbox device layout (after a restart)</li></ul></div>
+    <div class="p" style="padding:18px 20px"><div class="cap"><span class="acc">▍</span>Stays</div><ul class="ulist"><li><b>Your files, games, programs and saves</b>: Undo changes only settings</li><li>Removed apps (Teams, Copilot…): Undo <b>shows their list</b>, the ones you need come from the Microsoft Store</li><li>Visual C++ and DirectX libraries, the Domain OS pictures folder, Toolbox itself (Undo from Start does not remove it)</li></ul></div>
+  </div>
+</div></section>
+
+<section id="before"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">02</span><span class="acc">▍</span>Before</div><h2>Getting ready</h2><p>Half a minute, and Undo goes smoothly.</p></div>
+  <ol class="steps"><li><span class="p"><b>Optional but wise:</b> Start → <i>Create a restore point</i> → <b>Create</b>.</span></li><li><span class="p"><b>Close games and anti-cheats</b> (FACEIT, Vanguard and others).</span></li></ol>
+</div></section>
+
+<section id="undo"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">03</span><span class="acc">▍</span>Undo</div><h2>Run Undo</h2><p>One program from Start; it does the rest by itself.</p></div>
+  <ol class="steps"><li><span class="p">Start → <b>Domain OS → Undo Domain OS</b> → allow the administrator prompt.</span></li><li><span class="p"><b>Wait until it ends</b> (1–5 minutes), do not close the window. The last lines must say <code>Failed: 0</code> and <i>Restart the computer to finish</i>.</span></li><li><span class="p"><b>Restart the PC.</b></span></li></ol>
+  <div class="p warnbox" style="margin-top:14px"><div class="cap"><span class="acc">▍</span>Do not delete this folder</div><p><code>C:\ProgramData\Domain OS</code>: the saved original state is there, Undo works from it.</p></div>
+</div></section>
+
+<section id="check"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">04</span><span class="acc">▍</span>Check</div><h2>Check that everything is back</h2><p>Two checks: a quick one and a full one.</p></div>
+  <ol class="steps"><li><span class="p">Start → Domain OS → <b>Check Domain OS</b>: it must say <i>Domain OS was undone</i>, and the <b>Windows health</b> section is all PASS.</span></li><li><span class="p"><b>Full comparison of every saved setting:</b> <a href="https://github.com/6kane1/DomainOS/blob/main/tests/Verify-Undo.ps1">Verify-Undo.ps1</a>, PowerShell <b>as administrator</b>:<pre class="ucode">powershell -ExecutionPolicy Bypass -NoExit -File "C:\Path\Verify-Undo.ps1"</pre>Result: <code>Result: … back as before, … different</code>.</span></li></ol>
+  <div class="p act upg" style="margin-top:14px"><div class="cap"><span class="acc">▍</span>Normal differences</div><p>Windows changes these by itself: <code>GameDVR_Enabled</code>, <code>ContentDeliveryManager</code> values, Windows Spotlight wallpapers that come back as a plain picture.</p></div>
+</div></section>
+
+<section id="failed"><div class="wrap">
+  <div class="sh"><div class="label"><span class="n">05</span><span class="acc">▍</span>If FAILED</div><h2>If something went wrong</h2><p>Nothing is lost: on any error the saved state stays.</p></div>
+  <ol class="steps"><li><span class="p"><b>Restart</b> and run <b>Undo Domain OS</b> again.</span></li><li><span class="p">FAILED again? Write in <a href="https://discord.gg/wBGsV7WEpm">Discord</a>, channel 14・help: attach <code>C:\ProgramData\Domain OS\Logs\undo.log</code> and the Check Domain OS report from the desktop.</span></li></ol>
+  <div class="p act upg" style="margin-top:14px"><div class="cap"><span class="acc">▍</span>Install again</div><p>After Undo and a restart any Domain OS version installs as if for the first time.</p></div>
+</div></section>
+</main>
 <footer><div class="wrap"><span>DOMAIN OS 2.3.1 · © 2026 · ALL RIGHTS RESERVED</span><a href="scheduler.html">Domain OS Toolbox</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="ru/undo.html" hreflang="ru">Русский</a><span>Version 2.3.1 went through test builds and an automatic check of every change, but real PCs differ: report what breaks.</span><span>Team: 6kane1 (author and owner) and Zero Unflesh (zero_wake), co-owner of Domain OS and owner of AerialOS, who made a very large contribution to this project.</span></div></footer>
 <script src="site.js?v=230a"></script>
 </body></html>
