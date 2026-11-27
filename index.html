@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="preload" href="fonts/Inter-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="site.css?v=231b">
+<link rel="stylesheet" href="site.css?v=231d">
 </head><body>
 <header class="top">
   <div class="wrap bar">
@@ -48,6 +48,15 @@
   </div>
 </div></div>
 
+<section class="startsec"><div class="wrap"><div class="startbox">
+  <b>Start here</b>
+  <ol>
+    <li><a href="#download">Download the playbook and AME Wizard</a><span>two files, free</span></li>
+    <li><a href="install.html">Install with the guide</a><span>about 15 minutes if Windows is already installed</span></li>
+    <li><a href="scheduler.html#how">Turn on Auto in Toolbox</a><span>and play as usual</span></li>
+  </ol>
+</div></div></section>
+
 <div class="cpustrip"><div class="wrap">
   <div class="cpumap"><div class="cap"><span class="acc">▍</span>Processor map · diagram<span class="r leg"><span><i style="background:var(--pink)"></i>game</span><span><i style="background:var(--silver);opacity:.6"></i>background</span><span><i style="background:var(--warn)"></i>interrupts</span></span></div><div class="cores" role="img" aria-label="Diagram: the game on cores 0–7, interrupts on cores 12 and 14"><div class="c g"><div class="b"><i style="height:78%"></i></div><span>00</span></div><div class="c g"><div class="b"><i style="height:64%"></i></div><span>01</span></div><div class="c g"><div class="b"><i style="height:82%"></i></div><span>02</span></div><div class="c g"><div class="b"><i style="height:71%"></i></div><span>03</span></div><div class="c g"><div class="b"><i style="height:88%"></i></div><span>04</span></div><div class="c g"><div class="b"><i style="height:59%"></i></div><span>05</span></div><div class="c g"><div class="b"><i style="height:74%"></i></div><span>06</span></div><div class="c g"><div class="b"><i style="height:69%"></i></div><span>07</span></div><div class="c "><div class="b"><i style="height:22%"></i></div><span>08</span></div><div class="c "><div class="b"><i style="height:8%"></i></div><span>09</span></div><div class="c "><div class="b"><i style="height:14%"></i></div><span>10</span></div><div class="c "><div class="b"><i style="height:6%"></i></div><span>11</span></div><div class="c q"><div class="b"><i style="height:46%"></i></div><span>12</span></div><div class="c "><div class="b"><i style="height:9%"></i></div><span>13</span></div><div class="c q"><div class="b"><i style="height:38%"></i></div><span>14</span></div><div class="c "><div class="b"><i style="height:5%"></i></div><span>15</span></div></div></div>
   <div class="facts"><span>Defender stays</span><span>anti-cheats work</span><span>undo without reinstalling</span><span>every change explained</span><span>Windows 11 25H2 · 26H2</span><span>free</span></div>
@@ -76,7 +85,7 @@
   </div>
 </div></section>
 
-<section id="changes"><div class="wrap">
+<section id="changes" class="dz"><div class="wrap">
   <div class="sh"><div class="label"><span class="n">04</span><span class="acc">▍</span>What changes</div><h2>What Domain OS changes</h2><p>Before the install the wizard shows a few pages with checkboxes. Everything not marked as your choice is always applied.</p></div>
   <div class="split">
     <div class="p console" aria-label="Example install log">
@@ -116,7 +125,7 @@
   <div class="cards two"><div class="p card"><div class="hd"><span class="ix">01</span><h3>Put it back</h3></div><p>Start → Domain OS → <b>Undo Domain OS</b>, then restart. Settings, services, jobs, the power plan, the wallpapers and the Toolbox device layout come back as they were. Removed apps are not reinstalled automatically: you get their list and install the ones you want from the Microsoft Store. If you also choose to remove the tools, Toolbox is uninstalled completely.</p></div><div class="p card"><div class="hd"><span class="ix">02</span><h3>Upgrading from another 2.x</h3></div><p>Just install 2.3.1 over it in AME Wizard: nothing has to be undone first, and Toolbox updates itself to 1.16.1. Undo still returns Windows to the state before the very first install.</p></div></div>
 </div></section>
 
-<section id="install"><div class="wrap">
+<section id="install" class="dz"><div class="wrap">
   <div class="sh"><div class="label"><span class="n">07</span><span class="acc">▍</span>Install</div><h2>Install</h2><p>About 10 minutes. If you are unsure, try it in a virtual machine first.</p></div>
   <div class="p act upg" style="margin-bottom:16px"><div class="cap"><span class="acc">▍</span>First time?</div><p>Open <a href="install.html"><b>the step-by-step guide from scratch</b></a>: from downloading the official Windows 11 Pro to the first game, with common mistakes and a check. Below is the short version for those who have done it before.</p></div>
   <ol class="steps"><li><span class="p"><b>Install a clean Windows 11 Pro</b>, version 25H2 or 26H2 (on Home the install does not start). Before connecting to the internet, run <a href="downloads/No-WU-Drivers.reg" download>No-WU-Drivers.reg</a>, so Windows does not install its own drivers.</span></li><li><span class="p"><b>Install the updates</b> in Windows Update and restart.</span></li><li><span class="p"><b>Download <a href="https://ameliorated.io/">AME Wizard</a></b>, drag <code>Domain-OS-2.3.1.apbx</code> into it, check the boxes (table below) and start. You need internet, and plug in your laptop if you use one.</span></li><li><span class="p"><b>Restart.</b> Switch back on the toggles the wizard asked you to switch off: Windows Security → Virus &amp; threat protection → Manage settings. A guide with drivers for your PC opens: install them from top to bottom.</span></li></ol>
@@ -131,7 +140,7 @@
   </div>
 </div></section>
 
-<section id="versions"><div class="wrap">
+<section id="versions" class="dz"><div class="wrap">
   <div class="sh"><div class="label"><span class="n">08</span><span class="acc">▍</span>Windows versions</div><h2>Which Windows</h2><p>Windows 11 Pro only, versions 25H2 and 26H2: on Home and other editions the install stops at the first step, before any change. 24H2 is no longer supported: Microsoft no longer issues security updates for it.</p></div>
   <div class="p tbl"><table>
     <thead><tr><th>Version</th><th class="hide-s">Build</th><th>Domain OS 2.3.1</th><th>Updates<span class="nw-s"> for security</span></th></tr></thead>
@@ -165,5 +174,5 @@ gh attestation verify DomainOS-Toolbox-1.16.1.exe -R 6kane1/DomainOS</pre></div>
 </div></section>
 </main>
 <footer><div class="wrap"><span>DOMAIN OS 2.3.1 · © 2026 · ALL RIGHTS RESERVED</span><a href="scheduler.html">Domain OS Toolbox</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="ru/index.html" hreflang="ru">Русский</a><span>Version 2.3.1 went through test builds and an automatic check of every change, but real PCs differ: report what breaks.</span><span>Team: 6kane1 (author and owner) and Zero Unflesh (zero_wake), co-owner of Domain OS and owner of AerialOS, who made a very large contribution to this project.</span></div></footer>
-<script src="site.js?v=231b"></script>
+<script src="site.js?v=231d"></script>
 </body></html>

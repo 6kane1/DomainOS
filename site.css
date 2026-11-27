@@ -419,3 +419,48 @@ footer .wrap a{color:var(--silver)}
 .morecol{border:1px solid var(--line);border-radius:3px;padding:16px 18px}
 .morecol .plain{margin-top:12px}
 .morecol .plain li{font-size:15px;line-height:1.55}
+
+/* 27.11.2026: Start here, term hints, slide-out panels for the extra details */
+.startsec{padding:8px 0 28px}
+.startbox{border:1px solid var(--line);background:linear-gradient(180deg,rgba(244,182,203,.07),var(--panel) 70%);border-radius:14px;padding:20px 22px;display:grid;grid-template-columns:auto 1fr;gap:10px 28px;align-items:center}
+.startbox>b{color:var(--pink);font-size:15px;letter-spacing:.02em}
+.startbox ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;counter-reset:st}
+.startbox li{counter-increment:st;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:start}
+.startbox li::before{content:counter(st);grid-row:1/3;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(244,182,203,.13);color:var(--pink);font-weight:700}
+.startbox a{color:var(--fg);font-weight:600;text-decoration:none}
+.startbox a:hover{color:var(--pink)}
+.startbox span{color:var(--dim);font-size:14px}
+@media (max-width:860px){.startbox{grid-template-columns:1fr}.startbox ol{grid-template-columns:1fr}}
+
+.gl{border-bottom:1px dashed var(--dim);cursor:help;position:relative;outline:none}
+.gl::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 8px);transform:translate(-50%,4px);width:max-content;max-width:min(300px,80vw);
+  background:#16171d;color:var(--fg);border:1px solid var(--line2);border-radius:10px;padding:9px 12px;font:400 13.5px/1.45 var(--sans);letter-spacing:0;text-transform:none;
+  box-shadow:0 12px 32px -12px rgba(0,0,0,.8);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:40;white-space:normal}
+.gl:hover::after,.gl:focus::after{opacity:1;transform:translate(-50%,0)}
+.gl:focus-visible{border-bottom-color:var(--pink)}
+
+.dz-teaser{display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;border:1px solid var(--line);border-radius:14px;padding:18px 20px;background:var(--panel);
+  transition:border-color .25s,transform .25s}
+.dz-teaser:hover{border-color:rgba(244,182,203,.45);transform:translateY(-2px)}
+.dz-teaser p{margin:0;color:var(--text);flex:1 1 320px}
+.dz-open{display:inline-flex;align-items:center;gap:10px;height:42px;padding:0 18px;border-radius:999px;border:0;cursor:pointer;background:var(--pink);color:var(--ink);font:600 15px var(--sans)}
+.dz-open i{font-style:normal;transition:transform .25s}
+.dz-open:hover i{transform:translateX(4px)}
+.dz-open:focus-visible,.dz-x:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
+.dz-scrim{position:fixed;inset:0;z-index:60;background:rgba(4,4,6,.55);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;pointer-events:none;transition:opacity .4s}
+.dz-panel{position:fixed;top:0;right:0;bottom:0;z-index:61;width:min(820px,100vw);background:var(--bg);border-left:1px solid var(--line2);
+  box-shadow:-30px 0 80px -30px rgba(0,0,0,.9);transform:translateX(104%);transition:transform .55s cubic-bezier(.7,0,.2,1),visibility 0s .55s;visibility:hidden;
+  display:flex;flex-direction:column}
+.dz-panel::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--pink),#a998ff)}
+.dz-head{display:flex;align-items:center;gap:16px;padding:22px 28px 16px;border-bottom:1px solid var(--line)}
+.dz-head h2{margin:0;flex:1;font-size:clamp(22px,3vw,30px)}
+.dz-x{width:42px;height:42px;flex:none;border-radius:50%;border:1px solid var(--line2);background:none;color:var(--fg);font-size:22px;line-height:1;cursor:pointer;transition:transform .3s,border-color .3s}
+.dz-x:hover{transform:rotate(90deg);border-color:var(--pink)}
+.dz-body{overflow:auto;padding:24px 28px 48px;overscroll-behavior:contain}
+.dz-body>*{opacity:0;transform:translateX(24px);transition:opacity .5s .2s,transform .5s .2s cubic-bezier(.2,.7,.2,1)}
+.dz-on .dz-scrim{opacity:1;pointer-events:auto}
+.dz-panel.on{transform:none;visibility:visible;transition:transform .55s cubic-bezier(.7,0,.2,1),visibility 0s}
+.dz-panel.on .dz-body>*{opacity:1;transform:none}
+.dz-on body{overflow:hidden}
+@media (max-width:560px){.dz-head{padding:16px 18px 12px}.dz-body{padding:18px 18px 40px}}
+@media (prefers-reduced-motion:reduce){.dz-panel,.dz-body>*,.dz-scrim,.gl::after,.dz-teaser{transition:none}}

@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="preload" href="../fonts/Inter-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../site.css?v=231b">
+<link rel="stylesheet" href="../site.css?v=231d">
 </head><body>
 <header class="top">
   <div class="wrap bar">
@@ -48,6 +48,15 @@
   </div>
 </div></div>
 
+<section class="startsec"><div class="wrap"><div class="startbox">
+  <b>Начните здесь</b>
+  <ol>
+    <li><a href="#download">Скачайте плейбук и AME Wizard</a><span>два файла, бесплатно</span></li>
+    <li><a href="install.html">Установите по инструкции</a><span>около 15 минут, если Windows уже стоит</span></li>
+    <li><a href="scheduler.html#how">Включите Auto в Toolbox</a><span>и играйте как обычно</span></li>
+  </ol>
+</div></div></section>
+
 <div class="cpustrip"><div class="wrap">
   <div class="cpumap"><div class="cap"><span class="acc">▍</span>Карта процессора · схема<span class="r leg"><span><i style="background:var(--pink)"></i>игра</span><span><i style="background:var(--silver);opacity:.6"></i>фон</span><span><i style="background:var(--warn)"></i>прерывания</span></span></div><div class="cores" role="img" aria-label="Схема: игра на ядрах 0–7, прерывания на ядрах 12 и 14"><div class="c g"><div class="b"><i style="height:78%"></i></div><span>00</span></div><div class="c g"><div class="b"><i style="height:64%"></i></div><span>01</span></div><div class="c g"><div class="b"><i style="height:82%"></i></div><span>02</span></div><div class="c g"><div class="b"><i style="height:71%"></i></div><span>03</span></div><div class="c g"><div class="b"><i style="height:88%"></i></div><span>04</span></div><div class="c g"><div class="b"><i style="height:59%"></i></div><span>05</span></div><div class="c g"><div class="b"><i style="height:74%"></i></div><span>06</span></div><div class="c g"><div class="b"><i style="height:69%"></i></div><span>07</span></div><div class="c "><div class="b"><i style="height:22%"></i></div><span>08</span></div><div class="c "><div class="b"><i style="height:8%"></i></div><span>09</span></div><div class="c "><div class="b"><i style="height:14%"></i></div><span>10</span></div><div class="c "><div class="b"><i style="height:6%"></i></div><span>11</span></div><div class="c q"><div class="b"><i style="height:46%"></i></div><span>12</span></div><div class="c "><div class="b"><i style="height:9%"></i></div><span>13</span></div><div class="c q"><div class="b"><i style="height:38%"></i></div><span>14</span></div><div class="c "><div class="b"><i style="height:5%"></i></div><span>15</span></div></div></div>
   <div class="facts"><span>Defender остаётся</span><span>античиты работают</span><span>откат без переустановки</span><span>каждое изменение объяснено</span><span>Windows 11 25H2 · 26H2</span><span>бесплатно</span></div>
@@ -76,7 +85,7 @@
   </div>
 </div></section>
 
-<section id="changes"><div class="wrap">
+<section id="changes" class="dz"><div class="wrap">
   <div class="sh"><div class="label"><span class="n">04</span><span class="acc">▍</span>Что меняется</div><h2>Что меняет Domain OS</h2><p>Перед установкой мастер показывает несколько страниц с галочками. Всё, что не отмечено как ваш выбор, применяется всегда.</p></div>
   <div class="split">
     <div class="p console" aria-label="Пример журнала установки">
@@ -116,7 +125,7 @@
   <div class="cards two"><div class="p card"><div class="hd"><span class="ix">01</span><h3>Вернуть как было</h3></div><p>«Пуск» → Domain OS → <b>Undo Domain OS</b>, затем перезагрузка. Настройки, службы, задачи, план питания, обои и раскладка устройств Toolbox возвращаются. Удалённые приложения сами не ставятся: вы получите их список и поставите нужные из Microsoft Store. Если выбрать и удаление программ, Toolbox удаляется полностью.</p></div><div class="p card"><div class="hd"><span class="ix">02</span><h3>Обновление с другой 2.x</h3></div><p>Просто поставьте 2.3.1 поверх в AME Wizard: откатывать ничего не нужно, Toolbox сам обновится до 1.16.1. Откат всё равно вернёт Windows к состоянию до самой первой установки.</p></div></div>
 </div></section>
 
-<section id="install"><div class="wrap">
+<section id="install" class="dz"><div class="wrap">
   <div class="sh"><div class="label"><span class="n">07</span><span class="acc">▍</span>Установка</div><h2>Установка</h2><p>Около 10 минут. Если сомневаетесь, сначала попробуйте в виртуальной машине.</p></div>
   <div class="p act upg" style="margin-bottom:16px"><div class="cap"><span class="acc">▍</span>Впервые ставите?</div><p>Откройте <a href="install.html"><b>подробную инструкцию с нуля</b></a>: от загрузки официальной Windows 11 Pro до первой игры, с частыми ошибками и проверкой. Ниже — коротко для тех, кто уже ставил.</p></div>
   <ol class="steps"><li><span class="p"><b>Поставьте чистую Windows 11 Pro</b> версии 25H2 или 26H2 (на Home установка не начнётся). До подключения к интернету запустите <a href="../downloads/No-WU-Drivers.reg" download>No-WU-Drivers.reg</a>, чтобы Windows не ставила свои драйверы.</span></li><li><span class="p"><b>Установите обновления</b> в Центре обновления и перезагрузитесь.</span></li><li><span class="p"><b>Скачайте <a href="https://ameliorated.io/">AME Wizard</a></b>, перетащите в него <code>Domain-OS-2.3.1.apbx</code>, проверьте галочки (таблица ниже) и запустите. Нужен интернет, а ноутбук поставьте на зарядку.</span></li><li><span class="p"><b>Перезагрузитесь.</b> Включите обратно переключатели, которые мастер просил выключить: Безопасность Windows → Защита от вирусов и угроз → Управление настройками. Откроется подсказка с драйверами для вашего ПК: ставьте их сверху вниз.</span></li></ol>
@@ -131,7 +140,7 @@
   </div>
 </div></section>
 
-<section id="versions"><div class="wrap">
+<section id="versions" class="dz"><div class="wrap">
   <div class="sh"><div class="label"><span class="n">08</span><span class="acc">▍</span>Версии Windows</div><h2>Какая Windows</h2><p>Только Windows 11 Pro, версии 25H2 и 26H2: на Home и других редакциях установка останавливается на первом шаге, до любых изменений. 24H2 больше не поддерживается: Microsoft закончила выпускать для неё обновления безопасности.</p></div>
   <div class="p tbl"><table>
     <thead><tr><th>Версия</th><th class="hide-s">Сборка</th><th>Domain OS 2.3.1</th><th>Обновления<span class="nw-s"> безопасности</span></th></tr></thead>
@@ -165,5 +174,5 @@ gh attestation verify DomainOS-Toolbox-1.16.1.exe -R 6kane1/DomainOS</pre></div>
 </div></section>
 </main>
 <footer><div class="wrap"><span>DOMAIN OS 2.3.1 · © 2026 · ALL RIGHTS RESERVED</span><a href="scheduler.html">Domain OS Toolbox</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="../index.html" hreflang="en">English</a><span>Версия 2.3.1 прошла тестовые сборки и автоматическую проверку каждого изменения, но реальные ПК разные: сообщайте о том, что ломается.</span><span>Команда: 6kane1 (автор и владелец) и Zero Unflesh (zero_wake), совладелец Domain OS и владелец AerialOS, внёсший очень большой вклад в этот проект.</span></div></footer>
-<script src="../site.js?v=231b"></script>
+<script src="../site.js?v=231d"></script>
 </body></html>
