@@ -9,13 +9,13 @@ SKIP_TESTS=0
 if [ "$1" = "--skip-tests" ]; then SKIP_TESTS=1; shift; fi
 VERSION=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' playbook/playbook.conf)
 # The Toolbox shipped with the playbook: a ready exe (default toolbox/DomainScheduler.exe, or a path), or
-# --toolbox-from-source to build it from toolbox/src (needs the .NET 8 SDK). The source in toolbox/ follows
-# development and can be newer than the released Toolbox, so releases are built from the pinned exe.
+# --toolbox-from-source to build it from toolbox/ with toolbox/build.sh (the native Toolbox, 1.17.0+: Rust with the
+# x86_64-pc-windows-gnullvm target and llvm-mingw, see toolbox/README.md). The source in toolbox/ follows development
+# and can be newer than the released Toolbox, so releases are built from the pinned, attested exe.
 if [ "$1" = "--toolbox-from-source" ]; then
-    command -v dotnet >/dev/null 2>&1 || { echo ".NET 8 SDK not found: cannot build Toolbox from source"; exit 1; }
+    [ -x toolbox/build.sh ] || { echo "toolbox/build.sh not found: cannot build Toolbox from source"; exit 1; }
     TBOUT=$(mktemp -d)
-    dotnet publish toolbox/src/DomainScheduler/DomainScheduler.csproj -c Release -r win-x64 --self-contained true \
-        -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "$TBOUT" >/dev/null
+    OUT="$TBOUT/DomainScheduler.exe" OBJ="$TBOUT/obj" toolbox/build.sh >/dev/null
     EXE="$TBOUT/DomainScheduler.exe"
 else
     EXE=${1:-toolbox/DomainScheduler.exe}

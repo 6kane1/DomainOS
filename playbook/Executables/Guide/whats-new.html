@@ -34,6 +34,8 @@ h1{font-size:30px;line-height:1.2;color:var(--strong);font-weight:600;letter-spa
 .ver ul{margin:6px 0 0 18px}
 .ver li{margin-top:5px}.ver li::marker{color:var(--accent)}
 .foot{margin-top:34px;color:var(--faint);font-size:13px}
+.warn{margin-top:18px;padding:12px 16px;border-radius:12px;color:var(--strong);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent-line)}
+.warn a{color:var(--accent)}
 @media (prefers-reduced-motion:reduce){.ver{animation:none;opacity:1;transform:none}}
 </style>
 </head>
@@ -42,11 +44,27 @@ h1{font-size:30px;line-height:1.2;color:var(--strong);font-weight:600;letter-spa
   <div class="brand"><i></i>Domain OS<div class="lang"><button data-l="en">English</button><button data-l="ru">Русский</button></div></div>
   <h1 id="h1"></h1>
   <p class="lead" id="lead"></p>
+  <p class="warn" id="warn"></p>
   <div id="list"></div>
   <p class="foot" id="foot"></p>
 </div>
 <script>
 const NOTES = [
+  { v: "2.3.2", date: "2026-11-25",
+    groups: [
+      { en: "Toolbox 1.17.0", ru: "Toolbox 1.17.0", items: [
+        { en: "Toolbox is now a native program: the same logic, settings and texts as 1.16.2, rebuilt in Rust and C++ without .NET and WPF. The file is about 8 MB instead of about 71 MB, it starts faster and uses less memory while it waits in the tray.",
+          ru: "Toolbox теперь нативная программа: та же логика, настройки и тексты, что в 1.16.2, переписанные на Rust и C++ без .NET и WPF. Файл около 8 МБ вместо примерно 71 МБ, программа быстрее запускается и меньше занимает памяти, пока ждёт в трее." },
+        { en: "Your settings, the autostart task and the program folder stay the same. The previous Toolbox (1.16) does not update itself to 1.17.0: the new version comes only with this playbook.",
+          ru: "Ваши настройки, задача автозапуска и папка программы остаются прежними. Прежний Toolbox (1.16) сам до 1.17.0 не обновляется: новая версия приходит только с этим плейбуком." },
+        { en: "The burst guard never limits the graphics driver's own processes (NVIDIA and AMD containers, panels, overlays) or DomainSchedTest, so measurements stay exact.",
+          ru: "Защита от всплесков больше никогда не ограничивает собственные процессы драйвера видеокарты (контейнеры, панели и оверлеи NVIDIA и AMD) и DomainSchedTest, поэтому замеры остаются точными." }
+      ]},
+      { en: "Playbook", ru: "Плейбук", items: [
+        { en: "The Windows changes are the same as in 2.3.0. Install 2.3.2 over 2.x in AME Wizard (nothing to undo first): this is how Toolbox 1.17.0 gets onto your PC.",
+          ru: "Изменения Windows те же, что в 2.3.0. Поставьте 2.3.2 поверх 2.x в AME Wizard (отменять ничего не нужно): так на ваш ПК попадает Toolbox 1.17.0." }
+      ]}
+    ]},
   { v: "2.3.1", date: "2026-11-22",
     groups: [
       { en: "Toolbox 1.16.1", ru: "Toolbox 1.16.1", items: [
@@ -159,9 +177,9 @@ const NOTES = [
 ];
 const T = {
   en: { h1: v => "What's new in Domain OS " + v, lead: "Everything Domain OS changes is still documented and can be undone with Start → Domain OS → Undo Domain OS.",
-        cur: "installed", since: "since 2.2.0", foot: "Full list of changes: README on GitHub (github.com/6kane1/DomainOS). This page is a local file and sends nothing." },
+        cur: "installed", since: "since 2.2.0", warn: "Switched Windows Security off for the install? Switch it back on now: Domain OS keeps Defender. ", open: "Open Windows Security", foot: "Full list of changes: README on GitHub (github.com/6kane1/DomainOS). This page is a local file and sends nothing." },
   ru: { h1: v => "Что нового в Domain OS " + v, lead: "Всё, что меняет Domain OS, по-прежнему описано и отменяется через «Пуск → Domain OS → Undo Domain OS».",
-        cur: "установлено", since: "после 2.2.0", foot: "Полный список изменений — в README на GitHub (github.com/6kane1/DomainOS). Эта страница — локальный файл, она ничего никуда не отправляет." }
+        cur: "установлено", since: "после 2.2.0", warn: "Выключали «Безопасность Windows» для установки? Включите её обратно сейчас: Domain OS оставляет Defender. ", open: "Открыть «Безопасность Windows»", foot: "Полный список изменений — в README на GitHub (github.com/6kane1/DomainOS). Эта страница — локальный файл, она ничего никуда не отправляет." }
 };
 let lang = /^ru/i.test(navigator.language || "") ? "ru" : "en";
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -171,6 +189,7 @@ function draw() {
   document.querySelectorAll(".lang button").forEach(b => b.classList.toggle("on", b.dataset.l === lang));
   document.getElementById("h1").textContent = t.h1(NOTES[0].v);
   document.getElementById("lead").textContent = t.lead;
+  document.getElementById("warn").innerHTML = esc(t.warn) + '<a href="windowsdefender://threatsettings">' + esc(t.open) + '</a>';
   document.getElementById("foot").textContent = t.foot;
   document.getElementById("list").innerHTML = NOTES.map((n, i) =>
     '<section class="ver' + (i === 0 ? ' cur' : '') + '" style="animation-delay:' + (i * 80) + 'ms"><h2>' + esc(n.v) +

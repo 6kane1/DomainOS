@@ -4,15 +4,17 @@ One program checks the whole project and ends with PASS / FAIL (exit code 0 / 1)
 refuses to build on any failure, then checks the packed archive (area I) and deletes it if it is broken.
 `./build.sh --skip-tests` packs without tests: only for an emergency re-pack of sources that already passed.
 
-    python3 tests/run-all.py              # everything, about 30-40 s (+ the first dotnet restore)
+    python3 tests/run-all.py              # everything, about 30-40 s (+ the first cargo build of the Toolbox tests)
     python3 tests/run-all.py -v           # also list every passing test
     python3 tests/run-all.py --only A,B,D # some areas
 
 Areas: A playbook.conf, B YAML task files (AME schema + safety rules), C Undo consistency, D PowerShell static analysis
 (PS 5.1 compatibility, BOM, $null into .NET, %USERNAME%), E Pester tests that RUN Save-State / Undo / Undo-AsSystem /
-Install-DomainOS in a sandbox with a fake registry, F guide pages in node, G Toolbox `dotnet test`, H Discord bot,
+Install-DomainOS in a sandbox with a fake registry, F guide pages in node, G Toolbox `cargo test` (toolbox/core with
+`--features testsupport`, toolbox/threadmap; 376 tests), H Discord bot,
 I built .apbx, J website + signed update feeds, K DomainSchedTest, L GitHub workflows + status card.
-Needs python3 (PyYAML, cryptography, Pillow), PowerShell 7 (~/sdk/pwsh or DOS_PWSH), the .NET 8 SDK, node and 7zr.
+Needs python3 (PyYAML, cryptography, Pillow), PowerShell 7 (~/sdk/pwsh or DOS_PWSH), Rust 1.100.0 (cargo, area G), the
+.NET 8 SDK (area K), node and 7zr.
 Pester 5.7.1 is kept in tests/.vendor, so nothing is downloaded. No test uses the network or a token.
 Files: lib/ (runner, AME model, areas), ps/ (AST analysis, item list, guide generator), pester/ (Harness.ps1 = the
 Windows stand-ins, *.Tests.ps1), js/run-page.js (pages with a small DOM).
@@ -25,7 +27,7 @@ secrets, actions pinned by commit SHA, Python wheels pinned by hash (tests/requi
 - **linux** (ubuntu-latest): `python3 tests/run-all.py`, all areas; I (no .apbx is built) and K (DomainSchedTest is
   not in this repository) SKIP.
 - **windows** (windows-latest): every playbook .ps1 parsed by real Windows PowerShell 5.1 (`tests/ci/Parse-PS51.ps1`),
-  the Pester suite under powershell.exe 5.1 (called explicitly; the default shell there is pwsh 7) and under pwsh 7, `dotnet test` of the Toolbox on Windows.
+  the Pester suite under powershell.exe 5.1 (called explicitly; the default shell there is pwsh 7) and under pwsh 7, `cargo test` of the Toolbox on Windows (the same tests built for Windows; 350 core tests, 6 of them Windows-only). The linux and windows jobs take Rust 1.100.0 from `.github/actions/native-toolchain`.
 - **roundtrip** (windows-latest, twice: default options / every option), an extra on top of the Pester sandbox (area E,
   fake registry), which stays the main install -> check -> undo test: `tests/ci/RoundTrip.ps1` changes the
   disposable runner for real. Snapshot, then as main.yml: Save-State.ps1, Install-DomainOS.ps1 -Part Tools, the options

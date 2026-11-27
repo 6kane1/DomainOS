@@ -5,6 +5,10 @@ playbook/Executables/DomainScheduler.exe
 toolbox/*.exe
 toolbox/**/bin/
 toolbox/**/obj/
+# native Toolbox build output (toolbox/build.sh)
+toolbox/out/
+toolbox/**/target/
+toolbox/**/target-*/
 # website (published separately, branch gh-pages) and local copies
 site/
 site-*/

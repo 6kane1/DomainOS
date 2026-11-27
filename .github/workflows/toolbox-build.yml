@@ -1,16 +1,23 @@
-# Builds Domain OS Toolbox from the source in toolbox/ on GitHub's own machines, runs the tests and attests the
-# exe: a signed statement (Sigstore) that this exact file was built by this workflow from this commit.
+# Builds Domain OS Toolbox (the native one since 1.17.0: Rust core + C++ Dear ImGui/DirectX 11 app) from the source in
+# toolbox/ on GitHub's own machines, runs its tests and attests the exe: a signed statement (Sigstore) that this exact
+# file was built by this workflow from this commit.
 # Anyone can check a downloaded Toolbox:
-#   gh attestation verify DomainScheduler.exe -R 6kane1/DomainOS
-# With a release tag the exe is also attached to that release. The update-feed key and the tester key never come
-# here: sealing test builds and signing feeds stay on the author's PC, done on the exe built and attested here.
+#   gh attestation verify DomainOS-Toolbox-<version>.exe -R 6kane1/DomainOS
+# The build is the one of toolbox/build.sh on the author's PC: a Linux machine cross-builds the Windows exe with pinned
+# tools (Rust 1.100.0 for x86_64-pc-windows-gnullvm, llvm-mingw 20260922, checked by SHA-256: .github/actions/
+# native-toolchain), the crates exactly as in Cargo.lock (--locked), build paths taken out of the exe
+# (--remap-path-prefix, -ffile-prefix-map) and no link time stamp (build.sh: --no-insert-timestamp). The same commit
+# built at the same path (GitHub's workspace /home/runner/work/DomainOS/DomainOS) gives the same bytes; another path
+# changes the Rust symbol hashes of the path crates, so a rebuild for comparison uses that path.
+# With a release tag the exe is also attached to that release (a draft only). The update-feed key and the tester key
+# never come here: sealing test builds and signing feeds stay on the author's PC, done on the exe built and attested here.
 name: Toolbox build (attested)
 
 on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Release to attach the exe to (empty: only a build artifact)"
+        description: "Draft release to attach the exe to (empty: only a build artifact)"
         required: false
         default: ""
       asset_name:
@@ -18,60 +25,88 @@ on:
         required: false
         default: ""
 
-permissions:
-  contents: write        # attach the exe to a release
-  id-token: write        # Sigstore signing for the attestation
-  attestations: write
+permissions: {}
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write        # attach the exe to a draft release
+      id-token: write        # Sigstore signing for the attestation
+      attestations: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
-        with:
-          dotnet-version: 8.0.x
-
-      - name: Tests
-        run: dotnet test toolbox/tests/DomainScheduler.Tests -c Release
-
-      - name: Publish (self-contained single file, win-x64)
-        run: >
-          dotnet publish toolbox/src/DomainScheduler/DomainScheduler.csproj -c Release -r win-x64
-          --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o out
-
-      - name: Name and checksums
-        id: meta
-        shell: pwsh
+      - name: Inputs are plain names
         env:
           ASSET_NAME: ${{ inputs.asset_name }}      # inputs come in as data (env), never pasted into the script
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
-          foreach ($x in @($env:ASSET_NAME, $env:RELEASE_TAG)) {
-            if ($x -and $x -notmatch '^[\w.\-]+$') { throw "Not allowed in release_tag / asset_name (letters, digits, . _ - only): $x" }
-          }
-          [xml]$p = Get-Content toolbox/Directory.Build.props
-          $v = ($p.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1)
-          $name = if ($env:ASSET_NAME) { $env:ASSET_NAME } else { "DomainScheduler-$v.exe" }
-          Move-Item out/DomainScheduler.exe "out/$name"
-          $h = (Get-FileHash "out/$name" -Algorithm SHA256).Hash.ToLower()
-          "name=$name" >> $env:GITHUB_OUTPUT
-          "version=$v" >> $env:GITHUB_OUTPUT
-          "### Toolbox $v`n`n``$name`` SHA-256 ``$h```n`nCommit ${{ github.sha }}" >> $env:GITHUB_STEP_SUMMARY
+          for x in "$ASSET_NAME" "$RELEASE_TAG"; do
+            [ -z "$x" ] || [[ "$x" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "not allowed in release_tag / asset_name (letters, digits, . _ - only): $x"; exit 1; }
+          done
+
+      - uses: ./.github/actions/native-toolchain
+        with:
+          cross: "true"
+
+      - name: Tests (cargo test, core + thread map)
+        working-directory: toolbox
+        run: |
+          (cd core && cargo test --locked --features testsupport)
+          (cd threadmap && cargo test --locked)
+
+      - name: Build (toolbox/build.sh, x86_64-pc-windows-gnullvm + llvm-mingw)
+        working-directory: toolbox
+        run: |
+          export RUSTFLAGS="--remap-path-prefix=$CARGO_HOME=/cargo --remap-path-prefix=$PWD=/src"
+          export EXTRA_CXXFLAGS="-ffile-prefix-map=$PWD=/src"
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/target" OBJ="$RUNNER_TEMP/obj" OUT="$GITHUB_WORKSPACE/out/DomainScheduler.exe"
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          ./build.sh --no-test
+
+      - name: Name, checks and checksums
+        id: meta
+        env:
+          ASSET_NAME: ${{ inputs.asset_name }}
+        run: |
+          v=$(sed -n '/^\[package\]/,/^\[/s/^version = "\(.*\)"/\1/p' toolbox/core/Cargo.toml | head -1)
+          [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-test[0-9]+(\.[0-9]+)*)?$ ]] || { echo "::error::no valid version in toolbox/core/Cargo.toml: $v"; exit 1; }
+          name="${ASSET_NAME:-DomainScheduler-$v.exe}"
+          mv out/DomainScheduler.exe "out/$name"
+          # a 64-bit Windows program (MZ, PE32+ x86-64), the version in its file properties, a sane size
+          python3 - "out/$name" "$v" <<'PY'
+          import sys
+          p, v = sys.argv[1], sys.argv[2]
+          d = open(p, 'rb').read()
+          assert d[:2] == b'MZ', 'not an exe'
+          pe = int.from_bytes(d[60:64], 'little')
+          assert d[pe:pe + 4] == b'PE\0\0' and int.from_bytes(d[pe + 4:pe + 6], 'little') == 0x8664, 'not an x86-64 PE file'
+          assert int.from_bytes(d[pe + 24:pe + 26], 'little') == 0x20b, 'not PE32+'
+          pv = 'ProductVersion'.encode('utf-16-le') + b'\0\0'
+          i = d.find(pv)
+          assert i > 0 and v.encode('utf-16-le') in d[i:i + 120], 'ProductVersion is not ' + v
+          assert 1 << 20 < len(d) < 64 << 20, f'unexpected size {len(d)}'
+          print(f'{p}: PE32+ x86-64, version {v}, {len(d)} bytes')
+          PY
+          h=$(sha256sum "out/$name" | cut -d' ' -f1)
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          { echo "### Toolbox $v (native)"; echo; echo "\`$name\` SHA-256 \`$h\`, $(stat -c %s "out/$name") bytes"; echo;
+            echo "Commit $GITHUB_SHA, $(rustc -V), $("$MINGW/x86_64-w64-mingw32-clang" --version | head -1)"; } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Attest build provenance
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: out/${{ steps.meta.outputs.name }}
 
-      - name: SBOM (the exe and every NuGet package it is built from)
-        shell: pwsh
+      - name: SBOM (the exe, every Rust crate it links, Dear ImGui, the fonts, the build tools)
         env:
           NAME: ${{ steps.meta.outputs.name }}
-        run: ./tools/make-sbom.ps1 -Project toolbox/src/DomainScheduler/DomainScheduler.csproj -Exe "out/$env:NAME" -Out "out/$env:NAME.spdx.json"
+        run: python3 tools/make-sbom-native.py --toolbox toolbox --exe "out/$NAME" --out "out/$NAME.spdx.json"
 
       - name: Attest the SBOM
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
@@ -87,11 +122,16 @@ jobs:
             out/${{ steps.meta.outputs.name }}.spdx.json
           retention-days: 30
 
-      - name: Attach to the release
+      - name: Attach to the release (draft only)
         if: inputs.release_tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag }}
           ASSET: out/${{ steps.meta.outputs.name }}
-        shell: bash
-        run: gh release upload "$RELEASE_TAG" "$ASSET" "$ASSET.spdx.json" --clobber -R "$GITHUB_REPOSITORY"
+        run: |
+          draft=$(gh release view "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" --json isDraft -q .isDraft)
+          if [ "$draft" != "true" ]; then
+            echo "::error::$RELEASE_TAG is already published. --clobber would replace a file whose SHA-256 is on the website and in the release notes. Attach to a draft, then publish."
+            exit 1
+          fi
+          gh release upload "$RELEASE_TAG" "$ASSET" "$ASSET.spdx.json" --clobber -R "$GITHUB_REPOSITORY"

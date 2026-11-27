@@ -2,7 +2,7 @@
 """
 Publishes a Toolbox TEST build for Domain OS testers (1.15.0 Test 1.1+).
 
-  publish-test-build.py <exe> <version> <notes_en> <notes_ru> --site <gh-pages checkout> [--dry]
+  publish-test-build.py <exe> <version> <notes_en> <notes_ru> --site <gh-pages checkout> [--feed NAME] [--dry]
 
 What it does:
   * tester key: ~/.config/domainos/tester-key.txt ("DOST-…", 32 random bytes, base32). Created on the first run.
@@ -14,8 +14,10 @@ What it does:
   * download token: ~/.config/domainos/test-download-token.txt, a fine-grained GitHub token with Contents: read-only on
     DomainOS-test only. It goes INSIDE the sealed feed; Toolbox 1.16.0 Test 1.8+ downloads the asset through the GitHub
     API with it. Never print it. A leak: revoke it on GitHub, make a new one, publish again.
-  * the test feed (version, url, SHA-256 and size of the sealed file, notes) is sealed too -> update/test.bin,
-    and signed with the update key -> update/test.bin.sig. Nothing about a test build is readable without the key.
+  * the test feed (version, url, SHA-256 and size of the sealed file, notes) is sealed too -> update/test-native.bin
+    (the native Toolbox 1.17.0+, Updater::TEST_FEED), and signed with the update key -> .sig and .signed. Nothing about
+    a test build is readable without the key. --feed test.bin writes the C# Toolbox's test feed instead; never put a
+    native exe there (owner's decision 2026-11-27: C# clients move to the native Toolbox only through the playbook).
 Then commit and push the site checkout.
 """
 import base64, hashlib, json, os, secrets, subprocess, sys, tempfile
@@ -68,10 +70,12 @@ def seal(plain: bytes, key: bytes) -> bytes:
 
 
 def main():
-    a = [x for x in sys.argv[1:] if not x.startswith('--')]
+    a = [x for i, x in enumerate(sys.argv[1:], 1) if not x.startswith('--') and sys.argv[i - 1] not in ('--site', '--feed')]
     exe, version, en, ru = a[:4]
     site = sys.argv[sys.argv.index('--site') + 1]
     dry = '--dry' in sys.argv
+    feed_name = sys.argv[sys.argv.index('--feed') + 1] if '--feed' in sys.argv else 'test-native.bin'
+    if feed_name not in ('test-native.bin', 'test.bin'): sys.exit('--feed must be test-native.bin or test.bin')
     key = tester_key(); ktext = fmt(key)
     tag = f'toolbox-test-{version}'
     tmp = tempfile.mkdtemp(prefix='dos-test-')
@@ -97,7 +101,7 @@ def main():
                         'sha256': hashlib.sha256(open(binf, 'rb').read()).hexdigest(), 'size': os.path.getsize(binf),
                         'notes_en': en, 'notes_ru': ru}}
     upd = os.path.join(site, 'update'); os.makedirs(upd, exist_ok=True)
-    tb = os.path.join(upd, 'test.bin')
+    tb = os.path.join(upd, feed_name)
     open(tb, 'wb').write(seal(json.dumps(feed, ensure_ascii=False).encode(), key))
     subprocess.run([SIGN, tb], check=True)
     for old in ('test.json', 'test.json.sig'):

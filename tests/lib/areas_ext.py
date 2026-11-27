@@ -5,34 +5,31 @@ from datetime import datetime, timezone, timedelta
 
 from framework import PASS, FAIL, SKIP, INFO
 
-G, H, J, K, L = ('G Toolbox (dotnet test)', 'H Discord bot', 'J Website + update feeds', 'K DomainSchedTest', 'L Workflows + status card')
+G, H, J, K, L = ('G Toolbox (cargo test)', 'H Discord bot', 'J Website + update feeds', 'K DomainSchedTest', 'L Workflows + status card')
 
 
 # =================================================================================================================
 # G. Toolbox
 # =================================================================================================================
+# The native Toolbox (1.17.0+): cargo test of toolbox/core and toolbox/threadmap. 1.17.0 had 344 + 4 core tests and
+# 28 thread map tests on Linux; the floor below catches lost tests, raise it when tests are added.
+MIN_TOOLBOX_TESTS = 370
+
+
 def area_G(R, ctx, proc_result):
     if proc_result is None:
-        R.add(G, 'Toolbox test suite', SKIP, f'{ctx.toolbox} not found or dotnet missing')
+        R.add(G, 'Toolbox test suite', SKIP, f'{ctx.toolbox} has no core/Cargo.toml or cargo is missing')
         return
-    code, out, trx, dur = proc_result
-    m = re.search(r'(Passed|Failed)!\s+-\s+Failed:\s+(\d+),\s+Passed:\s+(\d+),\s+Skipped:\s+(\d+),\s+Total:\s+(\d+)', out)
-    if trx and os.path.exists(trx):
-        import xml.etree.ElementTree as ET
-        ns = {'t': 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'}
-        root = ET.parse(trx).getroot()
-        fails = []
-        for r in root.iter('{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}UnitTestResult'):
-            if r.get('outcome') not in ('Passed', 'NotExecuted'):
-                msg = r.find('.//t:Message', ns)
-                fails.append(f'{r.get("testName")}: {(msg.text if msg is not None else "")[:400]}')
-        total = sum(1 for _ in root.iter('{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}UnitTestResult'))
-        R.check(G, f'DomainScheduler.Tests: all {total} tests pass ({dur:.0f} s)', fails)
-        R.ok(G, 'the suite has at least 221 tests (none lost)', total >= 221, f'only {total} tests ran')
-    elif m:
-        R.ok(G, f'DomainScheduler.Tests ({m.group(5)} tests)', code == 0 and m.group(2) == '0', out[-2500:])
-    else:
-        R.add(G, 'DomainScheduler.Tests', FAIL, f'exit {code}, no test summary: {out[-2500:]}')
+    code, out, _, dur = proc_result
+    res = [tuple(map(int, m)) for m in re.findall(r'test result: \w+\. (\d+) passed; (\d+) failed; (\d+) ignored', out)]
+    fails = re.findall(r'^test (\S+) \.\.\. FAILED$', out, re.M)
+    if not res:
+        R.add(G, 'cargo test (core + threadmap)', FAIL, f'exit {code}, no test summary: {out[-2500:]}')
+        return
+    passed, failed = sum(r[0] for r in res), sum(r[1] for r in res)
+    R.ok(G, f'cargo test: all {passed} tests pass, core + threadmap ({dur:.0f} s)', code == 0 and failed == 0 and not fails,
+         '\n'.join(fails[:30]) or out[-2500:])
+    R.ok(G, f'the suite has at least {MIN_TOOLBOX_TESTS} tests (none lost)', passed >= MIN_TOOLBOX_TESTS, f'only {passed} tests ran')
 
 
 # =================================================================================================================
@@ -265,8 +262,10 @@ def _node_check(js):
 
 def _public_key(ctx):
     src = open(ctx.updater_cs, encoding='utf-8').read()
-    m = re.search(r'public const string PublicKey\s*=\s*"([A-Za-z0-9+/=]+)"', src)
-    assert m, 'PublicKey not found in Updater.cs'
+    # native updater.rs (1.17.0+): pub const PUBLIC_KEY: &'static str = "..."; C# Updater.cs: public const string PublicKey = "..."
+    m = (re.search(r"pub const PUBLIC_KEY: &'static str =\s*\"([A-Za-z0-9+/=]+)\"", src)
+         or re.search(r'public const string PublicKey\s*=\s*"([A-Za-z0-9+/=]+)"', src))
+    assert m, f'the public update key was not found in {os.path.basename(ctx.updater_cs)}'
     return m.group(1)
 
 
@@ -381,7 +380,8 @@ def area_J(R, ctx):
     except Exception as e:
         R.add(J, 'update feeds: public key / cryptography', FAIL, str(e))
         return
-    for name in ('stable.json', 'test.bin', 'test.json'):
+    # stable.json / test.bin: read by the C# Toolbox 1.16.x; stable-native.json / test-native.bin: the native Toolbox 1.17.0+
+    for name in ('stable.json', 'test.bin', 'test.json', 'stable-native.json', 'test-native.bin'):
         f = os.path.join(upd, name)
         if not os.path.exists(f):
             continue
@@ -390,16 +390,20 @@ def area_J(R, ctx):
             R.add(J, f'update/{name}: signed', FAIL, f'{name}.sig is missing: Toolbox refuses the feed')
             continue
         data = open(f, 'rb').read()
-        R.ok(J, f'update/{name}: signature verifies with the public key in Updater.cs (ECDSA P-256)', _verify(pub, data, open(sig).read()), 'INVALID signature: Toolbox refuses this feed')
+        R.ok(J, f'update/{name}: signature verifies with the public key of the Toolbox updater (ECDSA P-256)', _verify(pub, data, open(sig).read()), 'INVALID signature: Toolbox refuses this feed')
         R.ok(J, f'update/{name}: a changed byte breaks the signature (self-test)', not _verify(pub, data + b' ', open(sig).read()), 'the verification accepts modified data')
         R.ok(J, f'update/{name}: at most 1 MB (Updater limit)', len(data) <= 1_000_000, f'{len(data)} bytes')
-    f = os.path.join(upd, 'stable.json')
-    if os.path.exists(f):
-        def stable():
+    for feed_name in ('stable.json', 'stable-native.json'):
+        f = os.path.join(upd, feed_name)
+        if not os.path.exists(f):
+            continue
+        def stable(f=f):
             d = json.load(open(f, encoding='utf-8'))
             probs = []
-            assert set(d) <= {'toolbox', 'playbook'} and d, f'unexpected keys {list(d)}'
+            assert set(d) <= {'toolbox', 'playbook', 'tables'} and d, f'unexpected keys {list(d)}'
             for k, v in d.items():
+                if k == 'tables':
+                    continue
                 if not re.fullmatch(r'\d+\.\d+\.\d+(-test\d+(\.\d+)?)?', str(v.get('version', ''))):
                     probs.append(f'{k}.version "{v.get("version")}" is not a version')
                 url = str(v.get('url', ''))
@@ -419,7 +423,17 @@ def area_J(R, ctx):
                 if k == 'playbook' and not url.endswith('.apbx'):
                     probs.append('playbook url is not an .apbx')
             assert not probs, '\n'.join(probs)
-        R.run(J, 'update/stable.json: versions, https GitHub release URLs, sha256, sizes, notes', stable)
+        R.run(J, f'update/{feed_name}: versions, https GitHub release URLs, sha256, sizes, notes', stable)
+    # Owner's decision 2026-11-27: the C# Toolbox is never offered the native exe (it moves to it only through the
+    # playbook): stable.json keeps a C# Toolbox 1.16.x entry once the native feed exists.
+    cs, nat = os.path.join(upd, 'stable.json'), os.path.join(upd, 'stable-native.json')
+    if os.path.exists(cs) and os.path.exists(nat):
+        def separate():
+            a, b = json.load(open(cs, encoding='utf-8')), json.load(open(nat, encoding='utf-8'))
+            ta, tb = a.get('toolbox') or {}, b.get('toolbox') or {}
+            assert str(ta.get('version', '')).startswith('1.16.'), f'stable.json offers Toolbox {ta.get("version")} to C# clients (must stay 1.16.x)'
+            assert ta.get('url') != tb.get('url') and ta.get('sha256') != tb.get('sha256'), 'stable.json and stable-native.json offer the same exe'
+        R.run(J, 'update/stable.json (C# clients) never offers the native Toolbox of stable-native.json', separate)
 
 
 # =================================================================================================================

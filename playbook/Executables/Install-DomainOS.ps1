@@ -78,6 +78,16 @@ try {
                 Write-Log "A running copy of the app was closed ($($running.Count))"
             }
             Get-ChildItem -Path $app -Filter 'DomainScheduler.exe.old*' -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+            # Files Toolbox's own updater keeps next to the program (.prev = the version before an update, .next/.bad
+            # after a return or a failed start). The playbook installs one known version, so they go: otherwise
+            # "Return to the previous version" would swap in an older (since 2.3.2: the C#) Toolbox over this one.
+            foreach ($tail in '.prev', '.next', '.bad') {
+                $f = $exe + $tail
+                if (Test-Path -LiteralPath $f) {
+                    try { Remove-Item -LiteralPath $f -Force -ErrorAction Stop; Write-Log "Removed $f (left by an earlier Toolbox update)" }
+                    catch { Write-Log "Could not remove $f ($($_.Exception.Message)); Toolbox may offer to return to it" }
+                }
+            }
             $copied = $false
             for ($try = 1; $try -le 5 -and -not $copied; $try++) {
                 try { Copy-Item -Path $src -Destination $exe -Force; $copied = $true }
