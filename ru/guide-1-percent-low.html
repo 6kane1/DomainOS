@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1% low и 0.1% low: что это и почему средний FPS обманывает — Domain OS</title>
+<meta name="description" content="Простое объяснение 1% low и 0.1% low, как их считают разные программы и как честно сравнить два варианта настройки.">
+<meta name="theme-color" content="#060608">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="../img/icon-256.png">
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="preload" href="../fonts/Inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../site.css?v=231e">
+<link rel="canonical" href="https://6kane1.github.io/DomainOS/ru/guide-1-percent-low.html">
+<link rel="alternate" hreflang="en" href="https://6kane1.github.io/DomainOS/guide-1-percent-low.html">
+<link rel="alternate" hreflang="ru" href="https://6kane1.github.io/DomainOS/ru/guide-1-percent-low.html">
+<link rel="alternate" hreflang="x-default" href="https://6kane1.github.io/DomainOS/guide-1-percent-low.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Domain OS">
+<meta property="og:title" content="1% low и 0.1% low: что это и почему средний FPS обманывает — Domain OS">
+<meta property="og:description" content="Простое объяснение 1% low и 0.1% low, как их считают разные программы и как честно сравнить два варианта настройки.">
+<meta property="og:url" content="https://6kane1.github.io/DomainOS/ru/guide-1-percent-low.html">
+<meta property="og:image" content="https://6kane1.github.io/DomainOS/img/og-ru.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+</head><body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>DOMAIN OS</a>
+    <span class="status"><span class="blip" aria-hidden="true"></span>ГАЙДЫ</span>
+    <nav class="nav" aria-label="Страницы"><a href="index.html">Плейбук</a><a href="scheduler.html">Toolbox</a><a href="install.html">Установка</a><a href="faq.html">Вопросы</a><a href="undo.html">Откат</a><a href="results.html">Замеры</a><a href="changelog.html">Версии</a><a href="support.html">Услуги</a></nav>
+    <a class="dc" href="https://discord.gg/wBGsV7WEpm" rel="noopener" aria-label="Наш Discord-сервер"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.8 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 10.8 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.5-4.3-.8-8.1-3.2-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg><span>Discord</span></a>
+    <a class="lang" href="../guide-1-percent-low.html" hreflang="en" lang="en">EN</a>
+    <a class="btn main small" href="index.html#download">Скачать</a>
+  </div>
+  <div class="subnav"><div class="wrap"><span>НА СТРАНИЦЕ</span><a href="#guide">Гайд</a></div></div>
+  <i class="progress" aria-hidden="true"></i>
+</header>
+<main>
+<style>
+/* undo / measure / changelog pages */
+.xp{max-width:78ch}
+.xp h3{margin:26px 0 8px;font-size:1.08rem}
+.xp p,.xp li{line-height:1.6}
+.xp ul,.xp ol{padding-left:1.2em;margin:6px 0 12px}
+.xp li{margin:4px 0}
+.xp pre{overflow-x:auto;padding:10px 12px;border:1px solid var(--line,rgba(255,255,255,.1));background:rgba(255,255,255,.025);font-size:13.5px;line-height:1.5}
+.xp .warn{padding:10px 12px;border-left:2px solid var(--pink,#f4b6cb);background:rgba(255,255,255,.02);margin:12px 0}
+.ver{border:1px solid var(--line,rgba(255,255,255,.1));border-radius:14px;padding:14px 18px;margin:12px 0;background:rgba(255,255,255,.02)}
+.ver h3{margin:0 0 6px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline}
+.ver h3 small{font:500 12px var(--mono,monospace);opacity:.7}
+.ver .now{font:600 11px var(--mono,monospace);padding:2px 7px;border:1px solid currentColor;border-radius:6px}
+.ver ul{margin:6px 0 0}
+</style><section class="sec" id="guide"><div class="wrap"><div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>Гайд</div><h2>1% low и 0.1% low: что это и почему средний FPS обманывает</h2><p>Простое объяснение 1% low и 0.1% low, как их считают разные программы и как честно сравнить два варианта настройки.</p></div><div class="xp">
+<p><b>Средний FPS</b> говорит, сколько кадров в среднем выходит за секунду. Он не говорит, насколько ровно они выходят. Можно иметь 700 FPS в среднем и заметные рывки.</p>
+<p><b>1% low</b> показывает самые медленные кадры: каким был бы FPS, если бы все кадры были такими же долгими, как худший 1%. <b>0.1% low</b> то же самое для худшей тысячной доли кадров, это самые редкие и самые заметные рывки. Чем ближе 1% и 0.1% low к среднему, тем ровнее игра.</p>
+<h3>Разные программы считают по-разному</h3>
+<ul>
+<li><b>Процентиль</b>: берут время кадра, дольше которого только 1% кадров, и переводят в FPS (1000 / время в мс). Так считают Toolbox и DomainSchedTest.</li>
+<li><b>Среднее худших</b>: берут все кадры из худшего 1% и усредняют. Так считает CapFrameX в режиме «1% Low».</li>
+</ul>
+<p>Числа из разных программ сравнивать нельзя: у одной и той же записи они разные. Сравнивайте только замеры одной программы, одним способом.</p>
+<h3>Как честно сравнить два варианта</h3>
+<ul>
+<li>Меняйте одно: то, что сравниваете. Тот же ПК, драйверы и настройки игры.</li>
+<li><b>Поровну прогонов</b> в каждом варианте, например 3 и 3. Одно число ничего не доказывает: живая игра шумит.</li>
+<li>Смотрите на разброс. Если разбросы двух вариантов пересекаются, разница в пределах шума.</li>
+</ul>
+<p>Пример с ПК разработчика (Dust2 benchmark, CapFrameX, по 2 прогона): без Toolbox 1% low 271 <a class="mref" href="results.html#d1" title="строка таблицы замеров">D1</a>, с тестовой сборкой Toolbox 1.16.0 286 <a class="mref" href="results.html#d3" title="строка таблицы замеров">D3</a>. Средний FPS при этом почти тот же: 700 и 715. Именно поэтому мы смотрим на 1% и 0.1% low, а не на средний FPS.</p>
+<h3>Чем измерить</h3>
+<ul>
+<li><b>Toolbox, страница «Проверка»</b>: одна кнопка, 30 секунд, отчёт на рабочем столе: FPS, 1% и 0.1% low, самый долгий кадр, рывки, ожидания потоков игры и подсказка, что ограничивает FPS. <a href="scheduler.html">Toolbox</a> бесплатный и работает на любой Windows 10/11.</li>
+<li><b>DomainSchedTest</b>: несколько прогонов подряд и общая таблица со средними и разбросом. Инструкция на странице <a href="measure.html">Замер</a>.</li></ul><h3>Другие гайды</h3><ul><li><a href="guide-cs2-stutter.html">Фризы и микрофризы в CS2: откуда берутся и как найти свою причину</a></li><li><b><a href="guide-1-percent-low.html">1% low и 0.1% low: что это и почему средний FPS обманывает</a></b></li><li><a href="guide-dpc-latency.html">DPC и прерывания: как драйверы мешают игре и что с этим делать</a></li></ul></div></div></section></main>
+<footer><div class="wrap"><span>DOMAIN OS 2.3.3 · © 2026 · ALL RIGHTS RESERVED</span><a href="scheduler.html">Domain OS Toolbox</a><a href="guides.html">Гайды</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="../guide-1-percent-low.html" hreflang="en">English</a><span>Версия 2.3.3 прошла тестовые сборки и автоматическую проверку каждого изменения, но реальные ПК разные: сообщайте о том, что ломается.</span><span>Команда: 6kane1 (автор и разработчик) и Zero Unflesh (zero_wake), совладелец Domain OS и разработчик AerialOS, внёсший очень большой вклад в этот проект.</span></div></footer>
+<script src="../site.js?v=231e"></script>
+</body></html>

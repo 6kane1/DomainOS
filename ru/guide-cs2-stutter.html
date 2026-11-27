@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Фризы и микрофризы в CS2: откуда берутся и как найти свою причину — Domain OS</title>
+<meta name="description" content="Почему CS2 дёргается при высоком FPS: видеокарта, движок, драйверы или фон. Как измерить рывки и 1% low и что из этого можно исправить в Windows.">
+<meta name="theme-color" content="#060608">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="../img/icon-256.png">
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="preload" href="../fonts/Inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../site.css?v=231e">
+<link rel="canonical" href="https://6kane1.github.io/DomainOS/ru/guide-cs2-stutter.html">
+<link rel="alternate" hreflang="en" href="https://6kane1.github.io/DomainOS/guide-cs2-stutter.html">
+<link rel="alternate" hreflang="ru" href="https://6kane1.github.io/DomainOS/ru/guide-cs2-stutter.html">
+<link rel="alternate" hreflang="x-default" href="https://6kane1.github.io/DomainOS/guide-cs2-stutter.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Domain OS">
+<meta property="og:title" content="Фризы и микрофризы в CS2: откуда берутся и как найти свою причину — Domain OS">
+<meta property="og:description" content="Почему CS2 дёргается при высоком FPS: видеокарта, движок, драйверы или фон. Как измерить рывки и 1% low и что из этого можно исправить в Windows.">
+<meta property="og:url" content="https://6kane1.github.io/DomainOS/ru/guide-cs2-stutter.html">
+<meta property="og:image" content="https://6kane1.github.io/DomainOS/img/og-ru.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+</head><body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="index.html"><span class="logo" aria-hidden="true"></span>DOMAIN OS</a>
+    <span class="status"><span class="blip" aria-hidden="true"></span>ГАЙДЫ</span>
+    <nav class="nav" aria-label="Страницы"><a href="index.html">Плейбук</a><a href="scheduler.html">Toolbox</a><a href="install.html">Установка</a><a href="faq.html">Вопросы</a><a href="undo.html">Откат</a><a href="results.html">Замеры</a><a href="changelog.html">Версии</a><a href="support.html">Услуги</a></nav>
+    <a class="dc" href="https://discord.gg/wBGsV7WEpm" rel="noopener" aria-label="Наш Discord-сервер"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.8 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 10.8 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.5-4.3-.8-8.1-3.2-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg><span>Discord</span></a>
+    <a class="lang" href="../guide-cs2-stutter.html" hreflang="en" lang="en">EN</a>
+    <a class="btn main small" href="index.html#download">Скачать</a>
+  </div>
+  <div class="subnav"><div class="wrap"><span>НА СТРАНИЦЕ</span><a href="#guide">Гайд</a></div></div>
+  <i class="progress" aria-hidden="true"></i>
+</header>
+<main>
+<style>
+/* undo / measure / changelog pages */
+.xp{max-width:78ch}
+.xp h3{margin:26px 0 8px;font-size:1.08rem}
+.xp p,.xp li{line-height:1.6}
+.xp ul,.xp ol{padding-left:1.2em;margin:6px 0 12px}
+.xp li{margin:4px 0}
+.xp pre{overflow-x:auto;padding:10px 12px;border:1px solid var(--line,rgba(255,255,255,.1));background:rgba(255,255,255,.025);font-size:13.5px;line-height:1.5}
+.xp .warn{padding:10px 12px;border-left:2px solid var(--pink,#f4b6cb);background:rgba(255,255,255,.02);margin:12px 0}
+.ver{border:1px solid var(--line,rgba(255,255,255,.1));border-radius:14px;padding:14px 18px;margin:12px 0;background:rgba(255,255,255,.02)}
+.ver h3{margin:0 0 6px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline}
+.ver h3 small{font:500 12px var(--mono,monospace);opacity:.7}
+.ver .now{font:600 11px var(--mono,monospace);padding:2px 7px;border:1px solid currentColor;border-radius:6px}
+.ver ul{margin:6px 0 0}
+</style><section class="sec" id="guide"><div class="wrap"><div class="sh"><div class="label"><span class="n">01</span><span class="acc">▍</span>Гайд</div><h2>Фризы и микрофризы в CS2: откуда берутся и как найти свою причину</h2><p>Почему CS2 дёргается при высоком FPS: видеокарта, движок, драйверы или фон. Как измерить рывки и 1% low и что из этого можно исправить в Windows.</p></div><div class="xp">
+<p>Средний FPS в CS2 может быть 700 и выше, а игра всё равно дёргается. Дело не в среднем, а в отдельных долгих кадрах. При 240 Гц экран обновляется каждые 4.2 мс. Пока кадры укладываются в это время, движение плавное. Кадр, который считался дольше, чем длится одно-два обновления экрана, и есть рывок, который видно глазом.</p>
+<h3>Четыре источника рывков</h3>
+<ul>
+<li><b>Видеокарта загружена на 100%.</b> Кадры встают в очередь, и время кадра начинает «плясать». Признак: загрузка видеокарты около 100% и рывки на тяжёлых сценах (дым, взрывы, много игроков).</li>
+<li><b>Сама игра.</b> Подгрузка ресурсов, компиляция шейдеров после обновления драйвера, паузы движка. Это не исправить настройкой Windows.</li>
+<li><b>Потоку игры не досталось ядро.</b> Поток готов работать, но ядро занято другой программой или драйвером. Такие ожидания измеряются в микросекундах, и долгие из них дают рывки. Подробно в гайде <a href="guide-dpc-latency.html">про DPC и прерывания</a>.</li>
+<li><b>Фоновые программы.</b> Браузер, лаунчеры, оверлеи, которые просыпаются во время игры и забирают ядро.</li>
+</ul>
+<p>Причины разные, и лечатся они по-разному. Поэтому сначала замер, потом изменения.</p>
+<h3>Как найти свою причину</h3>
+<ul>
+<li><b>Toolbox, страница «Проверка»</b>: одна кнопка, 30 секунд, отчёт на рабочем столе: FPS, 1% и 0.1% low, самый долгий кадр, рывки, ожидания потоков игры и подсказка, что ограничивает FPS. <a href="scheduler.html">Toolbox</a> бесплатный и работает на любой Windows 10/11.</li>
+<li><b>DomainSchedTest</b>: несколько прогонов подряд и общая таблица со средними и разбросом. Инструкция на странице <a href="measure.html">Замер</a>.</li></ul>
+<p>Смотрите на три числа: <a href="guide-1-percent-low.html">1% low и 0.1% low</a>, самый долгий кадр и ожидания потоков игры. Если ожидания потоков короткие, а рывки есть, причина в видеокарте или в самой игре, а не в Windows.</p>
+<h3>Что делает Domain OS, а что нет</h3>
+<p>Плейбук Domain OS убирает из Windows то, что просыпается во время игры, и ничего не трогает без описания. Каждое изменение откатывается. Toolbox следит за игрой во время матча: даёт самым загруженным потокам игры ядра, свободные от драйверов и фона, и сам при этом почти не нагружает процессор.</p>
+<p>На ПК разработчика (Ryzen 7 7800X3D, RTX 5060, CS2, DM, по 3 прогона) при переходе с Toolbox 1.16.1 на 1.17.0 1% low вырос с 429 <a class="mref" href="results.html#m13" title="строка таблицы замеров">M13</a> до 454 <a class="mref" href="results.html#m15" title="строка таблицы замеров">M15</a>, а 0.1% low с 230 до 294. Это один ПК, поэтому все замеры и методика открыты на странице <a href="results.html">Замеры</a>.</p>
+<p>Чего Domain OS не сделает: не ускорит видеокарту, которая уже работает на 100%, и не исправит паузы самого движка. Если замер показывает именно это, мы так и скажем.</p>
+<p>Вопросы и свои замеры присылайте в <a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a>.</p><h3>Другие гайды</h3><ul><li><b><a href="guide-cs2-stutter.html">Фризы и микрофризы в CS2: откуда берутся и как найти свою причину</a></b></li><li><a href="guide-1-percent-low.html">1% low и 0.1% low: что это и почему средний FPS обманывает</a></li><li><a href="guide-dpc-latency.html">DPC и прерывания: как драйверы мешают игре и что с этим делать</a></li></ul></div></div></section></main>
+<footer><div class="wrap"><span>DOMAIN OS 2.3.3 · © 2026 · ALL RIGHTS RESERVED</span><a href="scheduler.html">Domain OS Toolbox</a><a href="guides.html">Гайды</a><a href="https://discord.gg/wBGsV7WEpm" rel="noopener">Discord</a><a href="../guide-cs2-stutter.html" hreflang="en">English</a><span>Версия 2.3.3 прошла тестовые сборки и автоматическую проверку каждого изменения, но реальные ПК разные: сообщайте о том, что ломается.</span><span>Команда: 6kane1 (автор и разработчик) и Zero Unflesh (zero_wake), совладелец Domain OS и разработчик AerialOS, внёсший очень большой вклад в этот проект.</span></div></footer>
+<script src="../site.js?v=231e"></script>
+</body></html>
