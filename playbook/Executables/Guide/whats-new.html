@@ -52,6 +52,10 @@ h1{font-size:30px;line-height:1.2;color:var(--strong);font-weight:600;letter-spa
 const NOTES = [
   { v: "2.3.2", date: "2026-11-25",
     groups: [
+      { en: "Toolbox 1.17.1", ru: "Toolbox 1.17.1", items: [
+        { en: "Ideal cores for all game threads: Dynamic Top-5 now also looks after every other thread of the game, DLL threads included. Each gets a preferred core away from core 0, the Top-5 cores and the cores drivers keep busy, and moves only for a clear reason. Threads still migrate freely; the switch is on the Game threads page.",
+          ru: "Идеальные ядра всем потокам игры: Dynamic Top-5 теперь ведёт и все остальные потоки игры, включая потоки DLL. Каждый получает предпочтительное ядро не на ядре 0, не на ядрах Top-5 и не на ядрах, занятых драйверами, и переезжает только по явной причине. Потоки по-прежнему свободно мигрируют; переключатель на странице «Потоки игры»." },
+      ] },
       { en: "Toolbox 1.17.0", ru: "Toolbox 1.17.0", items: [
         { en: "Toolbox is now a native program: the same logic, settings and texts as 1.16.2, rebuilt in Rust and C++ without .NET and WPF. The file is about 8 MB instead of about 71 MB, it starts faster and uses less memory while it waits in the tray.",
           ru: "Toolbox теперь нативная программа: та же логика, настройки и тексты, что в 1.16.2, переписанные на Rust и C++ без .NET и WPF. Файл около 8 МБ вместо примерно 71 МБ, программа быстрее запускается и меньше занимает памяти, пока ждёт в трее." },
