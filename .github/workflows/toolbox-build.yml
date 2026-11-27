@@ -6,7 +6,9 @@
 # The build is the one of toolbox/build.sh on the author's PC: a Linux machine cross-builds the Windows exe with pinned
 # tools (Rust 1.100.0 for x86_64-pc-windows-gnullvm, llvm-mingw 20260922, checked by SHA-256: .github/actions/
 # native-toolchain), the crates exactly as in Cargo.lock (--locked), build paths taken out of the exe
-# (--remap-path-prefix, -ffile-prefix-map), so the same commit gives the same bytes.
+# (--remap-path-prefix, -ffile-prefix-map) and no link time stamp (build.sh: --no-insert-timestamp). The same commit
+# built at the same path (GitHub's workspace /home/runner/work/DomainOS/DomainOS) gives the same bytes; another path
+# changes the Rust symbol hashes of the path crates, so a rebuild for comparison uses that path.
 # With a release tag the exe is also attached to that release (a draft only). The update-feed key and the tester key
 # never come here: sealing test builds and signing feeds stay on the author's PC, done on the exe built and attested here.
 name: Toolbox build (attested)
