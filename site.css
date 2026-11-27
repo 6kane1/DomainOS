@@ -16,9 +16,15 @@ b,strong{font-weight:600} /* the font has weights 400–600: no synthetic bold *
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;scroll-padding-top:112px;-webkit-text-size-adjust:100%}
-body{font:400 16px/1.6 var(--sans);color:var(--text);background-color:var(--bg);
-  background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
-  background-size:24px 24px;overflow-x:hidden;min-height:100vh}
+body{font:400 16px/1.6 var(--sans);color:var(--text);background-color:#09080c;overflow-x:hidden;min-height:100vh}
+/* 27.11.2026: "Aurora" like Toolbox (no grid): soft pink and violet glows that drift slowly */
+body::before{content:"";position:fixed;inset:-25%;z-index:-1;pointer-events:none;
+  background:radial-gradient(42% 38% at 18% 12%,rgba(244,182,203,.22),transparent 70%),
+    radial-gradient(40% 45% at 85% 88%,rgba(150,120,255,.18),transparent 70%),
+    radial-gradient(30% 30% at 65% 35%,rgba(244,182,203,.06),transparent 70%);
+  animation:aurora 28s ease-in-out infinite alternate;will-change:transform}
+@keyframes aurora{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(4%,-3%,0) scale(1.06)}100%{transform:translate3d(-3%,3%,0) scale(1.02)}}
+@media (prefers-reduced-motion:reduce){body::before{animation:none}}
 img{max-width:100%;height:auto;display:block}
 a{color:var(--pink);text-decoration:none}
 a:hover{text-decoration:underline;text-underline-offset:3px}
