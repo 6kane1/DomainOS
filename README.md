@@ -4,6 +4,10 @@
 
 **English** | [Русский](README.ru.md)
 
+![Domain OS Toolbox: Auto finds the game, places its busiest threads and shows frame times live](toolbox/docs/media/toolbox-en.gif)
+
+**Website:** [6kane1.github.io/DomainOS](https://6kane1.github.io/DomainOS/) · **Guides:** [CS2 stutters](https://6kane1.github.io/DomainOS/guide-cs2-stutter.html) · [1% low and 0.1% low](https://6kane1.github.io/DomainOS/guide-1-percent-low.html) · [DPC latency](https://6kane1.github.io/DomainOS/guide-dpc-latency.html) · **[Discord](https://discord.gg/wBGsV7WEpm)**
+
 A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 25H2 and 26H2 (builds 26200, 26300), Pro only**, for games. On Home and other editions the install stops at the first step, before any change.
 
 > **25H2 and 26H2 since 2.1.0.** 24H2 is no longer supported: its security updates have ended. "Hold Windows on 26H2" keeps the system on 26H2 (supported until October 2028) — a PC on 25H2 gets the 26H2 update first.
