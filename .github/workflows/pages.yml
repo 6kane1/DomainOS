@@ -17,6 +17,7 @@ jobs:
       contents: read
       pages: write
       id-token: write
+      actions: read   # deploy-pages reads the run's artifact list (failed with 'No artifacts named github-pages' since 27.11 17:04 UTC)
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
