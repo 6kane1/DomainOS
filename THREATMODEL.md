@@ -16,14 +16,14 @@ update both with every change to a security-relevant part.
 
 | # | Who / what | Attack | Mitigation | Tests |
 |---|---|---|---|---|
-| T1 | A program running as the **standard user** on the same PC | plants or changes Undo's state, a `.reg` export, Toolbox settings/backups, a link (junction/symlink) to steer an admin restore | data in `%ProgramData%\Domain OS` and `…\Domain OS Toolbox` with owner + ACL checked and repaired (`StateDir.Judge`, `Test-DomainOSFile`); files of a foreign owner or links are refused; Undo restores only allow-listed items (allow-list in Program Files); `.reg` import refuses anything outside its key, deletions, `..`, unknown types; restored values checked against what the program itself writes | `SecurityTests`, Pester `Common`/`Undo`, fuzz: `FuzzTests.FolderAnyoneElseCanWriteIsNeverTrusted`, `GpuProfileFileOfAnyContent…`, Pester `Import-DomainOSRegFile fuzz` |
-| T2 | **Network attacker** / a changed mirror | serves a fake feed or a changed exe | feeds signed (ECDSA P-256), signature checked before parsing; every download checked by size + SHA-256 from the signed feed; HTTPS only; feed size capped | `UpdaterTests`, fuzz `FeedParserAcceptsOnlyValidFiles` |
-| T3 | **Stolen main signing key** | signs a malicious feed | backup key offline; key-rotation procedure (`toolbox/README.md` → *Update keys and key rotation*): a feed signed with the backup key ships a Toolbox that drops the main key | rotation tests in `UpdaterTests` |
-| T4 | **Leaked tester key** | reads test builds | only confidentiality of unfinished builds is lost; test builds are still signed feeds + SHA-256; new key = new seal | `SealedFilesOpenOnlyUntouched…` |
+| T1 | A program running as the **standard user** on the same PC | plants or changes Undo's state, a `.reg` export, Toolbox settings/backups, a link (junction/symlink) to steer an admin restore | data in `%ProgramData%\Domain OS` and `…\Domain OS Toolbox` with owner + ACL checked and repaired (`StateDir.Judge`, `Test-DomainOSFile`); files of a foreign owner or links are refused; Undo restores only allow-listed items (allow-list in Program Files); `.reg` import refuses anything outside its key, deletions, `..`, unknown types; restored values checked against what the program itself writes | Toolbox `base::state_dir` / `system::store` tests, Pester `Common`/`Undo`, fuzz: `folder_anyone_else_can_write_is_never_trusted`, `gpu_profile_file_of_any_content…`, Pester `Import-DomainOSRegFile fuzz` |
+| T2 | **Network attacker** / a changed mirror | serves a fake feed or a changed exe | feeds signed (ECDSA P-256), signature checked before parsing; every download checked by size + SHA-256 from the signed feed; HTTPS only; feed size capped | `system::updater` tests, fuzz `feed_parser_accepts_only_valid_files` |
+| T3 | **Stolen main signing key** | signs a malicious feed | backup key offline; key-rotation procedure (`toolbox/README.md` → *Update keys and key rotation*): a feed signed with the backup key ships a Toolbox that drops the main key | rotation tests in `system::updater` (`leaked_main_key_is_shut_out_by_the_backup_signed_rotation`, `revoked_key_is_rejected_others_still_work`) |
+| T4 | **Leaked tester key** | reads test builds | only confidentiality of unfinished builds is lost; test builds are still signed feeds + SHA-256; new key = new seal | `sealed_files_open_only_untouched…` |
 | T5 | **Compromised GitHub account / workflow** | pushes malicious code or a malicious release | `main` protected (PR + green tests, no force-push, also admins); actions pinned by SHA; release files attested (Sigstore) so a file not built by the workflow fails `gh attestation verify` | `tests.yml` area L (workflows pinned) |
-| T6 | **Malformed driver data** (NVAPI/ADL tables, CfgMgr, CPU-set buffers) | crashes or out-of-range writes | parsers bounds-checked, values clamped to driver-reported ranges and program caps | fuzz `NvidiaClockTable…`, `AmdAdapterTable…`, `InterruptAndCpuSet…` |
-| T7 | **Anti-cheat** | bans a user because Toolbox opened a protected game | `Guard`: games under a kernel anti-cheat and anti-cheat processes are never opened (not even for reading); measuring uses only kernel ETW | `SpecTests` (denylist) |
-| T8 | **Unstable overclock** | crash loop at every boot | crash guard: a profile is not re-applied after an unexpected shutdown; values that crashed are remembered and marking them again asks first (1.16.0); AMD voltage only lowered; offsets capped | `Release1130Tests`, `Release1160Tests` |
+| T6 | **Malformed driver data** (NVAPI/ADL tables, CfgMgr, CPU-set buffers) | crashes or out-of-range writes | parsers bounds-checked, values clamped to driver-reported ranges and program caps | fuzz `nvidia_clock_table…`, `amd_adapter_table…`, `interrupt_buffers_never_throw`, `cpu_set_and_cache_buffers_never_panic` |
+| T7 | **Anti-cheat** | bans a user because Toolbox opened a protected game | `Guard`: games under a kernel anti-cheat and anti-cheat processes are never opened (not even for reading); measuring uses only kernel ETW | `engine::guard` tests, `manual_apis_refuse_denylisted_processes_without_opening_them` |
+| T8 | **Unstable overclock** | crash loop at every boot | crash guard: a profile is not re-applied after an unexpected shutdown; values that crashed are remembered and marking them again asks first (1.16.0); AMD voltage only lowered; offsets capped | `gpu` tests (`start_decision_keeps_the_crash_guard`, `crashed_values_are_recognised_again`), `system::boot_guard` tests |
 | T9 | **Our own bug** | an install or Undo half done | install stops on any error; state saved before the first change; Undo keeps the state on any failure and can be run again; a real apply → undo round trip in CI on every change | `tests.yml` round trip, Pester |
 
 ## Not protected / residual risks (honest list)
@@ -38,8 +38,8 @@ update both with every change to a security-relevant part.
 
 ## Where to look first in a review
 `playbook/Executables/DomainOS-Common.ps1` (file trust, allow-list, `.reg` import), `Undo-DomainOS.ps1`,
-`Undo-AsSystem.ps1`, `toolbox/src/DomainScheduler.Lib/{Updater,StateDir,Guard,GpuProfiles,NvOc,AmdOc}.cs`,
-`.github/workflows/*`.
+`Undo-AsSystem.ps1`, `toolbox/core/src/{system/updater,base/state_dir,engine/guard,gpu/profiles,gpu/nv_oc,gpu/amd_oc}.rs`,
+`toolbox/core/src/ffi` (the C ABI the window calls), `.github/workflows/*`, `.github/actions/native-toolchain`.
 
 ---
 Русский кратко: защищаем Windows пользователя, права администратора, канал обновлений, ключи, игровой аккаунт и
