@@ -4,6 +4,10 @@
 
 [English](README.md) | **Русский**
 
+![Domain OS Toolbox: «Авто» находит игру, расставляет её самые загруженные потоки и показывает время кадров вживую](toolbox/docs/media/toolbox-ru.gif)
+
+**Сайт:** [6kane1.github.io/DomainOS](https://6kane1.github.io/DomainOS/ru/) · **Гайды:** [фризы в CS2](https://6kane1.github.io/DomainOS/ru/guide-cs2-stutter.html) · [1% low и 0.1% low](https://6kane1.github.io/DomainOS/ru/guide-1-percent-low.html) · [DPC и прерывания](https://6kane1.github.io/DomainOS/ru/guide-dpc-latency.html) · **[Discord](https://discord.gg/wBGsV7WEpm)**
+
 Плейбук для [AME Wizard](https://ameliorated.io), который готовит **Windows 11 25H2 и 26H2 (сборки 26200, 26300), только Pro**, к играм. На Home и других редакциях установка останавливается на первом шаге, до любых изменений.
 
 > **25H2 и 26H2 с версии 2.1.0.** 24H2 больше не поддерживается: у неё закончились обновления безопасности. «Держать Windows на 26H2» удерживает систему на 26H2 (поддержка до октября 2028) — ПК на 25H2 сначала получает обновление до 26H2.
