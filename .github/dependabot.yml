@@ -1,4 +1,4 @@
-# Dependabot: a weekly look for updates of the pinned GitHub actions, the Toolbox's NuGet packages and the CI's pip
+# Dependabot: a weekly look for updates of the pinned GitHub actions, the Toolbox's Rust crates (Cargo.lock) and the CI's pip
 # packages; security updates come at once. Every update is an ordinary pull request: it must pass the whole test suite
 # (main is protected) before it can be merged.
 version: 2
@@ -7,8 +7,8 @@ updates:
     directory: /
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
-  - package-ecosystem: nuget
-    directories: [/toolbox/src/DomainScheduler.Lib, /toolbox/src/DomainScheduler, /toolbox/tests/DomainScheduler.Tests]
+  - package-ecosystem: cargo
+    directories: [/toolbox/core, /toolbox/threadmap]
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
   - package-ecosystem: pip

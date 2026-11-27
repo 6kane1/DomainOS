@@ -55,6 +55,10 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      # build.sh runs tests/run-all.py, whose area G is cargo test of the native Toolbox source (1.17.0+): the pinned
+      # toolchain, not whatever Rust the runner image carries. (.NET stays for the PowerShell parser tools/psparse.)
+      - uses: ./.github/actions/native-toolchain
+
       - name: Inputs are plain names
         env:
           A: ${{ inputs.release_tag }}

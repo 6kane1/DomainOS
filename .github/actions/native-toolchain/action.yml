@@ -1,0 +1,47 @@
+# The toolchain of the native Toolbox (toolbox/build.sh), pinned: the Rust release below through rustup (preinstalled on
+# GitHub's runners; rustup checks every component against the SHA-256 in the release manifest) and, for the Windows exe
+# on Linux, llvm-mingw downloaded by its exact URL and checked against the SHA-256 written here. The same versions as on
+# the author's PC: rustc 1.100.0, llvm-mingw 20260922 (ucrt, ubuntu-22.04, x86_64). To move to newer ones, change the
+# three values together in one pull request and note the new exe size in the release notes.
+name: Native Toolbox toolchain
+description: Pinned Rust (+ x86_64-pc-windows-gnullvm and llvm-mingw for the cross build)
+inputs:
+  cross:
+    description: "true: also the Windows target and llvm-mingw (Linux runners only)"
+    required: false
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - name: Rust 1.100.0 (and llvm-mingw 20260922)
+      shell: bash
+      env:
+        CROSS: ${{ inputs.cross }}
+        RUST_VERSION: "1.100.0"
+        LLVM_MINGW: llvm-mingw-20260922-ucrt-ubuntu-22.04-x86_64
+        LLVM_MINGW_URL: https://github.com/mstorsjo/llvm-mingw/releases/download/20260922/llvm-mingw-20260922-ucrt-ubuntu-22.04-x86_64.tar.xz
+        LLVM_MINGW_SHA256: bb7bb7654b33d5aa8712acb837c963b2e0c56352560c76105270a3268c665c21
+      run: |
+        set -euo pipefail
+        command -v rustup >/dev/null || { echo "rustup missing on this runner image"; exit 1; }
+        targets=()
+        [ "$CROSS" = "true" ] && targets=(--target x86_64-pc-windows-gnullvm)
+        rustup toolchain install "$RUST_VERSION" --profile minimal --no-self-update "${targets[@]}"
+        # every later step (and build.sh, which defaults RUSTUP_HOME/CARGO_HOME to the author's paths) uses exactly these
+        {
+          echo "RUSTUP_TOOLCHAIN=$RUST_VERSION"
+          echo "RUSTUP_HOME=${RUSTUP_HOME:-$HOME/.rustup}"
+          echo "CARGO_HOME=${CARGO_HOME:-$HOME/.cargo}"
+          echo "CARGO_TERM_COLOR=never"
+        } >> "$GITHUB_ENV"
+        RUSTUP_TOOLCHAIN="$RUST_VERSION" rustc -V
+        if [ "$CROSS" = "true" ]; then
+          [ "$RUNNER_OS" = "Linux" ] || { echo "the cross build runs on Linux only"; exit 1; }
+          f="$RUNNER_TEMP/$LLVM_MINGW.tar.xz"
+          curl -fsSL --retry 3 --proto '=https' --tlsv1.2 -o "$f" "$LLVM_MINGW_URL"
+          echo "$LLVM_MINGW_SHA256  $f" | sha256sum -c -
+          tar -xJf "$f" -C "$RUNNER_TEMP"
+          rm -f "$f"
+          echo "MINGW=$RUNNER_TEMP/$LLVM_MINGW/bin" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/$LLVM_MINGW/bin/x86_64-w64-mingw32-clang++" --version | head -1
+        fi
