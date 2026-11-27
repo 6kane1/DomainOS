@@ -220,7 +220,7 @@ Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-2.3.2.apbx` in Pow
 
 ## Team
 
-- **6kane1** — author and owner of Domain OS.
+- **6kane1** — author and developer of Domain OS.
 - **Zero Unflesh (zero_wake)** — co-owner of Domain OS and owner of AerialOS. Made a very large contribution to this project.
 
 ## License
