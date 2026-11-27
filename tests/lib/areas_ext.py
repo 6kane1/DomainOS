@@ -12,8 +12,9 @@ G, H, J, K, L = ('G Toolbox (cargo test)', 'H Discord bot', 'J Website + update 
 # G. Toolbox
 # =================================================================================================================
 # The native Toolbox (1.17.0+): cargo test of toolbox/core and toolbox/threadmap. 1.17.0 had 344 + 4 core tests and
-# 28 thread map tests on Linux; the floor below catches lost tests, raise it when tests are added.
-MIN_TOOLBOX_TESTS = 370
+# 28 thread map tests on Linux; the floor below catches lost tests, raise it when tests are added. 1.17.2 removed
+# Auto-tune together with its tests (361 tests then).
+MIN_TOOLBOX_TESTS = 360
 
 
 def area_G(R, ctx, proc_result):
