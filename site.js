@@ -83,7 +83,7 @@
     var p = panels[id]; if (!p) return false; if (open && open !== p) close();
     back = from || document.activeElement; open = p; p.classList.add('on'); p.removeAttribute('aria-hidden'); R.classList.add('dz-on');
     p.querySelector('.dz-body').scrollTop = 0; setTimeout(function () { p.querySelector('.dz-x').focus({ preventScroll: true }); }, 60);
-    window.dispatchEvent(new Event('resize')); return true;
+    setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 360); return true;
   }
   secs.forEach(function (sec) {
     var wrap = sec.querySelector('.wrap'), sh = wrap && wrap.querySelector('.sh'); if (!sh) return;
