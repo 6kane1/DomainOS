@@ -50,6 +50,14 @@ jobs:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           GH_PUSH_TOKEN: ${{ github.token }}
           RESULTS_JSON: site/results/results.json
+      - name: Payment notices (Stripe -> a Discord DM to the developer)
+        # Reads paid Checkout Sessions with a restricted read-only key; without the STRIPE_KEY secret it does nothing.
+        if: ${{ !cancelled() }}
+        timeout-minutes: 2
+        run: python .github/discord-bot/stripe_notify.py
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          STRIPE_KEY: ${{ secrets.STRIPE_KEY }}
       - name: Publish what is left (the bot already pushes every change right away)
         if: ${{ !cancelled() }}
         timeout-minutes: 5
