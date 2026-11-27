@@ -1,19 +1,19 @@
-MEYCIQDf+rQf0tWrKmZtBsR9bom8lnbCSzrdiXjGS0Byjo7Y4AIhAO8fMpl1zz2k2LrjxgBs3lTDc9fOtAyH/GPZHS9m+qAv
+MEYCIQCnfePgYGJH4pqpGyAuAlJVvSPFzgoA/kC7CLgI+kRrywIhAJ+TUuvHYSKckY7KrRiZenByQ8AveAR3yVSaUabxz5kA
 {
  "toolbox": {
-  "version": "1.17.0",
-  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.2/DomainOS-Toolbox-1.17.0.exe",
-  "sha256": "3a3e8a842660b8c2952631452f69a4c7b16f5382866931329ad45056e646c6fe",
-  "size": 8634880,
-  "notes_en": "Toolbox 1.17.0: see the changelog on the site.",
-  "notes_ru": "Toolbox 1.17.0: список изменений — на сайте."
+  "version": "1.17.1",
+  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.3/DomainOS-Toolbox-1.17.1.exe",
+  "sha256": "7a155149bad7f90b48f5eb8ac9bfe93a1bd0248173aeb68eed6ff4e577eef2b9",
+  "size": 8715776,
+  "notes_en": "Toolbox 1.17.1: see the changelog on the site.",
+  "notes_ru": "Toolbox 1.17.1: список изменений — на сайте."
  },
  "playbook": {
-  "version": "2.3.2",
-  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.2/Domain-OS-2.3.2.apbx",
-  "sha256": "1b0f9d3751f807ffe5da984b94782eafeaab76a958d565b8cf81a20add8ee8ad",
-  "size": 17433377,
-  "notes_en": "Domain OS 2.3.2: see the changelog on the site.",
-  "notes_ru": "Domain OS 2.3.2: список изменений — на сайте."
+  "version": "2.3.3",
+  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.3/Domain-OS-2.3.3.apbx",
+  "sha256": "5d467e7dea8af5b44e3b09e536733d4db7c2492ab87161a56abf19997c6b9de4",
+  "size": 17462081,
+  "notes_en": "Domain OS 2.3.3: see the changelog on the site.",
+  "notes_ru": "Domain OS 2.3.3: список изменений — на сайте."
  }
 }

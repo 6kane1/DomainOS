@@ -1,4 +1,4 @@
-MEUCICiFm+BmVLVv5wfnydItcgNlTCw93EUxQ4lPXv8GU8VuAiEApLzz3Hrn5wpbEJNPWtif/9BieEswYODiOts6gqhq6Zw=
+MEUCICBXpbl05jPi+dcd4emLxThKzvOOCrPpcMmBLuMfdJ4IAiEAi1n1R+gKubtRWHJromq6R1o/Dl7BUenj6GK/aoXPf3g=
 {
  "toolbox": {
   "version": "1.16.1",
@@ -9,11 +9,11 @@ MEUCICiFm+BmVLVv5wfnydItcgNlTCw93EUxQ4lPXv8GU8VuAiEApLzz3Hrn5wpbEJNPWtif/9BieEsw
   "notes_ru": "Toolbox 1.16.1: список изменений — на сайте."
  },
  "playbook": {
-  "version": "2.3.2",
-  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.2/Domain-OS-2.3.2.apbx",
-  "sha256": "1b0f9d3751f807ffe5da984b94782eafeaab76a958d565b8cf81a20add8ee8ad",
-  "size": 17433377,
-  "notes_en": "Domain OS 2.3.2 brings the new native Toolbox 1.17.0. Install the playbook with AME Wizard over your Domain OS: it replaces the Toolbox program, your settings stay. See the changelog on the site.",
-  "notes_ru": "Domain OS 2.3.2 приносит новый нативный Toolbox 1.17.0. Поставьте плейбук через AME Wizard поверх вашей Domain OS: он заменит программу Toolbox, настройки сохранятся. Список изменений на сайте."
+  "version": "2.3.3",
+  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.3/Domain-OS-2.3.3.apbx",
+  "sha256": "5d467e7dea8af5b44e3b09e536733d4db7c2492ab87161a56abf19997c6b9de4",
+  "size": 17462081,
+  "notes_en": "Domain OS 2.3.3 brings the new native Toolbox 1.17.1. Install the playbook with AME Wizard over your Domain OS: it replaces the Toolbox program, your settings stay. See the changelog on the site.",
+  "notes_ru": "Domain OS 2.3.3 приносит новый нативный Toolbox 1.17.1. Поставьте плейбук через AME Wizard поверх вашей Domain OS: он заменит программу Toolbox, настройки сохранятся. Список изменений на сайте."
  }
 }
