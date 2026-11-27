@@ -17,3 +17,5 @@ playbook-research-*.md
 tests/results/
 tools/psparse/bin/
 tools/psparse/obj/
+__pycache__/
+*.pyc
