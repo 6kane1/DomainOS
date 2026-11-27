@@ -1,4 +1,4 @@
-MEYCIQDlH6mNou3nec9NUCShyRSTvlFTV05PghYEFb0OA7eKawIhAKwJAvcqX6yMszDAaGfVuNavFevQhr0orEGZ4QyIDb1F
+MEUCICKxkWEcvZkQ5fbo5CT5+btbEglqFVCOKb7Xd45E6vxIAiEAjt/n3G1XQkJzPU/qBtRMZLEu/KhV3rb3yIYLiL+aY/A=
 {
  "toolbox": {
   "version": "1.16.1",
@@ -9,11 +9,11 @@ MEYCIQDlH6mNou3nec9NUCShyRSTvlFTV05PghYEFb0OA7eKawIhAKwJAvcqX6yMszDAaGfVuNavFevQ
   "notes_ru": "Toolbox 1.16.1: список изменений — на сайте."
  },
  "playbook": {
-  "version": "2.3.1",
-  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.1/Domain-OS-2.3.1.apbx",
-  "sha256": "662fc668380f46a07e0280d9d4d2ce7a08e6ffc5f4ff201928dddcf6bc39a132",
-  "size": 82395137,
-  "notes_en": "Domain OS 2.3.1: see the changelog on the site.",
-  "notes_ru": "Domain OS 2.3.1: список изменений — на сайте."
+  "version": "2.3.2",
+  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.2/Domain-OS-2.3.2.apbx",
+  "sha256": "1b0f9d3751f807ffe5da984b94782eafeaab76a958d565b8cf81a20add8ee8ad",
+  "size": 17433377,
+  "notes_en": "Domain OS 2.3.2 brings the new native Toolbox 1.17.0. Install the playbook with AME Wizard over your Domain OS: it replaces the Toolbox program, your settings stay. See the changelog on the site.",
+  "notes_ru": "Domain OS 2.3.2 приносит новый нативный Toolbox 1.17.0. Поставьте плейбук через AME Wizard поверх вашей Domain OS: он заменит программу Toolbox, настройки сохранятся. Список изменений на сайте."
  }
 }

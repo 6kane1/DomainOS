@@ -1,0 +1,19 @@
+MEUCIEwzL38l6yQmJETAfs+8xdmX9dwlxKXbG0oVN5r1//IKAiEA9optA+HE8LSkGHVV2d0+uGdsViM+dun/58lSxK2pxms=
+{
+ "toolbox": {
+  "version": "1.17.0",
+  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.2/DomainOS-Toolbox-1.17.0.exe",
+  "sha256": "3a3e8a842660b8c2952631452f69a4c7b16f5382866931329ad45056e646c6fe",
+  "size": 8634880,
+  "notes_en": "Toolbox 1.17.0: see the changelog on the site.",
+  "notes_ru": "Toolbox 1.17.0: список изменений — на сайте."
+ },
+ "playbook": {
+  "version": "2.3.2",
+  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.2/Domain-OS-2.3.2.apbx",
+  "sha256": "1b0f9d3751f807ffe5da984b94782eafeaab76a958d565b8cf81a20add8ee8ad",
+  "size": 17433377,
+  "notes_en": "Domain OS 2.3.2: see the changelog on the site.",
+  "notes_ru": "Domain OS 2.3.2: список изменений — на сайте."
+ }
+}
