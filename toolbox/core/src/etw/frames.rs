@@ -320,8 +320,11 @@ mod tests {
         let mut v = Vec::new();
         assert_eq!(f.times(t0 + TimeSpan::from_ms(15.0), &mut v), 3);
         assert_eq!(f.name(), "ETW DXGI Present");
-        f.start(); // not elevated on the test host
-        assert!(!f.available());
-        f.watch(100); // not available: no session
+        f.start(); // Linux/Wine: no session; an elevated Windows host (CI runner) really starts it
+        if f.available() {
+            f.dispose();
+        } else {
+            f.watch(100); // not available: no session
+        }
     }
 }

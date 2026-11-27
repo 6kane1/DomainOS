@@ -973,9 +973,16 @@ mod tests {
             assert!(r.thread.is_none() && r.leftover.is_none() && r.demo_stop.is_none());
         }
         assert!(t.stop()); // nothing runs: nothing to wait for
-        assert!(!t.start(false)); // no kernel trace here
-        assert!(!t.running());
-        assert!(!t.error().is_empty());
+        if t.start(false) {
+            // an elevated Windows host (CI runner): the real kernel trace starts; stop must end it too
+            assert!(t.running() && !t.demo());
+            assert!(t.stop());
+            assert!(!t.running());
+        } else {
+            // Linux/Wine: no kernel trace
+            assert!(!t.running());
+            assert!(!t.error().is_empty());
+        }
         assert!(lock(&t.inner.run).thread.is_none());
     }
 
