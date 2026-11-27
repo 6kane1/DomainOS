@@ -687,6 +687,36 @@ def area_F(R, ctx):
         assert m.group(1) == ctx.pb.conf.version, f'whats-new.html: first entry is {m.group(1)}, playbook.conf is {ctx.pb.conf.version}'
     R.run(F, 'whats-new.html: the first NOTES entry is the playbook version', first_note)
 
+    def toolbox_version():
+        # 2.3.2: playbook.conf names the Toolbox it ships (apbx-build.yml refuses any other exe); the version must be the
+        # Toolbox source's own (release number, without -testN), and the What's new entry must name the same Toolbox.
+        conf = open(os.path.join(ctx.pb.root, 'playbook.conf'), encoding='utf-8').read()
+        m = re.search(r'<!-- Toolbox (\d+\.\d+\.\d+)\b', conf)
+        assert m, 'playbook.conf: no "<!-- Toolbox N.N.N" line (apbx-build.yml checks it)'
+        found, v = False, None
+        for root in (os.path.join(ctx.pb.root, '..', 'toolbox'), ctx.toolbox):
+            f = os.path.join(root or '', 'core', 'Cargo.toml')      # the native Toolbox (1.17.0+)
+            if os.path.exists(f):
+                found = True
+                v = re.search(r'^\[package\][^\[]*?^version = "(\d+\.\d+\.\d+)', open(f, encoding='utf-8').read(), re.M | re.S); break
+        if found:
+            assert v and v.group(1) == m.group(1), f'playbook.conf ships Toolbox {m.group(1)}, the Toolbox source is {v.group(1) if v else "?"}'
+        first = text[text.index('NOTES = ['):][:1500]
+        assert 'Toolbox' not in first or m.group(1) in first or 'Toolbox' not in first.split('groups')[1][:400], \
+            f'whats-new.html: the first entry names a Toolbox other than {m.group(1)}'
+    R.run(F, 'playbook.conf names the Toolbox version of the source', toolbox_version)
+
+    def readme_versions():
+        # 2.3.2 (review point 6): every "Domain-OS-N.N.N.apbx" the READMEs name is the version of playbook.conf
+        bad = []
+        for name in ('README.md', 'README.ru.md'):
+            f = os.path.join(ctx.pb.root, '..', name)
+            if not os.path.exists(f): continue
+            for v in set(re.findall(r'Domain-OS-(\d+\.\d+\.\d+)\.apbx', open(f, encoding='utf-8').read())):
+                if v != ctx.pb.conf.version: bad.append(f'{name}: Domain-OS-{v}.apbx')
+        assert not bad, f'playbook.conf is {ctx.pb.conf.version}, but ' + ', '.join(bad)
+    R.run(F, 'the READMEs name the playbook version of playbook.conf', readme_versions)
+
     def both(lang, act, expect_lang, word):
         d = _page(ctx, wn, lang, *act)
         assert d['ok'], d['error']

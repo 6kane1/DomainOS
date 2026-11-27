@@ -629,6 +629,25 @@ function Test-InstallRecord {
 }
 
 # ---- Windows health (interactive only; read-only, each with a time limit) -------------------------------------------
+# 2.3.2: AME Wizard asks to switch Windows Security off for the install; this tells the user when it is still off.
+# Another antivirus registered and on (Security Center) counts as protected. Only reads.
+function Test-Defender {
+    $how = 'Windows Security > Virus & threat protection > Manage settings: switch it on (or run: start windowsdefender://threatsettings).'
+    $other = @()
+    try {
+        $other = @(Get-CimInstance -Namespace 'root/SecurityCenter2' -ClassName AntiVirusProduct -ErrorAction Stop |
+            Where-Object { $_.displayName -notmatch 'Defender' -and (([int64]$_.productState -band 0x1000) -ne 0) })
+    } catch { }
+    if ($other.Count -gt 0) { Add-Result 'PASS' 'Security' 'An antivirus is on' 'on' ($other[0].displayName + ' (another antivirus, Defender steps aside)'); return }
+    $st = $null
+    try { $st = Get-MpComputerStatus -ErrorAction Stop } catch { }
+    if (-not $st) { Add-Result 'FAIL' 'Security' 'Microsoft Defender' 'on' 'its status cannot be read (the service is not running)' '' $how; return }
+    if ($st.AntivirusEnabled -and $st.RealTimeProtectionEnabled) { Add-Result 'PASS' 'Security' 'Microsoft Defender real-time protection' 'on' 'on' }
+    else { Add-Result 'FAIL' 'Security' 'Microsoft Defender real-time protection' 'on' 'off' '' ('Domain OS keeps Defender: it was only switched off for the install. ' + $how) }
+    if ($st.IsTamperProtected) { Add-Result 'PASS' 'Security' 'Tamper Protection' 'on' 'on' }
+    else { Add-Result 'WARN' 'Security' 'Tamper Protection' 'on' 'off' '' $how }
+}
+
 function Test-WindowsHealth {
     $area = 'Windows health'
     if (-not $Quick) {
@@ -800,6 +819,8 @@ if ($AfterInstall) {
     Test-DataFolder
     Test-UndoReadiness
     Test-DomainOSTasks
+    Write-Section 'Security'
+    Test-Defender
     Write-Section 'Windows health'
     Test-WindowsHealth
 }
