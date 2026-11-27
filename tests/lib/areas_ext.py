@@ -12,8 +12,9 @@ G, H, J, K, L = ('G Toolbox (cargo test)', 'H Discord bot', 'J Website + update 
 # G. Toolbox
 # =================================================================================================================
 # The native Toolbox (1.17.0+): cargo test of toolbox/core and toolbox/threadmap. 1.17.0 had 344 + 4 core tests and
-# 28 thread map tests on Linux; the floor below catches lost tests, raise it when tests are added.
-MIN_TOOLBOX_TESTS = 370
+# 28 thread map tests on Linux; the floor below catches lost tests, raise it when tests are added. 1.17.2 removed
+# Auto-tune together with its tests (361 tests then).
+MIN_TOOLBOX_TESTS = 360
 
 
 def area_G(R, ctx, proc_result):
@@ -290,7 +291,10 @@ def area_J(R, ctx):
     # The owner's hub is a password-encrypted page at a private path, not part of the public site: it is skipped and its
     # path is never printed in the (public) CI log.
     _hub = lambda f: '<title>Domain OS Пульт</title>' in open(f, encoding='utf-8', errors='ignore').read(4000)
-    pages = sorted(p for p in glob.glob(os.path.join(site, '**', '*.html'), recursive=True) if '/.git/' not in p and not _hub(p))
+    # Search engine ownership files (google<id>.html, yandex_<id>.html) hold one line the search engine reads, not a page.
+    _ownership = lambda f: re.match(r'(google[0-9a-f]+|yandex_[0-9a-f]+)\.html$', os.path.basename(f)) is not None
+    pages = sorted(p for p in glob.glob(os.path.join(site, '**', '*.html'), recursive=True)
+                   if '/.git/' not in p and not _hub(p) and not _ownership(p))
     R.ok(J, f'website has pages ({len(pages)})', len(pages) >= 4, 'fewer than 4 pages')
     for p in pages:
         relp = os.path.relpath(p, site)
