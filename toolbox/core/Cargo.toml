@@ -14,7 +14,7 @@ serde_json = "1"
 sha2 = "0.10"
 p256 = { version = "0.13", features = ["ecdsa"] }
 aes-gcm = "0.10"
-base64 = "0.22"
+base64 = "0.23"
 # Insertion-ordered maps: C# Dictionary/HashSet enumerate in insertion order, and the port keeps every order.
 indexmap = "2"
 # The Thread map logic (../threadmap, C ABI tm_*): linked into this staticlib, so the app gets dos_* and tm_* from one library.
