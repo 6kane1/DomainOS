@@ -152,7 +152,7 @@ dependencies = [
 
 [[package]]
 name = "dos_core"
-version = "1.17.2"
+version = "1.17.3"
 dependencies = [
  "aes-gcm",
  "base64",

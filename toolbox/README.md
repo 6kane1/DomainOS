@@ -162,6 +162,13 @@ offers a small, careful overclock with named profiles, one of which can be appli
 
 ## Project status
 
+Version **1.17.3** (shipped with playbook 2.3.5 and through Toolbox's own update). New since 1.17.2:
+
+- **Playbook download lands in Downloads.** A playbook update downloaded in Toolbox is copied to your Downloads folder
+  and Explorer opens there with the file selected. Before, the `/select` argument reached Explorer quoted wrong and it
+  opened Documents without the file. A Downloads folder that is a link to somewhere else is never written to, and an
+  existing file is never overwritten.
+
 Version **1.17.2**, a very important hotfix (shipped with playbook 2.3.4 and through Toolbox's own update). New since 1.17.1:
 
 - **CS2 under FACEIT is found and kept.** FACEIT lets programs open cs2 but strips the rights of the handle, so 1.17.1
@@ -307,7 +314,7 @@ build-provenance attestation and an attested SPDX SBOM (`tools/make-sbom-native.
 the build tools). Check any copy with the GitHub CLI:
 
 ```
-gh attestation verify DomainOS-Toolbox-1.17.2.exe -R 6kane1/DomainOS
+gh attestation verify DomainOS-Toolbox-1.17.3.exe -R 6kane1/DomainOS
 ```
 
 ## Compatibility with the C# Toolbox
@@ -322,6 +329,10 @@ folder `%ProgramData%\Domain OS Toolbox` with the same files, the same command-l
 The C# Toolbox 1.16.x keeps reading `update/stable.json` and `update/test.bin`; `stable.json` keeps the 1.16.1 entry.
 A C# Toolbox is therefore **not** updated to the native one by itself: it comes with playbook 2.3.2, installed with AME
 Wizard over Domain OS. The C# Toolbox shows a card when playbook 2.3.2 is out and can download it.
+
+**Playbook download (native Toolbox):** a newer playbook from the feed shows as a card. "Download" checks the file
+(size + SHA-256 from the signed feed), keeps it in the state folder and, since 1.17.3, copies it to your Downloads
+folder (`Domain-OS-<version>.apbx`; an existing file is never overwritten) and opens Explorer with it selected.
 
 ## Where things are stored
 

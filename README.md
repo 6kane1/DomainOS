@@ -17,7 +17,7 @@ A playbook for [AME Wizard](https://ameliorated.io) that prepares **Windows 11 2
 > **Before you start**
 > - **It can be undone without reinstalling Windows** (see [Undo](#undo)). Removed apps are not reinstalled automatically: Undo lists them for you to install from the Microsoft Store (the Store itself comes back automatically if it was removed). Still, try it in a virtual machine first.
 > - **Average FPS does not go up** because of a playbook. What you get is fewer background processes, no advertising, no forced restarts and a system that is set up the same way every time.
-> - Domain OS is young. Version 2.3.4 went through test builds and an automatic check of every change, but real PCs differ: report what breaks.
+> - Domain OS is young. Version 2.3.5 went through test builds and an automatic check of every change, but real PCs differ: report what breaks.
 
 ## What stays untouched — on purpose
 
@@ -74,7 +74,7 @@ Removes apps that advertise or start in the background: Clipchamp, News, Weather
 ### Windows Update (two options, on by default)
 - **No preview builds (always):** the policies `AllowBuildPreview` = 0 and `EnableExperimentation` = 0 in `HKLM\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds`: no Insider builds and no feature experiments.
 - **Hold Windows on 26H2 (no further feature updates)**: `TargetReleaseVersion` = 26H2. On 26H2 nothing changes but the pin; on 25H2 this means one feature update to 26H2 (a small enablement update with one restart), then no further feature updates. **26H2 gets security updates until October 2028:** before then, apply a newer Domain OS version (it moves the pin) or run "Give Windows Update back its defaults" from the Start menu folder "Domain OS".
-- **No drivers from Windows Update:** you install the makers' drivers; the driver guide shows which.
+- **No drivers from Windows Update:** you install the makers' drivers; the driver guide in Start > Domain OS > "First steps (drivers)" shows which.
 
 Security updates keep coming. The Start menu folder "Domain OS" has a shortcut that puts everything back.
 
@@ -113,7 +113,7 @@ The plan that was active before is remembered; Undo makes it active again and de
 ### Tools
 - **DomainScheduler** (option, on): installed to `Program Files\Domain OS` and started with Windows for every user. It places a game's threads and lowers background programs while you play. Since 2.3.2 this is the native Toolbox (1.17.1 now) (one exe of about 8 MB, no runtime to install; settings and data of the earlier Toolbox are kept). A Toolbox 1.16.x does not update itself to it: install 2.3.2 over your Domain OS with AME Wizard (the 1.16.x Toolbox shows a card when 2.3.2 is out and can download it).
 - **Runtimes** (option, on): Visual C++ 2015–2022 x64 and x86, the DirectX June 2010 runtime, 7-Zip — downloaded from the vendors; Microsoft files are accepted only with a valid Microsoft signature, and 7-Zip (which has no signature) only as one known version whose SHA-256 matches the value in `Install-Runtimes.ps1`.
-- **Driver guide** (option, on): after the restart a page opens (with your account's normal rights, not as administrator) that was built for your PC: which drivers to install, in which order, with links to the official pages, and how to install an NVIDIA driver without extras using NVCleanstall. It also checks the monitor's refresh rate and whether the memory runs at its rated speed.
+- **Driver guide** (Start > Domain OS > "First steps (drivers)"; since 2.3.5 it no longer opens by itself after the install, only "What's new" does): a page (with your account's normal rights, not as administrator) built for your PC: which drivers to install, in which order, with links to the official pages, and how to install an NVIDIA driver without extras using NVCleanstall. It also checks the monitor's refresh rate and whether the memory runs at its rated speed.
 - **Wallpapers** (option, on): the Domain OS pictures are copied to `C:\Windows\Web\Wallpaper\Domain OS`. The desktop gets a slideshow of them (a new picture every 10 minutes, shuffled) and the lock screen gets one of them. A theme "Domain OS" appears in Settings → Personalization → Themes to choose the slideshow again later. Windows has no supported way for a program to turn on a lock screen slideshow, so to get one: Settings → Personalization → Lock screen → Slideshow → Browse → `C:\Windows\Web\Wallpaper\Domain OS`. These are ordinary settings, nothing is locked; Undo puts back the earlier desktop and lock screen pictures. A copy of your earlier picture is kept in `%ProgramData%\Domain OS\Undo\Wallpaper\<account>`, which only that account and administrators can read. Installed over 1.4.0–2.1.0 (which set a Domain OS picture themselves), the original is taken from the state those versions saved before their first change; if it is gone, Undo sets the Windows default picture.
 - **Shortcut:** "Domain OS Toolbox" on the desktop and in the Start menu.
 - **Check Domain OS** (always): Start menu → Domain OS → Check Domain OS. See [Checking](#checking).
@@ -201,9 +201,9 @@ Since 2.0 the rule is: Defender, SmartScreen, VBS / memory integrity, TPM and Se
 
 ## How to use
 1. Install a clean Windows 11 Pro, 25H2 or 26H2. **Before the first connection to the internet** run `extras/No-WU-Drivers.reg`: otherwise Windows Update installs its own drivers before the playbook can forbid it. Then finish Windows Update and restart.
-2. Download AME Wizard and `Domain-OS-2.3.4.apbx`. Since 2.3.0 AME Wizard asks you to switch off the four main toggles in Windows Security (real-time protection and the others) before it starts: Domain OS does not change Defender, the wizard only needs it quiet while it works. **Switch them back on after the restart** (Windows Security > Virus & threat protection > Manage settings).
+2. Download AME Wizard and `Domain-OS-2.3.5.apbx`. Since 2.3.0 AME Wizard asks you to switch off the four main toggles in Windows Security (real-time protection and the others) before it starts: Domain OS does not change Defender, the wizard only needs it quiet while it works. **Switch them back on after the restart** (Windows Security > Virus & threat protection > Manage settings).
 3. Drag the `.apbx` into AME Wizard, choose the options, start.
-4. Restart. The driver guide opens: follow it from top to bottom.
+4. Restart. "What's new in Domain OS" opens. Drivers: Start > Domain OS > "First steps (drivers)".
 
 AME Wizard will say that the playbook is not verified: verification is issued by the AME team and this project does not have it yet.
 
@@ -218,9 +218,9 @@ AME Wizard will say that the playbook is not verified: verification is issued by
 
 **Proof that a Toolbox exe is built from this source:** from 1.15.0 on, Toolbox is built on GitHub's own machines by `.github/workflows/toolbox-build.yml` (tests first), and every exe gets a signed build-provenance attestation. Since 1.17.0 the workflow cross-builds the native exe on ubuntu-latest with the pinned toolchain (`.github/actions/native-toolchain`, llvm-mingw checked by SHA-256), the crates exactly as in `Cargo.lock` (`--locked`) and build paths taken out of the exe (`--remap-path-prefix`), and also attests an SPDX SBOM made by `tools/make-sbom-native.py` (the crates, Dear ImGui, the fonts, the build tools). Check any copy with the GitHub CLI: `gh attestation verify DomainOS-Toolbox-1.17.1.exe -R 6kane1/DomainOS` — it names the workflow and the exact commit; a file changed by even one byte fails. (1.14.1 and the test builds before 1.15.0 were built before this existed.)
 
-**Proof that the playbook archive is built from this source:** from 2.2.4 on, `Domain-OS-<version>.apbx` is built by `.github/workflows/apbx-build.yml` on GitHub's machines: it takes the attested Toolbox exe (and checks its attestation), runs the whole test suite, packs and attests the archive. Check it with `gh attestation verify Domain-OS-2.3.4.apbx -R 6kane1/DomainOS`. The archive is encrypted with a random salt, so a rebuild never has the same SHA-256: the attestation binds the published file.
+**Proof that the playbook archive is built from this source:** from 2.2.4 on, `Domain-OS-<version>.apbx` is built by `.github/workflows/apbx-build.yml` on GitHub's machines: it takes the attested Toolbox exe (and checks its attestation), runs the whole test suite, packs and attests the archive. Check it with `gh attestation verify Domain-OS-2.3.5.apbx -R 6kane1/DomainOS`. The archive is encrypted with a random salt, so a rebuild never has the same SHA-256: the attestation binds the published file.
 
-Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-2.3.4.apbx` in PowerShell must match the value on the website and in the release notes.
+Downloads are checked with SHA-256: `Get-FileHash .\Domain-OS-2.3.5.apbx` in PowerShell must match the value on the website and in the release notes.
 
 ## Team
 

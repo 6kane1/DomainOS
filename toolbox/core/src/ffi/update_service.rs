@@ -256,7 +256,11 @@ impl UpdateService {
                 .and_then(|data| Updater::write_new(&data, &format!("Domain-OS-{}.apbx", p.version), None).map_err(|e| e.message().to_string()));
             match r {
                 Ok(file) => {
-                    let f = file.to_string_lossy().into_owned();
+                    // 1.17.3: the checked file stays in the state folder (Updates, hidden); a copy goes to the user's
+                    // Downloads, where people look for it and AME Wizard can open it. Nothing in Downloads is deleted or
+                    // overwritten: a name already taken by another file gets " (2)", " (3)"...
+                    let f = Self::copy_to_downloads(&file, &format!("Domain-OS-{}.apbx", p.version))
+                        .unwrap_or_else(|| file.to_string_lossy().into_owned());
                     {
                         let mut st = lock(&me.st);
                         st.busy = None;
@@ -277,8 +281,54 @@ impl UpdateService {
     }
 
     pub fn show_file(file: &str) {
-        let explorer = std::path::Path::new(&super::win::windows_dir()).join("explorer.exe");
-        let _ = std::process::Command::new(explorer).arg(format!("/select,\"{}\"", file)).spawn();
+        super::win::show_in_explorer(file);
+    }
+
+    /// Copies the downloaded playbook to Downloads; the path of the copy, None when Downloads is not available or the
+    /// copy failed (then the state-folder file is shown). A file with the same name and the same bytes is reused.
+    fn copy_to_downloads(src: &std::path::Path, name: &str) -> Option<String> {
+        let dir = super::win::downloads_dir();
+        if dir.is_empty() {
+            return None;
+        }
+        let dir = std::path::Path::new(&dir);
+        if !dir.is_dir() {
+            return None;
+        }
+        // Toolbox runs as administrator and Downloads belongs to the standard user (THREATMODEL T1): a Downloads that is
+        // a link (symlink or junction) to somewhere else is not written to; CREATE_NEW below never follows a planted
+        // link at the file name either.
+        let md = std::fs::symlink_metadata(dir).ok()?;
+        if md.file_type().is_symlink() {
+            return None;
+        }
+        #[cfg(windows)]
+        {
+            use std::os::windows::fs::MetadataExt;
+            if md.file_attributes() & 0x400 != 0 {
+                return None; // FILE_ATTRIBUTE_REPARSE_POINT
+            }
+        }
+        let data = std::fs::read(src).ok()?;
+        let (stem, ext) = name.rsplit_once('.').unwrap_or((name, ""));
+        for i in 1..100 {
+            let n = if i == 1 { name.to_string() } else { format!("{} ({}).{}", stem, i, ext) };
+            let t = dir.join(&n);
+            match std::fs::read(&t) {
+                Ok(old) if old == data => return Some(t.to_string_lossy().into_owned()),
+                Ok(_) => continue,
+                Err(_) => {}
+            }
+            let mut f = std::fs::OpenOptions::new().write(true).create_new(true).open(&t).ok()?;
+            use std::io::Write;
+            if f.write_all(&data).and_then(|_| f.sync_all()).is_err() {
+                drop(f);
+                let _ = std::fs::remove_file(&t);
+                return None;
+            }
+            return Some(t.to_string_lossy().into_owned());
+        }
+        None
     }
 
     pub fn playbook_file(&self) -> Option<String> {
