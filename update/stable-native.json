@@ -1,18 +1,18 @@
 {
  "toolbox": {
-  "version": "1.17.2",
-  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.4/DomainOS-Toolbox-1.17.2.exe",
-  "sha256": "7fd309630885effb0575a01c049582210246670139623fe4b85b4fb0f065b20a",
-  "size": 8663552,
-  "notes_en": "Toolbox 1.17.2: see the changelog on the site.",
-  "notes_ru": "Toolbox 1.17.2: список изменений — на сайте."
+  "version": "1.17.3",
+  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.5/DomainOS-Toolbox-1.17.3.exe",
+  "sha256": "eb8b63aafd15879e442c65d261c503827718371bf178d268c6269d5b538e42d9",
+  "size": 8666112,
+  "notes_en": "Toolbox 1.17.3: see the changelog on the site.",
+  "notes_ru": "Toolbox 1.17.3: список изменений — на сайте."
  },
  "playbook": {
-  "version": "2.3.4",
-  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.4/Domain-OS-2.3.4.apbx",
-  "sha256": "0aef2e1cb687201d0ad99cf4d42268ac30d25a12e10d284941369b29bc84d929",
-  "size": 17449633,
-  "notes_en": "Domain OS 2.3.4: see the changelog on the site.",
-  "notes_ru": "Domain OS 2.3.4: список изменений — на сайте."
+  "version": "2.3.5",
+  "url": "https://github.com/6kane1/DomainOS/releases/download/v2.3.5/Domain-OS-2.3.5.apbx",
+  "sha256": "1f80b2647e147cff34d1e6f7415aa9899d3121c157a0ab878e20d00e6e17bceb",
+  "size": 17450721,
+  "notes_en": "Domain OS 2.3.5: see the changelog on the site.",
+  "notes_ru": "Domain OS 2.3.5: список изменений — на сайте."
  }
 }
