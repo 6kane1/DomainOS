@@ -12,7 +12,6 @@ actions:
   - !registryKey: {path: 'HKLM\SOFTWARE\Domain OS\Options', operation: delete, errorAction: Ignore}
   - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'install-scheduler', data: '1', type: REG_DWORD, option: 'install-scheduler', errorAction: Halt}
   - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'install-runtimes', data: '1', type: REG_DWORD, option: 'install-runtimes', errorAction: Halt}
-  - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'open-guide', data: '1', type: REG_DWORD, option: 'open-guide', errorAction: Halt}
   - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'wallpaper', data: '1', type: REG_DWORD, option: 'wallpaper', errorAction: Halt}
   - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'updates-no-feature', data: '1', type: REG_DWORD, option: 'updates-no-feature', errorAction: Halt}
   - !registryValue: {path: 'HKLM\SOFTWARE\Domain OS\Options', value: 'updates-no-drivers', data: '1', type: REG_DWORD, option: 'updates-no-drivers', errorAction: Halt}

@@ -198,6 +198,19 @@ mod imp {
         known_folder(&windows_sys::Win32::UI::Shell::FOLDERID_ProgramFiles)
     }
 
+    /// The user's Downloads folder (1.17.3: the playbook download is copied there, where people look for it).
+    pub fn downloads_dir() -> String {
+        known_folder(&windows_sys::Win32::UI::Shell::FOLDERID_Downloads)
+    }
+
+    /// 1.17.3: Explorer with this file selected. The argument goes to Explorer exactly as `/select,"<path>"`: through
+    /// `Command::arg` the inner quotes were escaped, Explorer did not understand it and opened Documents instead.
+    pub fn show_in_explorer(file: &str) {
+        use std::os::windows::process::CommandExt;
+        let explorer = std::path::Path::new(&windows_dir()).join("explorer.exe");
+        let _ = std::process::Command::new(explorer).raw_arg(format!("/select,\"{}\"", file)).spawn();
+    }
+
     /// `Environment.GetFolderPath(SpecialFolder.Windows)`.
     pub fn windows_dir() -> String {
         use windows_sys::Win32::System::SystemInformation::GetWindowsDirectoryW;
@@ -362,6 +375,10 @@ mod imp {
     pub fn program_files_dir() -> String {
         String::new()
     }
+    pub fn downloads_dir() -> String {
+        std::env::var("HOME").map(|h| format!("{}/Downloads", h)).unwrap_or_default()
+    }
+    pub fn show_in_explorer(_file: &str) {}
     pub fn windows_dir() -> String {
         String::new()
     }

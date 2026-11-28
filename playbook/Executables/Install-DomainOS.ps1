@@ -9,7 +9,8 @@
     -Part Scheduler  DomainScheduler.exe + a logon task for every user (highest rights the user has),
                      shortcut "Domain OS Toolbox" in the Start menu and on the desktop
     -Part Guide      the driver guide opens once after the next sign-in, without administrator rights (a scheduled
-                     task for the group Users, see Register-DomainOSOpenAtLogon in DomainOS-Common.ps1)
+                     task for the group Users). Not called by the playbook since 2.3.5: the guide no longer opens by
+                     itself, it stays in Start > Domain OS > "First steps (drivers)"
     -Part WhatsNew   the page "What's new in Domain OS" (Guide\whats-new.html) opens once after the next sign-in,
                      the same way; once per version, so an update shows what changed
   Log: %ProgramData%\Domain OS\Logs\install.log
@@ -131,6 +132,11 @@ try {
         }
         'WhatsNew' {
             $page = Join-Path $app 'Guide\whats-new.html'
+            # 2.3.5: the driver guide no longer opens by itself. A one-time task left by an earlier install that has not
+            # run yet goes, so only What's new opens after this update (the guide stays in the Start menu).
+            Unregister-ScheduledTask -TaskPath '\Domain OS\' -TaskName 'Open the driver guide' -Confirm:$false -ErrorAction SilentlyContinue
+            Remove-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce' -Name 'DomainOSGuide' -ErrorAction SilentlyContinue
+            Remove-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce' -Name 'DomainOSGuide' -ErrorAction SilentlyContinue
             Remove-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce' -Name 'DomainOSWhatsNew' -ErrorAction SilentlyContinue
             $version = ''
             $conf = Join-Path $here '..\playbook.conf'

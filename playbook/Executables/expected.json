@@ -1,6 +1,6 @@
 {
- "version": "2.3.4",
- "generated": "2026-11-27T20:59:22Z",
+ "version": "2.3.5",
+ "generated": "2026-11-28T15:48:58Z",
  "optionsKey": "HKLM\\SOFTWARE\\Domain OS\\Options",
  "options": [
   {
@@ -10,11 +10,6 @@
   },
   {
    "name": "install-runtimes",
-   "kind": "CheckboxOption",
-   "default": true
-  },
-  {
-   "name": "open-guide",
    "kind": "CheckboxOption",
    "default": true
   },
@@ -95,7 +90,7 @@
   }
  ],
  "taskFiles": {
-  "Tasks/options.yml": "11FA088CFD8D67F1059C2EF104F5A6C98ED35431E95E2FC30B7E1CACE1D0F03E",
+  "Tasks/options.yml": "AF0EBC41E40DC2253E13089E29894FD230331845F0DF65D7195D57F7F9619648",
   "Tasks/apps.yml": "B898AF59456E1A4717B95E747412DD46263F5635264FA057C141BF2BBADF5908",
   "Tasks/privacy.yml": "56ED7CAABB378DEDF49080CA51C0BE5F1840D993AA790E6250456FADB0E719F6",
   "Tasks/services.yml": "D1C2D4562DE77B44B02F6AD77DD532BB1B2702D0352CC801375CF93BADFC501F",
@@ -103,7 +98,7 @@
   "Tasks/updates.yml": "24E729B53454FEAE179ACD20F7B428E9F5F3D6E923D73A991D62BE04EF03F92D",
   "Tasks/gaming.yml": "9BBFF8D9AADAB1B7BB041DB6864D477D4D1E6C79A3B065382E6583BA53BCACB3",
   "Tasks/interface.yml": "981A8BAC5C48AC0ECC22091EE07E841283A6DB0FC8E26B99B6CF2224DAB15659",
-  "Tasks/software.yml": "CBDCEC0609D51FAA2BB2D6F0EAB02753292FE0A898EBF3FEAFEDCA3222E4A261"
+  "Tasks/software.yml": "1B9B8E3997F869D7F436C861C0A798DC8774459576878E87801310D1655275AA"
  },
  "items": [
   {
@@ -2818,18 +2813,7 @@
   {
    "kind": "run",
    "file": "Tasks/software.yml",
-   "line": 32,
-   "option": "open-guide",
-   "builds": [],
-   "check": "fail",
-   "exe": "%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-   "script": "Install-DomainOS.ps1",
-   "args": "-Part Guide"
-  },
-  {
-   "kind": "run",
-   "file": "Tasks/software.yml",
-   "line": 44,
+   "line": 34,
    "option": "",
    "builds": [],
    "check": "fail",
@@ -2840,7 +2824,7 @@
   {
    "kind": "run",
    "file": "Tasks/software.yml",
-   "line": 57,
+   "line": 47,
    "option": "wallpaper",
    "builds": [],
    "check": "fail",
@@ -2851,7 +2835,7 @@
   {
    "kind": "run",
    "file": "Tasks/software.yml",
-   "line": 70,
+   "line": 60,
    "option": "power-plan",
    "builds": [],
    "check": "fail",
@@ -2862,7 +2846,7 @@
   {
    "kind": "run",
    "file": "Tasks/software.yml",
-   "line": 82,
+   "line": 72,
    "option": "apps-basic",
    "builds": [],
    "check": "fail",
@@ -2873,7 +2857,7 @@
   {
    "kind": "run",
    "file": "Tasks/software.yml",
-   "line": 91,
+   "line": 81,
    "option": "apps-max",
    "builds": [],
    "check": "fail",
@@ -2884,7 +2868,7 @@
   {
    "kind": "run",
    "file": "Tasks/software.yml",
-   "line": 102,
+   "line": 92,
    "option": "apps-basic",
    "builds": [],
    "check": "fail",
@@ -2895,7 +2879,7 @@
   {
    "kind": "run",
    "file": "Tasks/software.yml",
-   "line": 114,
+   "line": 104,
    "option": "taskbar-clean",
    "builds": [],
    "check": "fail",
